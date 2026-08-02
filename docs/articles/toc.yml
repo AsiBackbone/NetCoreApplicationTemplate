@@ -72,6 +72,8 @@
   items:
     - name: Data Access
       href: data-access.md
+    - name: EF Core Diagnostics
+      href: ef-core-diagnostics.md
     - name: EF Core Save Pipeline
       href: ef-core-save-pipeline.md
     - name: Audit Accountability Integration

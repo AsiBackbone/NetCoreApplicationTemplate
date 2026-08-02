@@ -17,6 +17,8 @@ public sealed class DataAccessOptions
 
     public string ConnectionStringName { get; init; } = "ApplicationDatabase";
 
+    public DataDiagnosticsOptions Diagnostics { get; init; } = new();
+
     public DataAuditingOptions Auditing { get; init; } = new();
 
     public static bool IsDisabledProvider(string? provider)
