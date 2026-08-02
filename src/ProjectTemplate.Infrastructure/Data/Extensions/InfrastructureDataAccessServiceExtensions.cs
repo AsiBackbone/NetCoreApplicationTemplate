@@ -31,6 +31,8 @@ public static class InfrastructureDataAccessServiceExtensions
             .Validate(options => DataAccessOptions.IsDisabledProvider(options.Provider)
                 || !string.IsNullOrWhiteSpace(options.ConnectionStringName),
                 "ProjectTemplate:DataAccess:ConnectionStringName must not be empty when data access is enabled.")
+            .Validate(options => options.Diagnostics is not null,
+                "ProjectTemplate:DataAccess:Diagnostics must be configured as an object when specified.")
             .Validate(options => AuditStorageModes.IsSupported(options.Auditing.StorageMode),
                 "ProjectTemplate:DataAccess:Auditing:StorageMode must be Local, Outbox, or ExternalSink.")
             .ValidateOnStart();
@@ -61,16 +63,17 @@ public static class InfrastructureDataAccessServiceExtensions
         services.TryAddScoped<IApplicationMutationAuditReceiptAccessor, ApplicationDbContextMutationAuditReceiptAccessor>();
         services.TryAddScoped<ApplicationSaveChangesInterceptor>();
 
-        services.AddDbContext<ApplicationDbContext>(options => ConfigureProvider(
+        services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
+            ConfigureDataAccess(
+                serviceProvider,
                 options,
-                registration.Provider,
-                registration.ConnectionString));
+                registration));
 
         services.AddDbContextFactory<ApplicationDbContext>(
-            options => ConfigureProvider(
-                    options,
-                    registration.Provider,
-                    registration.ConnectionString),
+            (serviceProvider, options) => ConfigureDataAccess(
+                serviceProvider,
+                options,
+                registration),
             ServiceLifetime.Scoped);
 
         services.TryAddScoped<IExternalLoginAccountResolver, EfCoreExternalLoginAccountResolver>();
@@ -110,7 +113,38 @@ public static class InfrastructureDataAccessServiceExtensions
         string connectionString = configuration.GetConnectionString(connectionStringName)
             ?? throw new InvalidOperationException($"Connection string '{connectionStringName}' was not configured.");
 
-        return DataAccessRegistration.Enabled(provider, connectionString, auditStorageMode);
+        return DataAccessRegistration.Enabled(
+            provider,
+            connectionString,
+            auditStorageMode,
+            dataAccessOptions.Diagnostics.EnableDetailedErrors,
+            dataAccessOptions.Diagnostics.EnableEfCoreTraceBridge);
+    }
+
+    private static void ConfigureDataAccess(
+        IServiceProvider serviceProvider,
+        DbContextOptionsBuilder options,
+        DataAccessRegistration registration)
+    {
+        ConfigureProvider(
+            options,
+            registration.Provider,
+            registration.ConnectionString);
+
+        if (registration.EnableDetailedErrors)
+        {
+            _ = options.EnableDetailedErrors();
+        }
+
+        if (registration.EnableEfCoreTraceBridge)
+        {
+            ILogger<ApplicationDbContext> logger = serviceProvider
+                .GetRequiredService<ILogger<ApplicationDbContext>>();
+
+            _ = options.LogTo(
+                message => EfCoreDiagnosticsLogging.LogEfCoreMessage(logger, message),
+                LogLevel.Trace);
+        }
     }
 
     private static void ConfigureProvider(
@@ -138,21 +172,48 @@ public static class InfrastructureDataAccessServiceExtensions
         string Provider,
         string ConnectionString,
         string AuditStorageMode,
+        bool EnableDetailedErrors,
+        bool EnableEfCoreTraceBridge,
         bool IsDisabled)
     {
         public static DataAccessRegistration Enabled(
             string provider,
             string connectionString,
-            string auditStorageMode)
+            string auditStorageMode,
+            bool enableDetailedErrors,
+            bool enableEfCoreTraceBridge)
         {
-            return new(provider, connectionString, auditStorageMode, false);
+            return new(
+                provider,
+                connectionString,
+                auditStorageMode,
+                enableDetailedErrors,
+                enableEfCoreTraceBridge,
+                false);
         }
 
         public static DataAccessRegistration Disabled(
             string provider,
             string auditStorageMode)
         {
-            return new(provider, string.Empty, auditStorageMode, true);
+            return new(
+                provider,
+                string.Empty,
+                auditStorageMode,
+                false,
+                false,
+                true);
         }
     }
+}
+
+internal static partial class EfCoreDiagnosticsLogging
+{
+    [LoggerMessage(
+        EventId = 19000,
+        Level = LogLevel.Trace,
+        Message = "{EfCoreMessage}")]
+    internal static partial void LogEfCoreMessage(
+        ILogger logger,
+        string efCoreMessage);
 }
