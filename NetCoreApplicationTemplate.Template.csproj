@@ -13,8 +13,8 @@
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageReadmeFile>PACKAGE-README.md</PackageReadmeFile>
     <PackageIcon>PACKAGE-ICON.png</PackageIcon>
-    <PackageReleaseNotes>Minor 2.4.0 release of the NetCoreApplicationTemplate dotnet new template. This release adds authenticated-by-default routed endpoints, secure authentication-cookie defaults, forwarded-header trust diagnostics, framework-neutral audit accountability context, privacy-safe canonical mutation manifests, opt-in audited transaction coordination, a durable audit-completion outbox, audit reconciliation, integrity health checks, and operational metrics while preserving the stable 2.x package and template identities.</PackageReleaseNotes>
-    <VersionPrefix>2.4.0</VersionPrefix>
+    <PackageReleaseNotes>Minor 2.5.0 release of the NetCoreApplicationTemplate dotnet new template. This release adds explicit opt-in EF Core diagnostics controls with production-oriented defaults, hardens the Kubernetes deployment example, updates observability and SQLite runtime dependencies, and refreshes GitHub Actions security tooling while preserving the stable 2.x package, template identities, and supported template options.</PackageReleaseNotes>
+    <VersionPrefix>2.5.0</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Version>$(VersionPrefix)</Version>
     <PackageType>Template</PackageType>
