@@ -4,6 +4,53 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
+## 2.5.0 - 2026-08-02
+
+### Added
+
+* Added `ProjectTemplate:DataAccess:Diagnostics` as an explicit EF Core diagnostics configuration surface.
+* Added `ProjectTemplate:DataAccess:Diagnostics:EnableDetailedErrors` for opt-in EF Core detailed error diagnostics.
+* Added `ProjectTemplate:DataAccess:Diagnostics:EnableEfCoreTraceBridge` for opt-in forwarding of EF Core simple logging through `ILogger<ApplicationDbContext>` at `Trace` level.
+* Added dedicated EF Core diagnostics documentation covering standard EF Core logging, detailed errors, the optional trace bridge, sensitive-data logging boundaries, and recommended operational use.
+* Added regression coverage verifying EF Core diagnostics behavior for both scoped `ApplicationDbContext` instances and contexts created through `IDbContextFactory<ApplicationDbContext>`.
+
+### Changed
+
+* Changed EF Core detailed errors from always enabled to explicitly opt-in, with `EnableDetailedErrors` defaulting to `false`.
+* Changed the custom EF Core `LogTo(...)` trace bridge from always enabled to explicitly opt-in, with `EnableEfCoreTraceBridge` defaulting to `false`.
+* Moved optional EF Core diagnostics configuration into the infrastructure data-access registration so scoped and factory-created contexts receive the same settings.
+* Preserved the `ApplicationSaveChangesInterceptor` independently of optional diagnostic settings so auditing, canonicalization, mutation manifests, and other save-pipeline behavior remain active when diagnostics are disabled.
+* Preserved EF Core's standard `Microsoft.Extensions.Logging` integration as the normal production logging path.
+* Updated OpenTelemetry ASP.NET Core and HTTP instrumentation to `1.17.0`.
+* Updated `SQLitePCLRaw.bundle_e_sqlite3` to `3.0.4`.
+* Updated GitHub Actions dependencies including checkout, .NET setup, CodeQL, OpenSSF Scorecard, Zizmor, and Docker registry authentication tooling.
+* Refreshed NuGet dependency lock files for the updated dependency graph.
+* Updated repository, package, template-packaging, citation, Zenodo, and Kubernetes example metadata for release `2.5.0`.
+
+### Security
+
+* Hardened the Kubernetes deployment example with a `RuntimeDefault` seccomp profile.
+* Configured the Kubernetes workload to run as a non-root application-specific UID/GID (`10001`).
+* Configured the Kubernetes container to drop all Linux capabilities.
+* Enabled a read-only container root filesystem while retaining explicitly writable data and logging volumes.
+* Added CPU and memory requests and limits to the Kubernetes example.
+* Disabled automatic Kubernetes service-account token mounting because the sample application does not require Kubernetes API access.
+* Changed the Kubernetes example to always check the registry for its version-pinned image on pod startup.
+* Kept EF Core sensitive-data logging disabled when either of the new diagnostic options is enabled; detailed errors and the trace bridge do not implicitly enable `EnableSensitiveDataLogging()`.
+
+### Compatibility
+
+* This is a backward-compatible minor release within the stable `2.x` package line.
+* The public NuGet package ID remains `NetCoreApplicationTemplate`.
+* The template short name remains `netcoreapp-template`.
+* The internal template and template-group identities remain unchanged.
+* Supported template options remain unchanged.
+* Existing projects generated from earlier releases are not modified automatically.
+* Both new EF Core diagnostic settings default to `false` when omitted.
+* Applications that do not opt into the new diagnostics retain normal EF Core `Microsoft.Extensions.Logging` behavior without the additional detailed-error or `LogTo(...)` diagnostic pipelines.
+* The existing save-changes interceptor and persistence pipeline remain active regardless of the optional diagnostics configuration.
+
+
 ## 2.4.0 - 2026-07-20
 
 ### Added

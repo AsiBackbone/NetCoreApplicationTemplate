@@ -20,13 +20,13 @@ This README is intended for NuGet package consumers. The full repository README 
 Install the template package from NuGet:
 
 ```text
-dotnet new install NetCoreApplicationTemplate::2.4.0
+dotnet new install NetCoreApplicationTemplate::2.5.0
 ```
 
 For local package validation, install a packed package directly:
 
 ```text
-dotnet new install ./artifacts/template-package/NetCoreApplicationTemplate.2.4.0.nupkg
+dotnet new install ./artifacts/template-package/NetCoreApplicationTemplate.2.5.0.nupkg
 ```
 
 ## Generate a project
@@ -88,7 +88,7 @@ dotnet test --configuration Release
 Install the newer package version with the same package identity:
 
 ```text
-dotnet new install NetCoreApplicationTemplate::2.4.0
+dotnet new install NetCoreApplicationTemplate::2.5.0
 ```
 
 ## Uninstall
