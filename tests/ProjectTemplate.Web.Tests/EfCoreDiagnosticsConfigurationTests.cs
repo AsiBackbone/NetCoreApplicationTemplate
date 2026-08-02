@@ -25,9 +25,10 @@ public sealed class EfCoreDiagnosticsConfigurationTests
             });
 
         using ServiceProvider serviceProvider = CreateServiceProvider(configuration, loggerProvider);
-        using ApplicationDbContext context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+        using IServiceScope scope = serviceProvider.CreateScope();
+        using ApplicationDbContext context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        DataAccessOptions options = serviceProvider
+        DataAccessOptions options = scope.ServiceProvider
             .GetRequiredService<IOptions<DataAccessOptions>>()
             .Value;
 
@@ -38,7 +39,7 @@ public sealed class EfCoreDiagnosticsConfigurationTests
         Assert.False(GetCoreOptionBoolean(context, "DetailedErrorsEnabled", "IsDetailedErrorsEnabled"));
         Assert.False(GetCoreOptionBoolean(context, "IsSensitiveDataLoggingEnabled", "SensitiveDataLoggingEnabled"));
         Assert.DoesNotContain(loggerProvider.Entries, entry => entry.EventId == 19000);
-        Assert.NotNull(serviceProvider.GetRequiredService<ApplicationSaveChangesInterceptor>());
+        Assert.NotNull(scope.ServiceProvider.GetRequiredService<ApplicationSaveChangesInterceptor>());
     }
 
     [Fact]
@@ -118,9 +119,8 @@ public sealed class EfCoreDiagnosticsConfigurationTests
         params string[] propertyNames)
     {
         IDbContextOptions dbContextOptions = context.GetService<IDbContextOptions>();
-        object coreOptions = Assert.Single(
-            dbContextOptions.Extensions,
-            extension => extension.GetType().Name == "CoreOptionsExtension");
+        object coreOptions = dbContextOptions.Extensions
+            .Single(extension => extension.GetType().Name == "CoreOptionsExtension");
 
         PropertyInfo? property = propertyNames
             .Select(name => coreOptions.GetType().GetProperty(name, BindingFlags.Instance | BindingFlags.Public))
