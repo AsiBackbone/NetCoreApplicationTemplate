@@ -38,14 +38,6 @@ public sealed partial class ApplicationDbContext(
     public DbSet<ExternalLoginAccount> ExternalLoginAccounts => Set<ExternalLoginAccount>();
 
     [LoggerMessage(
-        EventId = 19000,
-        Level = LogLevel.Trace,
-        Message = "{EfCoreMessage}")]
-    private static partial void LogEfCoreMessage(
-        ILogger logger,
-        string efCoreMessage);
-
-    [LoggerMessage(
         EventId = 19001,
         Level = LogLevel.Warning,
         Message = "Optimistic concurrency conflict detected while saving {EntryCount} tracked entity entries.")]
@@ -74,10 +66,7 @@ public sealed partial class ApplicationDbContext(
         ApplicationSaveChangesInterceptor interceptor =
             _configuredSaveChangesInterceptor ?? new ApplicationSaveChangesInterceptor(_saveChangesPipeline);
 
-        _ = optionsBuilder
-            .LogTo(message => LogEfCoreMessage(_logger, message), LogLevel.Trace)
-            .AddInterceptors(interceptor)
-            .EnableDetailedErrors();
+        _ = optionsBuilder.AddInterceptors(interceptor);
 
         base.OnConfiguring(optionsBuilder);
     }
