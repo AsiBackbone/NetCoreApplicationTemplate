@@ -11,6 +11,9 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 - Updated GitHub CodeQL Action usage from `4.37.3` to `4.37.4` across CI and security workflows.
 - Updated the Docker Login Action used by container publishing to `4.6.0`.
 - Updated release and package metadata to identify `AsiBackbone/NetCoreApplicationTemplate` as the repository's new GitHub organization location following the repository transfer.
+- Migrated the canonical repository-maintained container image to `ghcr.io/asibackbone/netcoreapplicationtemplate`.
+- Preserved the previous `ghcr.io/cdcavell/netcoreapplicationtemplate` image location as a compatibility path for existing 2.x consumers.
+- Updated Kubernetes examples, container publishing, and documentation to prefer the new organization-owned image namespace.
 
 ### Fixed
 
