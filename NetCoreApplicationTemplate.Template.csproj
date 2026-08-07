@@ -13,7 +13,7 @@
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageReadmeFile>PACKAGE-README.md</PackageReadmeFile>
     <PackageIcon>PACKAGE-ICON.png</PackageIcon>
-    <PackageReleaseNotes>Minor 2.6.0 release of the NetCoreApplicationTemplate dotnet new template. This release adds explicit opt-in EF Core diagnostics controls with production-oriented defaults, hardens the Kubernetes deployment example, updates observability and SQLite runtime dependencies, and refreshes GitHub Actions security tooling while preserving the stable 2.x package, template identities, and supported template options.</PackageReleaseNotes>
+    <PackageReleaseNotes>Minor 2.6.0 release of the NetCoreApplicationTemplate dotnet new template. This release migrates repository and distribution metadata to the AsiBackbone organization, establishes ghcr.io/asibackbone/netcoreapplicationtemplate as the canonical repository-maintained container image, updates GitHub Packages and consumer-facing repository references, and refreshes GitHub Actions security tooling while preserving the stable NetCoreApplicationTemplate package ID, template identities, supported template options, and runtime application behavior.</PackageReleaseNotes>
     <VersionPrefix>2.6.0</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Version>$(VersionPrefix)</Version>

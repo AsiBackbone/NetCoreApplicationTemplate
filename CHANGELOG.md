@@ -4,27 +4,28 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
-## 2.5.1 - 2026-08-07
+## 2.6.0 - 2026-08-07
 
 ### Changed
 
-- Updated GitHub CodeQL Action usage from `4.37.3` to `4.37.4` across CI and security workflows.
+- Migrated repository and release metadata from `cdcavell/NetCoreApplicationTemplate` to `AsiBackbone/NetCoreApplicationTemplate` following the repository transfer to the AsiBackbone organization.
+- Migrated the canonical repository-maintained container image from `ghcr.io/cdcavell/netcoreapplicationtemplate` to `ghcr.io/asibackbone/netcoreapplicationtemplate`.
+- Updated Kubernetes examples and container publishing documentation to use the organization-owned GHCR namespace.
+- Updated the GitHub Packages source from the personal `cdcavell` namespace to the `AsiBackbone` organization namespace.
+- Updated repository, package, citation, generated-scaffold, documentation, security, and deployment references for the new organization location.
+- Updated GitHub CodeQL Action usage from `4.37.3` to `4.37.4`.
 - Updated the Docker Login Action used by container publishing to `4.6.0`.
-- Updated release and package metadata to identify `AsiBackbone/NetCoreApplicationTemplate` as the repository's new GitHub organization location following the repository transfer.
-- Migrated the canonical repository-maintained container image to `ghcr.io/asibackbone/netcoreapplicationtemplate`.
-- Preserved the previous `ghcr.io/cdcavell/netcoreapplicationtemplate` image location as a compatibility path for existing 2.x consumers.
-- Updated Kubernetes examples, container publishing, and documentation to prefer the new organization-owned image namespace.
 
 ### Fixed
 
-- Corrected stale repository ownership references in release metadata, package metadata, citation metadata, and consumer-facing repository links following the move from `cdcavell` to the `AsiBackbone` organization.
+- Corrected stale repository ownership and documentation references following the repository transfer.
+- Corrected generated scaffold upstream references so newly created applications point to the current repository and documentation site.
 
 ### Notes
 
-- This is a maintenance-only patch release.
-- No template source code, generated scaffold behavior, package identity, configuration surface, or runtime application behavior changes are intended.
-- The existing documented container image identity is preserved pending explicit migration planning for the GitHub Container Registry namespace.
-
+- This is a backward-compatible minor release focused on repository and distribution ownership migration.
+- No template source behavior, generated scaffold structure, NuGet package identity, template identity, configuration surface, or runtime application behavior changes are intended.
+- Existing previously published images under `ghcr.io/cdcavell/netcoreapplicationtemplate` are not modified by this release.
 
 ## 2.5.0 - 2026-08-02
 
