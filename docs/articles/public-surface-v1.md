@@ -203,14 +203,14 @@ The repository-maintained container image is part of the release evidence and di
 
 The documented repository image is:
 ```
-ghcr.io/AsiBackbone/netcoreapplicationtemplate
+ghcr.io/asibackbone/netcoreapplicationtemplate
 ```
 
 Stable semantic version tags publish:
 ```
-ghcr.io/AsiBackbone/netcoreapplicationtemplate:<major>.<minor>.<patch>
-ghcr.io/AsiBackbone/netcoreapplicationtemplate:<major>
-ghcr.io/AsiBackbone/netcoreapplicationtemplate:latest
+ghcr.io/asibackbone/netcoreapplicationtemplate:<major>.<minor>.<patch>
+ghcr.io/asibackbone/netcoreapplicationtemplate:<major>
+ghcr.io/asibackbone/netcoreapplicationtemplate:latest
 ```
 
 Prerelease tags publish the full version tag only and do not update `latest` or the major tag.
@@ -228,7 +228,40 @@ Recommended probe paths are:
 /health/ready
 ```
 
-Breaking changes include renaming the documented repository image, removing documented stable tag forms, changing the default container port, or changing the health probe contract without a compatibility path.
+### Repository Ownership and Registry Namespace Migration
+
+A repository ownership transfer may require the canonical repository-maintained
+container image to move to a registry namespace owned by the repository's new
+organization.
+
+Such a namespace migration is treated as a backward-compatible minor release
+when all of the following remain true:
+
+- The NuGet package identity, template identity, and generated application
+  behavior remain unchanged.
+- Generated applications do not depend on the repository-maintained container
+  image as a runtime requirement.
+- Previously published container images and immutable version tags remain
+  available under the former registry namespace as historical compatibility
+  artifacts.
+- The new canonical registry namespace is clearly documented in release notes,
+  deployment examples, and container-publishing documentation.
+- Container runtime behavior, exposed ports, health probe contracts, and stable
+  tag semantics are otherwise unchanged.
+
+Historical images in the former namespace are not required to receive new
+release tags after the ownership migration. New releases may be published only
+under the canonical organization-owned namespace.
+
+This ownership-transfer exception applies specifically when a repository
+ownership change requires migration to a registry namespace controlled by the
+new repository owner and the compatibility conditions above remain satisfied.
+
+Outside that case, renaming the documented repository image, removing previously
+published release artifacts, removing documented stable tag forms, changing
+stable tag semantics, changing the default container port, or changing the
+health probe contract is a breaking change unless a separate compatibility path
+is provided.
 
 Adding new image variants, additional tags, or additional examples while preserving the existing contract is normally a minor change.
 

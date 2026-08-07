@@ -9,7 +9,7 @@ The published image is intended as release evidence for the template repository.
 The release workflow publishes the repository image to GitHub Container Registry:
 
 ```text
-ghcr.io/AsiBackbone/netcoreapplicationtemplate
+ghcr.io/asibackbone/netcoreapplicationtemplate
 ```
 
 A tag push matching `v*.*.*` starts the container release workflow.
@@ -17,9 +17,9 @@ A tag push matching `v*.*.*` starts the container release workflow.
 Stable semantic version tags publish:
 
 ```text
-ghcr.io/AsiBackbone/netcoreapplicationtemplate:<major>.<minor>.<patch>
-ghcr.io/AsiBackbone/netcoreapplicationtemplate:<major>
-ghcr.io/AsiBackbone/netcoreapplicationtemplate:latest
+ghcr.io/asibackbone/netcoreapplicationtemplate:<major>.<minor>.<patch>
+ghcr.io/asibackbone/netcoreapplicationtemplate:<major>
+ghcr.io/asibackbone/netcoreapplicationtemplate:latest
 ```
 
 Prerelease tags publish the full version tag only and do not update `latest` or the major tag.
