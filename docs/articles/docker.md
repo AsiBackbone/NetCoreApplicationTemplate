@@ -190,7 +190,7 @@ This tag is intended for local development and testing. It is not the published 
 The repository release workflow publishes tag-driven images to:
 
 ```text
-ghcr.io/cdcavell/netcoreapplicationtemplate
+ghcr.io/asibackbone/netcoreapplicationtemplate
 ```
 
 See [Container Release Publishing](container-publish.md) for the GHCR publish, scan, SBOM, signing, and provenance workflow.

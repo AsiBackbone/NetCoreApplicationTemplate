@@ -16,7 +16,7 @@ Security fixes are applied to the current stable line unless otherwise noted in 
 
 Please report suspected security issues privately instead of opening a public GitHub issue.
 
-Use [GitHub private vulnerability reporting](https://github.com/cdcavell/NetCoreApplicationTemplate/security/advisories/new) to submit a confidential report directly to the repository maintainer. If that form is unavailable, use the repository owner's GitHub profile contact options and do not include sensitive details in a public issue or discussion.
+Use [GitHub private vulnerability reporting](https://github.com/AsiBackbone/NetCoreApplicationTemplate/security/advisories/new) to submit a confidential report directly to the repository maintainer. If that form is unavailable, use the repository owner's GitHub profile contact options and do not include sensitive details in a public issue or discussion.
 
 When reporting a vulnerability, include:
 

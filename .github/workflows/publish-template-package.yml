@@ -10,7 +10,7 @@ on:
       publish_source:
         description: 'Package source URL used by dotnet nuget push.'
         required: true
-        default: 'https://nuget.pkg.github.com/cdcavell/index.json'
+        default: 'https://nuget.pkg.github.com/AsiBackbone/index.json'
       skip_publish:
         description: 'Pack only and skip dotnet nuget push.'
         required: true
@@ -132,7 +132,7 @@ jobs:
 
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             case "$REQUESTED_PACKAGE_SOURCE" in
-              https://api.nuget.org/v3/index.json|https://nuget.pkg.github.com/cdcavell/index.json)
+              https://api.nuget.org/v3/index.json|https://nuget.pkg.github.com/AsiBackbone/index.json)
                 package_source="$REQUESTED_PACKAGE_SOURCE"
                 ;;
               *)
@@ -171,7 +171,7 @@ jobs:
           fi
 
           api_key="$NUGET_TRUSTED_API_KEY"
-          if [ "$PACKAGE_SOURCE" = "https://nuget.pkg.github.com/cdcavell/index.json" ]; then
+          if [ "$PACKAGE_SOURCE" = "https://nuget.pkg.github.com/AsiBackbone/index.json" ]; then
             api_key="$GITHUB_TOKEN"
           fi
 

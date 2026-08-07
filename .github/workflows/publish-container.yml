@@ -11,7 +11,7 @@ permissions: {}
   
 
 env:
-  IMAGE_NAME: ghcr.io/cdcavell/netcoreapplicationtemplate
+  IMAGE_NAME: ghcr.io/asibackbone/netcoreapplicationtemplate
   LOCAL_IMAGE_NAME: netcoreapplicationtemplate-release
   TRIVY_IMAGE: aquasec/trivy:0.58.2
 

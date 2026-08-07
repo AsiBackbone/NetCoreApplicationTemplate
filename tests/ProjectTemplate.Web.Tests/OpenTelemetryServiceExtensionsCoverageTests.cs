@@ -157,12 +157,12 @@ public sealed class OpenTelemetryServiceExtensionsCoverageTests
     {
         ApplicationOpenTelemetryOptions options = new()
         {
-            ServiceVersion = " 2.5.1 "
+            ServiceVersion = " 2.6.0 "
         };
 
         string result = InvokeResolveServiceVersion(options);
 
-        Assert.Equal("2.5.1", result);
+        Assert.Equal("2.6.0", result);
     }
 
     /// <summary>

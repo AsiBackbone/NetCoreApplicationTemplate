@@ -114,7 +114,7 @@ if ($Generate) {
         forbiddenContentPatterns = @(
             [ordered]@{
                 path = 'README.md'
-                pattern = 'github.com/cdcavell/NetCoreApplicationTemplate/actions'
+                pattern = 'github.com/AsiBackbone/NetCoreApplicationTemplate/actions'
                 description = 'repository maintainer workflow badges'
             },
             [ordered]@{
