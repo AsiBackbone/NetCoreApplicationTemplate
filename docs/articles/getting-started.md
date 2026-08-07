@@ -13,7 +13,7 @@ This guide explains how to clone, build, test, run, and locally document the .NE
 ## Clone, Restore, Build, and Test
 
 ```powershell
-git clone https://github.com/cdcavell/NetCoreApplicationTemplate.git
+git clone https://github.com/AsiBackbone/NetCoreApplicationTemplate.git
 cd NetCoreApplicationTemplate
 dotnet restore
 dotnet build --configuration Release

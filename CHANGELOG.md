@@ -4,6 +4,25 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
+## 2.5.1 - 2026-08-07
+
+### Changed
+
+- Updated GitHub CodeQL Action usage from `4.37.3` to `4.37.4` across CI and security workflows.
+- Updated the Docker Login Action used by container publishing to `4.6.0`.
+- Updated release and package metadata to identify `AsiBackbone/NetCoreApplicationTemplate` as the repository's new GitHub organization location following the repository transfer.
+
+### Fixed
+
+- Corrected stale repository ownership references in release metadata, package metadata, citation metadata, and consumer-facing repository links following the move from `cdcavell` to the `AsiBackbone` organization.
+
+### Notes
+
+- This is a maintenance-only patch release.
+- No template source code, generated scaffold behavior, package identity, configuration surface, or runtime application behavior changes are intended.
+- The existing documented container image identity is preserved pending explicit migration planning for the GitHub Container Registry namespace.
+
+
 ## 2.5.0 - 2026-08-02
 
 ### Added

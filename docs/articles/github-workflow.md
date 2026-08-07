@@ -119,7 +119,7 @@ The workflow builds the Docker image, scans it with Trivy, uploads SARIF results
 The published image is:
 
 ```text
-ghcr.io/cdcavell/netcoreapplicationtemplate
+ghcr.io/AsiBackbone/netcoreapplicationtemplate
 ```
 
 Stable tags publish the full version tag, the major tag, and `latest`. Prerelease tags publish only the full version tag.

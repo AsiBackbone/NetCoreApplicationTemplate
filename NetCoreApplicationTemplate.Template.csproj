@@ -7,8 +7,8 @@
     <Authors>Christopher D. Cavell</Authors>
     <Description>Production-oriented ASP.NET Core application template with structured logging, security headers, forwarded headers, rate limiting, centralized error handling, cookie authentication, authenticated-by-default routed endpoints, policy-based authorization, and EF Core-ready structure.</Description>
     <PackageTags>dotnet-new;templates;aspnetcore;mvc;web;enterprise;security</PackageTags>
-    <PackageProjectUrl>https://github.com/cdcavell/NetCoreApplicationTemplate</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/cdcavell/NetCoreApplicationTemplate</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/AsiBackbone/NetCoreApplicationTemplate</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/AsiBackbone/NetCoreApplicationTemplate</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageReadmeFile>PACKAGE-README.md</PackageReadmeFile>

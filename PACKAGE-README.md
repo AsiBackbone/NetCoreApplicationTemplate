@@ -1,4 +1,4 @@
-![.NET Core Application Social Preview](https://raw.githubusercontent.com/cdcavell/NetCoreApplicationTemplate/main/docs/images/social-preview.png)
+![.NET Core Application Social Preview](https://raw.githubusercontent.com/AsiBackbone/NetCoreApplicationTemplate/main/docs/images/social-preview.png)
 
 # .NET Core Application Template
 
@@ -99,12 +99,12 @@ dotnet new uninstall NetCoreApplicationTemplate
 
 ## Additional resources
 
-- GitHub repository: https://github.com/cdcavell/NetCoreApplicationTemplate
-- Published documentation: https://cdcavell.github.io/NetCoreApplicationTemplate/
-- Template packaging documentation: https://cdcavell.github.io/NetCoreApplicationTemplate/articles/template-packaging.html
+- GitHub repository: https://github.com/AsiBackbone/NetCoreApplicationTemplate
+- Published documentation: https://AsiBackbone.github.io/NetCoreApplicationTemplate/
+- Template packaging documentation: https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/template-packaging.html
 - Changelog: CHANGELOG.md
 - License: LICENSE.txt
-- Releases: https://github.com/cdcavell/NetCoreApplicationTemplate/releases
-- Coverage Report: https://cdcavell.github.io/NetCoreApplicationTemplate/coverage/index.html
+- Releases: https://github.com/AsiBackbone/NetCoreApplicationTemplate/releases
+- Coverage Report: https://AsiBackbone.github.io/NetCoreApplicationTemplate/coverage/index.html
 
 Generated projects receive their own consumer-oriented README from the scaffold. This package README is intentionally limited to NuGet installation, scaffold options, validation commands, and consumer-facing reference links.

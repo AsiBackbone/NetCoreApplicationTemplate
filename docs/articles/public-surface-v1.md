@@ -2,7 +2,7 @@
 
 This article defines the public compatibility surface for the current stable .NET Core Application Template release line.
 
-After `v1.0.0`, this document should be used with [ADR-0003](../adr/0003-record-release-surface-and-distribution-strategy.md), [Release Checklist](https://github.com/cdcavell/NetCoreApplicationTemplate/blob/main/RELEASE.md), and the [v1.0 Migration Guide](v1-migration-guide.md) to decide whether a future change is SemVer-major, SemVer-minor, SemVer-patch, or internal-only.
+After `v1.0.0`, this document should be used with [ADR-0003](../adr/0003-record-release-surface-and-distribution-strategy.md), [Release Checklist](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/RELEASE.md), and the [v1.0 Migration Guide](v1-migration-guide.md) to decide whether a future change is SemVer-major, SemVer-minor, SemVer-patch, or internal-only.
 
 ## Purpose
 
@@ -203,14 +203,14 @@ The repository-maintained container image is part of the release evidence and di
 
 The documented repository image is:
 ```
-ghcr.io/cdcavell/netcoreapplicationtemplate
+ghcr.io/AsiBackbone/netcoreapplicationtemplate
 ```
 
 Stable semantic version tags publish:
 ```
-ghcr.io/cdcavell/netcoreapplicationtemplate:<major>.<minor>.<patch>
-ghcr.io/cdcavell/netcoreapplicationtemplate:<major>
-ghcr.io/cdcavell/netcoreapplicationtemplate:latest
+ghcr.io/AsiBackbone/netcoreapplicationtemplate:<major>.<minor>.<patch>
+ghcr.io/AsiBackbone/netcoreapplicationtemplate:<major>
+ghcr.io/AsiBackbone/netcoreapplicationtemplate:latest
 ```
 
 Prerelease tags publish the full version tag only and do not update `latest` or the major tag.

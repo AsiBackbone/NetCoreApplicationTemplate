@@ -3,8 +3,8 @@ message: "If you use this software, please cite it using the metadata below."
 title: "NetCoreApplicationTemplate"
 version: "2.5.0"
 date-released: "2026-08-02"
-repository-code: "https://github.com/cdcavell/NetCoreApplicationTemplate"
-url: "https://cdcavell.github.io/NetCoreApplicationTemplate/"
+repository-code: "https://github.com/AsiBackbone/NetCoreApplicationTemplate"
+url: "https://AsiBackbone.github.io/NetCoreApplicationTemplate/"
 type: software
 license: MIT
 identifiers:

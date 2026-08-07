@@ -30,7 +30,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
 
-    <RepositoryUrl>https://github.com/cdcavell/NetCoreApplicationTemplate</RepositoryUrl>
+    <RepositoryUrl>https://github.com/AsiBackbone/NetCoreApplicationTemplate</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 </Project>

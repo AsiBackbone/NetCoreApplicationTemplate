@@ -1,14 +1,14 @@
-![.NET Core Application Social Preview](https://raw.githubusercontent.com/cdcavell/NetCoreApplicationTemplate/main/docs/images/social-preview.png)
+![.NET Core Application Social Preview](https://raw.githubusercontent.com/AsiBackbone/NetCoreApplicationTemplate/main/docs/images/social-preview.png)
 
 # .NET Core Application Template
 
-[![CI](https://github.com/cdcavell/NetCoreApplicationTemplate/actions/workflows/ci.yml/badge.svg)](https://github.com/cdcavell/NetCoreApplicationTemplate/actions/workflows/ci.yml)
-[![Coverage Report](https://img.shields.io/badge/coverage%20gate-75%25-brightgreen)](https://cdcavell.github.io/NetCoreApplicationTemplate/coverage/index.html)
+[![CI](https://github.com/AsiBackbone/NetCoreApplicationTemplate/actions/workflows/ci.yml/badge.svg)](https://github.com/AsiBackbone/NetCoreApplicationTemplate/actions/workflows/ci.yml)
+[![Coverage Report](https://img.shields.io/badge/coverage%20gate-75%25-brightgreen)](https://AsiBackbone.github.io/NetCoreApplicationTemplate/coverage/index.html)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13645/badge)](https://www.bestpractices.dev/projects/13645)
-[![Documentation](https://github.com/cdcavell/NetCoreApplicationTemplate/actions/workflows/publish-docs.yml/badge.svg)](https://github.com/cdcavell/NetCoreApplicationTemplate/actions/workflows/publish-docs.yml)
+[![Documentation](https://github.com/AsiBackbone/NetCoreApplicationTemplate/actions/workflows/publish-docs.yml/badge.svg)](https://github.com/AsiBackbone/NetCoreApplicationTemplate/actions/workflows/publish-docs.yml)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE.txt)
-[![GitHub Release](https://img.shields.io/github/v/release/cdcavell/NetCoreApplicationTemplate?display_name=tag)](https://github.com/cdcavell/NetCoreApplicationTemplate/releases/latest)
+[![GitHub Release](https://img.shields.io/github/v/release/AsiBackbone/NetCoreApplicationTemplate?display_name=tag)](https://github.com/AsiBackbone/NetCoreApplicationTemplate/releases/latest)
 [![NuGet](https://img.shields.io/nuget/v/NetCoreApplicationTemplate?label=NuGet)](https://www.nuget.org/packages/NetCoreApplicationTemplate)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/NetCoreApplicationTemplate?label=downloads)](https://www.nuget.org/packages/NetCoreApplicationTemplate)
 [![Zenodo DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20373042-blue)](https://doi.org/10.5281/zenodo.20373042)
@@ -18,7 +18,7 @@ A reusable, production-oriented ASP.NET Core application template with structure
 ## Current Release
 
 <!-- BEGIN LATEST_RELEASE -->
-Current release: __[Release 2.5.0](https://github.com/cdcavell/NetCoreApplicationTemplate/releases/tag/v2.5.0)__
+Current release: __[Release 2.5.0](https://github.com/AsiBackbone/NetCoreApplicationTemplate/releases/tag/v2.5.0)__
 
 Tag: `v2.5.0`
 <!-- END LATEST_RELEASE -->
@@ -53,7 +53,7 @@ The phrase **secure baseline** in this project refers to concrete controls—clo
 ## Quick Start from Source
 
 ```powershell
-git clone https://github.com/cdcavell/NetCoreApplicationTemplate.git
+git clone https://github.com/AsiBackbone/NetCoreApplicationTemplate.git
 cd NetCoreApplicationTemplate
 dotnet restore
 dotnet build --configuration Release
@@ -144,16 +144,16 @@ A consuming application may integrate AsiBackbone for application-level policy d
 
 ## Documentation
 
-- [Published documentation](https://cdcavell.github.io/NetCoreApplicationTemplate/)
-- [Getting Started](https://cdcavell.github.io/NetCoreApplicationTemplate/articles/getting-started.html)
-- [Authentication](https://cdcavell.github.io/NetCoreApplicationTemplate/articles/authentication.html)
-- [Production Authentication Hardening](https://cdcavell.github.io/NetCoreApplicationTemplate/articles/authentication-hardening.html)
-- [Authorization](https://cdcavell.github.io/NetCoreApplicationTemplate/articles/authorization.html)
-- [Runtime Readiness](https://cdcavell.github.io/NetCoreApplicationTemplate/articles/runtime-readiness.html)
-- [Production Deployment Checklist](https://cdcavell.github.io/NetCoreApplicationTemplate/articles/production-deployment-checklist.html)
-- [Health Checks](https://cdcavell.github.io/NetCoreApplicationTemplate/articles/health-checks.html)
-- [Template Packaging](https://cdcavell.github.io/NetCoreApplicationTemplate/articles/template-packaging.html)
-- [Data Access](https://cdcavell.github.io/NetCoreApplicationTemplate/articles/data-access.html)
+- [Published documentation](https://AsiBackbone.github.io/NetCoreApplicationTemplate/)
+- [Getting Started](https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/getting-started.html)
+- [Authentication](https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/authentication.html)
+- [Production Authentication Hardening](https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/authentication-hardening.html)
+- [Authorization](https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/authorization.html)
+- [Runtime Readiness](https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/runtime-readiness.html)
+- [Production Deployment Checklist](https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/production-deployment-checklist.html)
+- [Health Checks](https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/health-checks.html)
+- [Template Packaging](https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/template-packaging.html)
+- [Data Access](https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/data-access.html)
 
 Build documentation locally:
 

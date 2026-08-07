@@ -160,15 +160,15 @@ Trade-offs and risks:
 
 ## Related References
 
-- [Issue #140](https://github.com/cdcavell/NetCoreApplicationTemplate/issues/140)
-- [Issue #138](https://github.com/cdcavell/NetCoreApplicationTemplate/issues/138)
+- [Issue #140](https://github.com/AsiBackbone/NetCoreApplicationTemplate/issues/140)
+- [Issue #138](https://github.com/AsiBackbone/NetCoreApplicationTemplate/issues/138)
 - [`docs/articles/template-packaging.md`](../articles/template-packaging.md)
 - [`docs/articles/api-versioning.md`](../articles/api-versioning.md)
 - [`docs/articles/docker.md`](../articles/docker.md)
 - [`docs/articles/deployment.md`](../articles/deployment.md)
-- [`README.md`](https://github.com/cdcavell/NetCoreApplicationTemplate/blob/main/README.md)
-- [`CITATION.cff`](https://github.com/cdcavell/NetCoreApplicationTemplate/blob/main/CITATION.cff)
+- [`README.md`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/README.md)
+- [`CITATION.cff`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/CITATION.cff)
 - [`docs/articles/public-surface-v1.md`](../articles/public-surface-v1.md)
 - [`docs/articles/v1-migration-guide.md`](../articles/v1-migration-guide.md)
-- [`RELEASE.md`](https://github.com/cdcavell/NetCoreApplicationTemplate/blob/main/RELEASE.md)
-- [`CHANGELOG.md`](https://github.com/cdcavell/NetCoreApplicationTemplate/blob/main/CHANGELOG.md)
+- [`RELEASE.md`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/RELEASE.md)
+- [`CHANGELOG.md`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/CHANGELOG.md)

@@ -21,7 +21,7 @@
   ],
   "related_identifiers": [
     {
-      "identifier": "https://github.com/cdcavell/NetCoreApplicationTemplate",
+      "identifier": "https://github.com/AsiBackbone/NetCoreApplicationTemplate",
       "relation": "isIdenticalTo",
       "scheme": "url",
       "resource_type": "software"
