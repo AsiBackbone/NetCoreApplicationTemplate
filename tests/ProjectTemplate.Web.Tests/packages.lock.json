@@ -85,18 +85,18 @@
       },
       "Asp.Versioning.Abstractions": {
         "type": "Transitive",
-        "resolved": "10.0.0",
-        "contentHash": "cMRE5nvNMfBgfkb0XFWst/7UtyXCjoAXnV0L4Scx4P9fcf0idgrj1Z0c+3ylsy01K4cOib7dKhCBfpg5z3r0Kg==",
+        "resolved": "10.1.0",
+        "contentHash": "RwdgC5O0baZ4pt30pAKKPQHq2CV4unBKA4HWoTeu7NY9ZwXM0dWYGf1Ipc5GK0eFBe9cMeqz4pGpPncMz4/ZNQ==",
         "dependencies": {
           "Microsoft.Extensions.Primitives": "10.0.0"
         }
       },
       "Asp.Versioning.Http": {
         "type": "Transitive",
-        "resolved": "10.0.0",
-        "contentHash": "xmNm9FM2d20NKy7i1osEQysf7pJ4iJjWnM6e8CoeIhUREqG8nugsfC82pGpmzlatjAJL5T52ieSpyW+GFdSsSQ==",
+        "resolved": "10.0.1",
+        "contentHash": "g0ayV/9ho3tGgooC6eF5p1063I1WzlxFJDYQrigcGnW+mLvui6eXrcW5hzTHhQREroUR3ZwXQrIN2SAIoi+KDw==",
         "dependencies": {
-          "Asp.Versioning.Abstractions": "10.0.0"
+          "Asp.Versioning.Abstractions": "10.1.0"
         }
       },
       "Azure.Core": {
@@ -918,7 +918,7 @@
       "projecttemplate.web": {
         "type": "Project",
         "dependencies": {
-          "Asp.Versioning.Mvc": "[10.0.0, )",
+          "Asp.Versioning.Mvc": "[10.0.1, )",
           "AspNet.Security.OAuth.GitHub": "[10.0.0, )",
           "Microsoft.AspNetCore.Authentication.Google": "[10.0.10, )",
           "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "[10.0.10, )",
@@ -927,7 +927,7 @@
           "OpenTelemetry.Extensions.Hosting": "[1.17.0, )",
           "OpenTelemetry.Instrumentation.AspNetCore": "[1.17.0, )",
           "OpenTelemetry.Instrumentation.Http": "[1.17.0, )",
-          "ProjectTemplate.Infrastructure": "[2.4.0, )",
+          "ProjectTemplate.Infrastructure": "[2.6.0, )",
           "SQLitePCLRaw.bundle_e_sqlite3": "[3.0.4, )",
           "Serilog.AspNetCore": "[10.0.0, )",
           "Serilog.Enrichers.Environment": "[3.0.1, )",
@@ -940,11 +940,11 @@
       },
       "Asp.Versioning.Mvc": {
         "type": "CentralTransitive",
-        "requested": "[10.0.0, )",
-        "resolved": "10.0.0",
-        "contentHash": "W0wZ+0uZ0UK4KstjvEkNBZ0xxhBmxunwNg8582SVyyW7txQmSXibtm8fC4o82LaemPquYskms67bIbJOSrnlug==",
+        "requested": "[10.0.1, )",
+        "resolved": "10.0.1",
+        "contentHash": "OqoFPKKxXkNmw62H3CgXkPrf1L4PPwwyYr9QMP6itt/khKTIayqaHhK6F2e3jt6KHc4s23cWAUbu+Z5GPEeMaw==",
         "dependencies": {
-          "Asp.Versioning.Http": "10.0.0"
+          "Asp.Versioning.Http": "10.0.1"
         }
       },
       "AspNet.Security.OAuth.GitHub": {
