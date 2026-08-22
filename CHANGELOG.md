@@ -4,6 +4,29 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
+## 2.6.1 - 2026-08-22
+
+### Changed
+
+* Updated `Asp.Versioning.Mvc` from `10.0.0` to `10.2.1`, incorporating backward-compatible API versioning fixes, analyzers, and supporting improvements.
+* Updated Entity Framework Core packages from `10.0.10` to `10.0.11`.
+* Updated `Microsoft.Extensions.Configuration.Abstractions` from `10.0.10` to `10.0.11`.
+* Updated GitHub Actions security, analysis, provenance, and workflow-hardening dependencies, including CodeQL, Harden Runner, build provenance attestation, and Zizmor tooling.
+* Updated the ReportGenerator .NET tool from `5.5.10` to `5.5.11`.
+* Refreshed NuGet dependency lock files for the updated dependency graph.
+* Updated release, package, citation, documentation, and Kubernetes example metadata for release `2.6.1`.
+
+### Fixed
+
+* Normalized `.config/dotnet-tools.json` line-ending handling to prevent false-positive working-tree modifications on Windows.
+
+### Notes
+
+* This is a backward-compatible patch release focused on dependency servicing, build and security tooling maintenance, and repository hygiene.
+* No NetCoreApplicationTemplate public API, template option, configuration surface, generated scaffold structure, package identity, template identity, or intended runtime application behavior changes are introduced by this release.
+* The public NuGet package ID remains `NetCoreApplicationTemplate`.
+* The template short name remains `netcoreapp-template`.
+
 ## 2.6.0 - 2026-08-07
 
 ### Changed
