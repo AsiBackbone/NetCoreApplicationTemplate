@@ -13,8 +13,8 @@
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageReadmeFile>PACKAGE-README.md</PackageReadmeFile>
     <PackageIcon>PACKAGE-ICON.png</PackageIcon>
-    <PackageReleaseNotes>Patch 2.6.1 release of the NetCoreApplicationTemplate dotnet new template. This maintenance release updates API versioning and .NET servicing dependencies, refreshes GitHub Actions security and release tooling, regenerates dependency lock files, and includes repository hygiene fixes while preserving the stable NetCoreApplicationTemplate package ID, template identities, supported template options, scaffold structure, configuration surface, and runtime application behavior.</PackageReleaseNotes>
-    <VersionPrefix>2.6.1</VersionPrefix>
+    <PackageReleaseNotes>Patch 2.6.2 release of the NetCoreApplicationTemplate dotnet new template. This security maintenance release refreshes the pinned ASP.NET Core .NET 10 runtime container image to the patched .NET 10.0.11 servicing image after the release vulnerability gate detected CVE-2026-62901, while preserving the stable NetCoreApplicationTemplate package ID, template identities, supported template options, scaffold structure, configuration surface, and intended application behavior.</PackageReleaseNotes>
+    <VersionPrefix>2.6.2</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Version>$(VersionPrefix)</Version>
     <PackageType>Template</PackageType>

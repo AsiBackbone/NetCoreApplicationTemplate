@@ -4,6 +4,23 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
+## 2.6.2 - 2026-08-22
+
+### Security
+
+* Updated the pinned ASP.NET Core .NET 10 runtime container image to the patched .NET 10.0.11 servicing image, addressing CVE-2026-62901 detected by the release container vulnerability gate.
+
+### Changed
+
+* Updated release, package, citation, documentation, and Kubernetes example metadata for release `2.6.2`.
+
+### Notes
+
+* This is a backward-compatible security patch release.
+* No NetCoreApplicationTemplate public API, template option, configuration surface, generated scaffold structure, package identity, template identity, or intended application behavior changes are introduced by this release.
+* The public NuGet package ID remains `NetCoreApplicationTemplate`.
+* The template short name remains `netcoreapp-template`.
+
 ## 2.6.1 - 2026-08-22
 
 ### Changed
