@@ -16,7 +16,7 @@ Package-based validation is preferred because it verifies the actual distributio
 | Template identity | `CDCavell.NetCoreApplicationTemplate.CSharp` |
 | Template group identity | `CDCavell.NetCoreApplicationTemplate` |
 | Source replacement token | `ProjectTemplate` |
-| Current package version | `2.6.1` |
+| Current package version | `2.6.2` |
 
 The `2.0.0` release moved the public NuGet package ID to `NetCoreApplicationTemplate`. The internal template identity and group identity remain unchanged for template metadata continuity.
 
@@ -92,13 +92,13 @@ dotnet pack ./NetCoreApplicationTemplate.Template.csproj --configuration Release
 Install the published package from NuGet:
 
 ```powershell
-dotnet new install NetCoreApplicationTemplate::2.6.1
+dotnet new install NetCoreApplicationTemplate::2.6.2
 ```
 
 Install a locally packed package:
 
 ```powershell
-dotnet new install ./artifacts/template-package/NetCoreApplicationTemplate.2.6.1.nupkg
+dotnet new install ./artifacts/template-package/NetCoreApplicationTemplate.2.6.2.nupkg
 ```
 
 ## Create a New Project from the Template
