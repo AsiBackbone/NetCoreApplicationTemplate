@@ -1,8 +1,14 @@
 # Documentation
 
-This section contains detailed documentation for the .NET Core Application Template.
+This section contains implementation and operational documentation for the .NET Core Application Template. It is authoritative for NCAT-specific generated behavior, configuration, template options, runtime defaults, middleware order, authentication and authorization behavior, data-access implementation, deployment, extensibility, ADRs, public surface, releases, and compatibility guidance.
+
+Broader architecture education belongs in [ASI Backbone Learning](https://asibackbone.github.io/Learning/), including general ASP.NET Core teaching, terminology, tutorials, tradeoffs, architectural comparisons, labs, and secure-by-default principles. The [Learning repository](https://github.com/AsiBackbone/Learning) contains the source for that educational material.
+
+Learning may explain or compare patterns demonstrated by NCAT, but it does not define NCAT runtime contracts. When a topic needs both educational context and implementation detail, Learning owns the general lesson while NCAT documents the exact local decision and behavior.
 
 Start with [Getting Started](getting-started.md), then use the navigation menu to browse the major documentation areas.
+
+See [Documentation Ownership](documentation-ownership.md) for the cross-repository ownership matrix and contributor routing rules.
 
 ## Release readiness and compatibility
 
