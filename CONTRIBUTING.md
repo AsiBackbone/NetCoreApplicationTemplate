@@ -133,9 +133,33 @@ For documentation changes, validate that new pages are included in navigation wh
 
 ## Documentation Expectations
 
-Update documentation when a change affects configuration behavior, middleware ordering, security defaults, authentication, authorization, data access, deployment, GitHub workflow, release process, or template packaging behavior.
+Update NCAT documentation when a change affects configuration behavior, middleware ordering, security defaults, authentication, authorization, data access, deployment, GitHub workflow, release process, template packaging, generated output, or another concrete runtime or repository contract.
 
 Long-term architectural decisions should be captured in an Architecture Decision Record under `docs/adr`.
+
+### Choose the Documentation Repository
+
+`AsiBackbone/Learning` and NCAT have complementary documentation responsibilities. Before adding a new conceptual explanation, tutorial, comparison, or reference page, choose the repository based on what must remain authoritative.
+
+| Put documentation in... | When the material primarily... |
+|:---|:---|
+| [AsiBackbone/Learning](https://asibackbone.github.io/Learning/) | Teaches general software architecture or ASP.NET Core concepts; defines educational terminology; presents tutorials or labs; compares alternatives and tradeoffs; or explains secure-by-default principles that are useful beyond NCAT. |
+| **NCAT** | Documents template installation or options; generated structure; exact middleware order; concrete configuration keys; authentication or authorization defaults; EF Core implementation or migrations; deployment/runtime behavior; repository ADRs; package/public surface; release compatibility; or other behavior a consumer must be able to rely on for a specific NCAT version. |
+
+When both repositories are relevant:
+
+1. Put the reusable architectural lesson, alternatives, and tradeoff discussion in Learning.
+2. Keep the NCAT page focused on the repository's concrete choice, exact behavior, configuration, and operational consequences.
+3. Link from NCAT to Learning for the broader lesson instead of growing a duplicate educational treatment.
+4. Link from Learning to NCAT when a working implementation is useful as a reference specimen.
+
+Learning does not define NCAT runtime behavior. Do not make an educational page the sole source for a template option, configuration key, generated contract, local ADR decision, or version-specific runtime behavior that NCAT consumers must rely on.
+
+Direct references:
+
+- [ASI Backbone Learning — published site](https://asibackbone.github.io/Learning/)
+- [AsiBackbone/Learning — source repository](https://github.com/AsiBackbone/Learning)
+- [NCAT Documentation Ownership](docs/articles/documentation-ownership.md)
 
 ## Dependency Update Expectations
 

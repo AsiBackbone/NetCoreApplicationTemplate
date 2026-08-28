@@ -4,6 +4,9 @@
 - name: Getting Started
   href: getting-started.md
 
+- name: Documentation Ownership
+  href: documentation-ownership.md
+
 - name: Release Readiness and Compatibility
   items:
     - name: v1.0 Migration Guide

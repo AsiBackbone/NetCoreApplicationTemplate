@@ -142,6 +142,23 @@ NCAT supplies ASP.NET Core authentication, endpoint authorization, middleware or
 
 A consuming application may integrate AsiBackbone for application-level policy decisions, acknowledgments, scoped capability grants, and decision audit records around protected operations. AsiBackbone complements but does not replace ASP.NET Core authentication or endpoint authorization.
 
+## Documentation Ownership
+
+The ASI Backbone organization separates broad architecture education from implementation-specific documentation:
+
+| Repository | Documentation responsibility |
+|:---|:---|
+| [AsiBackbone/Learning](https://asibackbone.github.io/Learning/) | Canonical educational source for organization-level software architecture, ASP.NET Core teaching, terminology, tutorials, tradeoffs, comparisons, labs, and general secure-by-default guidance. |
+| **NetCoreApplicationTemplate (NCAT)** | Authoritative source for this template's installation, options, generated structure, exact runtime defaults, configuration, authentication and authorization behavior, middleware order, data-access implementation, deployment, extensibility, ADRs, public surface, releases, compatibility, and operational guidance. |
+
+NCAT documentation should explain **what this template does and why this repository chose it**. When broader architectural teaching is useful, NCAT links to Learning rather than duplicating a second educational treatment.
+
+Learning does not define NCAT runtime behavior. The current NCAT source, generated output, release artifacts, ADRs, and implementation documentation remain authoritative for NCAT contracts and behavior.
+
+- [ASI Backbone Learning — published site](https://asibackbone.github.io/Learning/)
+- [AsiBackbone/Learning — source repository](https://github.com/AsiBackbone/Learning)
+- [NCAT documentation ownership contract](https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/documentation-ownership.html)
+
 ## Documentation
 
 - [Published documentation](https://AsiBackbone.github.io/NetCoreApplicationTemplate/)
