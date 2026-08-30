@@ -4,6 +4,41 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
+## 2.7.0 - 2026-08-30
+
+### Added
+
+* Added an explicit cross-repository documentation ownership contract establishing AsiBackbone/Learning as the canonical educational source while keeping NCAT authoritative for template behavior, configuration, generated output, runtime contracts, ADRs, releases, and repository-specific implementation decisions.
+* Added a documentation ownership inventory and dedicated API documentation landing surface to make NCAT's implementation-focused documentation boundaries easier to navigate.
+* Added automated DocFX documentation link validation with Lychee, including NCAT-to-Learning and Learning-to-NCAT guardrails, URL-continuity checks, pull-request validation, manual execution, and scheduled link-rot checks.
+* Added repository-level NuGet lock-file coverage to strengthen deterministic restore and dependency reproducibility.
+
+### Changed
+
+* Reorganized DocFX information architecture and consolidated the top navigation around template usage, implementation, operations, API reference, and project resources.
+* Refocused authentication, authorization, configuration, data-access, middleware, logging, telemetry, health-check, forwarded-header, security-header, rate-limiting, error-handling, and optional application-layer guidance on NCAT's concrete implementation, with broader architectural teaching deferred to AsiBackbone/Learning.
+* Migrated the NCAT test suite from xUnit v3 to xUnit v4 and updated the associated Microsoft.NET.Test.Sdk, test dependencies, test configuration, and dependency lock files.
+* Updated ASP.NET Core, OpenTelemetry, testing, and GitHub Actions dependencies while preserving the established NCAT 2.x template contract.
+* Updated release, package, citation, documentation, and Kubernetes example metadata for release `2.7.0`.
+
+### Fixed
+
+* Corrected DocFX source-link remapping in the documentation validation workflow so generated source links resolve to the underlying Markdown files instead of being interpreted as directories.
+
+### Security
+
+* Added a narrowly scoped, time-bounded OWASP Dependency-Check suppression for CVE-2026-54285 when it is incorrectly associated with the .NET `OpenTelemetry.Exporter.OpenTelemetryProtocol` NuGet package; the referenced vulnerability applies to the JavaScript OpenTelemetry implementation.
+* Retained normal scanning for other vulnerabilities and package versions rather than applying a broad CVE suppression.
+
+### Compatibility
+
+* This is a backward-compatible minor release within the stable `2.x` package line.
+* The public NuGet package ID remains `NetCoreApplicationTemplate`.
+* The template short name remains `netcoreapp-template`.
+* The internal template and template-group identities remain unchanged.
+* Supported template options and the generated scaffold structure remain unchanged.
+* No intentional breaking change is introduced to NCAT's public application surface or configuration contract.
+
 ## 2.6.2 - 2026-08-22
 
 ### Security
