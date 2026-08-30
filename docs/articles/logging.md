@@ -1,8 +1,18 @@
 # Logging
 
+> **Scope:** This article is the NCAT implementation reference for generated behavior. Broader architectural rationale, alternatives, and tradeoffs live in [ASI Backbone Learning](https://asibackbone.github.io/Learning/); Learning is educational guidance, not a dependency of NCAT behavior.
+
 This application uses Serilog for structured application logging.
 
 Serilog is configured as the primary logging provider so that application events, startup events, errors, and HTTP request activity are written using a consistent structured format.
+
+
+## Implementation Locations
+
+- Serilog bootstrap: [`SerilogExtensions.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/Extensions/SerilogExtensions.cs)
+- Request logging/correlation: [`RequestLoggingExtensions.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/Extensions/RequestLoggingExtensions.cs)
+- Generated sink/level/template defaults: [`appsettings.json`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/appsettings.json)
+- Architecture decision: [ADR-0001](../adr/0001-use-structured-serilog-logging.md)
 
 ## Bootstrap Logging
 
@@ -74,13 +84,13 @@ This keeps normal application lifecycle and request activity visible while reduc
 The console sink writes structured messages with this default template:
 
 ```text
-[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] [{SourceContext}] [CorrelationId: {CorrelationId}] [RequestId: {RequestId}] [RequestPath: {RequestPath}] {Message:lj}{NewLine}{Exception}
+[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] [{SourceContext}] [CorrelationId: {CorrelationId}] [TraceId: {TraceId}] [SpanId: {SpanId}] [RequestId: {RequestId}] [RequestPath: {RequestPath}] {Message:lj}{NewLine}{Exception}
 ```
 
 The rolling file sink writes structured messages with this default template:
 
 ```text
-[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] [{SourceContext}] [RequestId: {RequestId}] [RequestPath: {RequestPath}] {Message:lj}{NewLine}{Exception}
+[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] [{SourceContext}] [CorrelationId: {CorrelationId}] [TraceId: {TraceId}] [SpanId: {SpanId}] [RequestId: {RequestId}] [RequestPath: {RequestPath}] {Message:lj}{NewLine}{Exception}
 ```
 
 The default file sink writes to `Logs/application-web-.log`, rolls daily, keeps 14 retained files, and rolls when the file reaches the configured size limit.
@@ -147,3 +157,11 @@ Configuration is controlled through `appsettings.json`:
 Query string logging is disabled by default because query strings may contain sensitive values. Applications should avoid logging request bodies, response bodies, cookies, authorization headers, access tokens, refresh tokens, or authentication payloads unless a specific, reviewed diagnostic need exists.
 
 See [Runtime Readiness Baseline](runtime-readiness.md) for the consolidated release-readiness view.
+
+## Contract References
+
+[`RequestLoggingExtensionsBranchGapTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/RequestLoggingExtensionsBranchGapTests.cs) exercises request-logging branches. `appsettings.json` is authoritative for generated sink, level, retention, and output-template defaults.
+
+## Learn the Pattern
+
+See [Structured Logging Without Sensitive-Data Sprawl](https://asibackbone.github.io/Learning/aspnetcore/structured-logging-without-sensitive-data-sprawl.html) and [Secure Logging Across Trust Boundaries](https://asibackbone.github.io/Learning/security/secure-logging-across-trust-boundaries.html).
