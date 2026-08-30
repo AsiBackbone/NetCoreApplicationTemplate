@@ -1,79 +1,89 @@
-# Optional Application and Domain Layers
+# Application and Domain Extension Boundaries
 
-The default template intentionally keeps the generated solution compact:
+The generated .NET Core Application Template intentionally starts with a compact solution. This page documents the **NCAT-specific extension boundary** for consumers who want to add projects such as an application layer, domain layer, or additional infrastructure modules.
+
+General guidance about when additional layers are justified, dependency-direction tradeoffs, CQRS, MediatR, DDD, and incremental migration now lives in the organization-wide Learning site:
+
+> [Growing Beyond a Simple Application Structure](https://asibackbone.github.io/Learning/architecture/growing-beyond-a-simple-application-structure.html)
+
+NCAT does **not** require Clean Architecture, CQRS, MediatR, DDD, or any particular layer count. The generated structure is a working baseline, not a universal architecture prescription.
+
+## What NCAT Generates Today
+
+The default generated solution contains three projects:
+
+```text
+src/
+├── ProjectTemplate.Web/
+└── ProjectTemplate.Infrastructure/
+
+tests/
+└── ProjectTemplate.Web.Tests/
+```
+
+The generated solution file contains the same projects:
+
+```text
+ProjectTemplate.Web
+ProjectTemplate.Infrastructure
+ProjectTemplate.Web.Tests
+```
+
+Their current responsibilities are:
+
+| Project | NCAT responsibility |
+| --- | --- |
+| `ProjectTemplate.Web` | ASP.NET Core host, composition root, middleware pipeline, authentication and authorization registration, endpoints, UI/API concerns, configuration, logging, telemetry, and runtime startup. |
+| `ProjectTemplate.Infrastructure` | EF Core data access and other infrastructure/persistence implementation details that should not live directly in the web host. |
+| `ProjectTemplate.Web.Tests` | Automated validation of startup, configuration, middleware, authentication, authorization, data access wiring, error handling, and related generated behavior. |
+
+See [Project Structure](project-structure.md) for the complete repository and generated-solution layout.
+
+## Intentional Dependency Direction
+
+The generated project-reference direction is deliberately small:
 
 ```text
 ProjectTemplate.Web
         |
         v
 ProjectTemplate.Infrastructure
+
+ProjectTemplate.Web.Tests
+        |
+        v
+ProjectTemplate.Web
 ```
 
-That shape is enough for many small-to-medium internal applications, prototypes that may grow into production systems, and line-of-business applications whose business rules are still simple.
+Today:
 
-This guide describes an optional growth path for consumers who outgrow the starter structure. It is guidance only. The base template does not require Clean Architecture, CQRS, MediatR, DDD, or additional projects.
+- `ProjectTemplate.Web.csproj` references `ProjectTemplate.Infrastructure.csproj`.
+- `ProjectTemplate.Infrastructure.csproj` has no project reference back to `Web`.
+- `ProjectTemplate.Web.Tests.csproj` references `ProjectTemplate.Web.csproj`.
 
-## When the Default Structure Is Sufficient
+Keep `Web` as the composition root unless the application deliberately adopts a different host/composition model. Avoid introducing a reference from `Infrastructure` back to `Web`.
 
-Keep the default `Web` / `Infrastructure` split when the application is still easy to understand and change.
+## Where Additional Projects Can Be Inserted
 
-The default structure is usually sufficient when:
-
-- The application mostly serves Razor Pages, MVC controllers, API endpoints, or health checks.
-- Business rules are simple and close to request/response behavior.
-- Validation is mostly input validation rather than complex business policy.
-- Data access is straightforward and owned by the application.
-- The team can still find use cases, persistence behavior, and tests without friction.
-- Adding more projects would mostly create ceremony rather than reduce complexity.
-
-Do not add layers only because a pattern says every application should have them. Extra projects add build cost, dependency-management work, naming decisions, and review overhead. They should earn their place.
-
-## When to Add Optional Layers
-
-Consider introducing `ProjectTemplate.Application` and/or `ProjectTemplate.Domain` when the application begins to show real domain complexity.
-
-Useful signals include:
-
-- Business rules are duplicated across pages, controllers, jobs, or services.
-- Controllers or page models are becoming orchestration-heavy.
-- Authorization, validation, persistence, and domain decisions are blending together.
-- Use cases need to be tested without booting the web host.
-- Multiple UI/API entry points need to call the same business workflow.
-- External integrations, messaging, or background jobs need to trigger the same application behavior as web requests.
-- Domain events or business state transitions need a clearer home.
-- The team needs stronger boundaries before adding more features.
-
-When those signals appear, add only the layer that solves the current problem.
-
-## Optional Target Structure
-
-A larger application may grow toward this optional structure:
+A generated application may add projects under `src/` when its own complexity justifies them. For example:
 
 ```text
 src/
 ├── ProjectTemplate.Web/
-│   └── ASP.NET Core host, endpoints, UI, authentication, authorization, and composition root
-│
 ├── ProjectTemplate.Application/
-│   └── Use cases, application services, commands, queries, DTOs, validators, and ports/interfaces
-│
 ├── ProjectTemplate.Domain/
-│   └── Domain entities, value objects, domain services, domain events, and business rules
-│
 └── ProjectTemplate.Infrastructure/
-    └── EF Core, repositories/adapters, external services, messaging, files, email, and provider implementations
 ```
 
-This is not the generated default. It is an optional extension model for consumers who need more separation.
-
-## Dependency Direction
-
-A common dependency direction is:
+One possible dependency shape is:
 
 ```text
 ProjectTemplate.Web
         |
-        v
+        +----> ProjectTemplate.Application
+        |
+        +----> ProjectTemplate.Infrastructure
+
 ProjectTemplate.Application
         |
         v
@@ -81,182 +91,131 @@ ProjectTemplate.Domain
 
 ProjectTemplate.Infrastructure
         |
-        v
-ProjectTemplate.Application and/or ProjectTemplate.Domain abstractions
+        +----> ProjectTemplate.Application   (when implementing application-owned ports)
+        |
+        +----> ProjectTemplate.Domain        (when infrastructure needs domain types)
 ```
 
-In this model:
+That is only an example. Consumers may use application services without a separate Domain project, add bounded-context projects, split infrastructure by provider, or keep the generated two-project runtime structure.
 
-- `Web` is still the composition root.
-- `Web` references `Application` so controllers, pages, APIs, and background entry points can invoke use cases.
-- `Application` references `Domain` so use cases can coordinate domain behavior.
-- `Domain` should not reference `Web`, `Infrastructure`, EF Core, ASP.NET Core, provider SDKs, or configuration packages.
-- `Infrastructure` implements persistence, external services, and provider adapters behind interfaces owned by `Application` or, when appropriate, the domain model.
-- `Web` wires the concrete `Infrastructure` implementations into dependency injection.
+The template does not require a mediator, command/query handlers, repositories, domain events, or a particular DDD model.
 
-Avoid circular references. If a dependency cycle appears, it usually means an abstraction belongs in `Application` or `Domain` instead of `Infrastructure` or `Web`.
+## Consumer Changes After Generation
 
-## Suggested Responsibilities
+If you have already generated an application and are adding projects only to that application, the NCAT template-authoring files do not need to change.
 
-| Concern | Suggested home when optional layers are added |
-| --- | --- |
-| Razor Pages, MVC controllers, API endpoints | `ProjectTemplate.Web` |
-| Authentication provider registration | `ProjectTemplate.Web` |
-| Authorization policy registration | `ProjectTemplate.Web`, with policy inputs from `Application` or `Domain` when useful |
-| Request/response models tied to HTTP | `ProjectTemplate.Web` |
-| Use cases and workflows | `ProjectTemplate.Application` |
-| Commands and queries | `ProjectTemplate.Application` |
-| Application DTOs/contracts | `ProjectTemplate.Application` |
-| Application validators | `ProjectTemplate.Application` |
-| Ports/interfaces for persistence or external services | `ProjectTemplate.Application` |
-| Domain entities and value objects | `ProjectTemplate.Domain` |
-| Domain rules and invariants | `ProjectTemplate.Domain` |
-| Domain services | `ProjectTemplate.Domain` |
-| Domain events | `ProjectTemplate.Domain` |
-| EF Core `DbContext`, migrations, entity configuration | `ProjectTemplate.Infrastructure` |
-| Repository/adaptor implementations | `ProjectTemplate.Infrastructure` |
-| Email, files, queues, HTTP clients, provider SDKs | `ProjectTemplate.Infrastructure` |
+At minimum, update the generated application itself:
 
-## Business Rules
+1. Add the new `.csproj` file under the desired source or test folder.
+2. Add the project to the generated `.slnx`.
+3. Add only the project references required by the dependency direction you chose.
+4. Register new application/infrastructure services from the `Web` composition root.
+5. Add focused tests for meaningful new behavior.
+6. Run restore, build, and test for the complete generated solution.
 
-Keep simple request validation close to the web boundary when it only protects model binding or user input shape.
+If the new projects require NuGet packages and the generated application retains NCAT's central package-management files, add package versions through `Directory.Packages.props` rather than scattering version numbers across project files.
 
-Move business rules into `Application` or `Domain` when they represent policy that should be consistent across entry points. For example:
+## Changing NCAT's Generated Default
 
-- A required field on a Razor Page view model can remain in `Web`.
-- A rule that determines whether an order may be submitted belongs in `Application` or `Domain`.
-- A rule that protects an invariant inside an entity or value object belongs in `Domain`.
-- A rule that coordinates persistence, authorization inputs, and external notifications usually belongs in `Application`.
+Contributors changing the **template itself** so every future scaffold contains another project must update more than a solution file.
 
-The dividing line is reuse and meaning. If the rule describes the business, move it out of the HTTP layer. If it describes a request shape, it can stay near the request.
+### Solution and project references
 
-## Commands, Queries, and DTOs
+Update:
 
-Consumers may organize use cases as command/query handlers, application services, or simple methods. The template does not require a specific pattern.
+- `NetCoreApplicationTemplate.slnx` so the source template solution contains the new project.
+- The relevant `.csproj` files so project-reference direction matches the intended generated architecture.
+- Tests when the new boundary changes startup composition or runtime behavior.
 
-Possible `Application` organization:
+The template uses `ProjectTemplate` as its source replacement token, so project names, namespaces, and paths intended for generated output should continue to use that token consistently.
 
-```text
-ProjectTemplate.Application/
-├── Abstractions/
-├── Common/
-├── Features/
-│   └── Users/
-│       ├── CreateUserCommand.cs
-│       ├── CreateUserResult.cs
-│       ├── GetUserDetailsQuery.cs
-│       └── UserDetailsDto.cs
-├── Validation/
-└── DependencyInjection.cs
+### Template metadata
+
+Review `.template.config/template.json`.
+
+Its current `primaryOutputs` explicitly list:
+
+- `ProjectTemplate.slnx`
+- `src/ProjectTemplate.Infrastructure/ProjectTemplate.Infrastructure.csproj`
+- `src/ProjectTemplate.Web/ProjectTemplate.Web.csproj`
+- `tests/ProjectTemplate.Web.Tests/ProjectTemplate.Web.Tests.csproj`
+
+If a new generated project is part of the template's primary output surface, add it there.
+
+The template source rules already include `src/**/*` and `tests/**/*`, so files placed under those trees are generally within the packaged template source. Still verify the generated package and scaffold rather than assuming a new project is emitted correctly.
+
+### Golden scaffold manifest
+
+Review `eng/scaffold-manifest.default.json`.
+
+The default manifest explicitly records the expected generated project files and directories. If the default scaffold intentionally gains a project, update the manifest only after generating and inspecting the packed template output.
+
+Use the existing validator:
+
+```powershell
+./eng/Validate-ScaffoldManifest.ps1 `
+  -ScaffoldRoot ./artifacts/scaffold/ContosoSecurityPortal
 ```
 
-Use DTOs when data crosses an application boundary. Avoid exposing EF Core entities directly as application contracts when the model is likely to evolve independently from persistence.
+When the change is intentional, regenerate the manifest with `-Generate`, then review the diff before committing.
 
-## Domain Events
+### Package project
 
-Domain events are optional. Add them only when they clarify a business state change or decouple follow-up behavior.
+Review `NetCoreApplicationTemplate.Template.csproj`.
 
-A domain event can live in `Domain` when it describes something meaningful that already happened in the domain, such as:
+The package project currently packs `src/**/*` and `tests/**/*`, which normally captures additional projects placed beneath those roots. A new layer therefore may not require a new explicit `Content` entry, but package contents still need validation.
 
-```text
-UserRegistered
-OrderSubmitted
-InvoiceApproved
-```
+If a new generated artifact lives outside the existing included roots, the package project and template source rules may both require changes.
 
-Application-layer code can collect and dispatch those events after persistence succeeds. Infrastructure can provide the dispatcher, message bus adapter, outbox implementation, or notification mechanism.
+### Tests and CI
 
-Avoid adding a messaging framework before there is a clear need for asynchronous behavior or cross-boundary event handling.
+A template-structure change should continue to pass:
 
-## Service Registration
+- Repository restore.
+- Release build.
+- Repository tests.
+- Template package creation.
+- Package installation.
+- Default scaffold generation.
+- Golden scaffold-manifest validation.
+- Build and test of the generated scaffold.
 
-Continue the existing extension-method convention when adding optional layers.
+The existing template smoke test exercises the packed `.nupkg` rather than only the repository working tree. Preserve that distinction when validating structural changes.
 
-Example registration shape:
+## NCAT Invariants to Preserve
 
-```csharp
-// Program.cs
-builder.Services.AddApplicationServices();
-builder.Services.AddInfrastructureServices(builder.Configuration);
-```
+Adding layers should not accidentally weaken the baseline that NCAT is meant to provide.
 
-Possible application-layer extension:
+Unless a change intentionally revises the template contract and updates its tests/documentation, preserve these characteristics:
 
-```csharp
-namespace ProjectTemplate.Application;
+- `Web` remains the ASP.NET Core composition root.
+- Middleware ordering remains centralized and deliberate.
+- Structured logging and telemetry remain wired through the host.
+- Centralized error handling and Problem Details remain the application failure boundary.
+- Security headers, forwarded-header handling, rate limiting, health checks, authentication, and authorization remain explicit infrastructure concerns.
+- Data-access provider selection remains configuration driven.
+- `Infrastructure` does not depend on `Web`.
+- Generated projects continue to build and test as one solution.
+- Template renaming through the `ProjectTemplate` source token continues to work.
+- The default scaffold manifest reflects the actual consumer-facing output.
+- Package-based smoke validation remains authoritative for the distributable template.
 
-public static class DependencyInjection
-{
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
-    {
-        // Register use cases, validators, domain event dispatch abstractions, or application services.
-        return services;
-    }
-}
-```
+Additional projects should extend these boundaries rather than silently bypass them.
 
-Possible infrastructure extension:
+## Architecture Guidance Lives in Learning
 
-```csharp
-namespace ProjectTemplate.Infrastructure;
+The question **"Should this application add another layer at all?"** is intentionally outside NCAT's product-reference scope.
 
-public static class DependencyInjection
-{
-    public static IServiceCollection AddInfrastructureServices(
-        this IServiceCollection services,
-        IConfiguration configuration)
-    {
-        // Register DbContext, repositories, external adapters, and provider implementations.
-        return services;
-    }
-}
-```
+For general architecture education covering:
 
-Keep `Web` as the composition root so deployment-specific configuration, provider selection, and ASP.NET Core startup remain centralized.
+- when a simple application structure is enough;
+- signals that justify additional boundaries;
+- dependency-direction reasoning;
+- optional Application and Domain projects;
+- CQRS, MediatR, and DDD tradeoffs;
+- incremental migration strategies; and
+- the cost of premature layering;
 
-## Testing Optional Layers
+see [Growing Beyond a Simple Application Structure](https://asibackbone.github.io/Learning/architecture/growing-beyond-a-simple-application-structure.html).
 
-Adding layers should make testing easier, not weaker.
-
-Recommended test growth path:
-
-- Keep existing web integration tests that protect startup, middleware, authentication, authorization, error handling, and data access wiring.
-- Add `ProjectTemplate.Application.Tests` when use cases contain meaningful branching, validation, or orchestration.
-- Add `ProjectTemplate.Domain.Tests` when domain entities, value objects, invariants, or domain services contain meaningful rules.
-- Use focused tests for application/domain behavior without booting the full web host.
-- Keep at least a small number of end-to-end or integration tests to prove the web host composes the optional layers correctly.
-
-Do not replace integration tests with unit tests only. The template's value comes partly from proving that startup, middleware, provider configuration, and runtime wiring still work together.
-
-## MediatR, CQRS, and DDD
-
-Consumers may add MediatR, CQRS, DDD patterns, or another application architecture style if those patterns solve a real complexity problem.
-
-The base template does not require them because:
-
-- Many applications do not need a mediator pipeline.
-- CQRS can be overkill for simple CRUD or workflow screens.
-- DDD terminology can add confusion if the domain model is still mostly data-oriented.
-- The template should not force consumers into one methodology before the application earns that structure.
-
-A good middle path is to start with ordinary application services and introduce commands, queries, domain events, or mediator behavior only when they reduce complexity.
-
-## Migration Path From the Default Template
-
-A safe incremental path is:
-
-1. Keep the default `Web` / `Infrastructure` structure while the application is simple.
-2. Move repeated use-case logic from controllers/page models into application services.
-3. Add `ProjectTemplate.Application` when use cases need a clear home.
-4. Move business rules that are independent of HTTP and persistence into `ProjectTemplate.Domain`.
-5. Move infrastructure implementations behind interfaces owned by `Application` or `Domain`.
-6. Add focused tests for the new layer while preserving web integration coverage.
-7. Update documentation so future maintainers understand the chosen layering model.
-
-The goal is not to maximize layer count. The goal is to keep the codebase understandable as the application grows.
-
-## Summary
-
-The default template remains intentionally lightweight. Optional `Application` and `Domain` layers are a growth path, not a requirement.
-
-Add them when they clarify real use cases, protect business rules, improve testing, or reduce coupling. Do not add them merely to satisfy a pattern.
+That Learning article treats NCAT as one concrete reference implementation among many possible application structures. This page remains authoritative only for **how NCAT is generated and what must be considered when extending its template boundary**.

@@ -59,7 +59,7 @@
 
 - name: Extensibility
   items:
-    - name: Optional Application and Domain Layers
+    - name: Application and Domain Extension Boundaries
       href: optional-application-domain-layers.md
     - name: Public Surface and Compatibility Boundaries
       href: public-surface-v1.md
