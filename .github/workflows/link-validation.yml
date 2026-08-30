@@ -89,7 +89,7 @@ jobs:
             './docs/_site/articles/middleware.html'
             './docs/_site/adr/index.html'
             './docs/_site/articles/v1-migration-guide.html'
-            './docs/_site/api/index.html'
+            './docs/_site/api/**/*.html'
           token: ${{ secrets.GITHUB_TOKEN }}
           fail: true
           jobSummary: true
