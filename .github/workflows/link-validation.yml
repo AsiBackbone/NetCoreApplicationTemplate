@@ -113,6 +113,7 @@ jobs:
           args: >-
             --root-dir "${{ github.workspace }}"
             --exclude "^https://github[.]com/AsiBackbone/NetCoreApplicationTemplate/blob/[0-9]+/merge/"
+            --remap "^https://github\.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/(.*)/#L[0-9]+$ file://${{ github.workspace }}/\$1"
             --remap "^https://github\.com/AsiBackbone/NetCoreApplicationTemplate/blob/main file://${{ github.workspace }}"
             './README.md'
             './CONTRIBUTING.md'
