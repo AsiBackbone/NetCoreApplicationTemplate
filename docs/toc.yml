@@ -1,4 +1,7 @@
-- name: Documentation
+- name: Overview
+  href: index.md
+
+- name: Template & Operations
   href: articles/
 
 - name: Architecture Decisions
@@ -10,6 +13,8 @@
 - name: Test Coverage
   href: coverage/
 
+- name: Learn the Architecture
+  href: https://asibackbone.github.io/Learning/
+
 - name: Repository
   href: https://github.com/AsiBackbone/NetCoreApplicationTemplate
-
