@@ -163,12 +163,39 @@ if (-not [string]::IsNullOrWhiteSpace($templatePackageVersion)) {
 }
 
 $escapedVersion = [regex]::Escape($ExpectedVersion)
-$escapedReleaseTag = [regex]::Escape('`v' + $ExpectedVersion + '`')
 $escapedPackageId = [regex]::Escape('NetCoreApplicationTemplate')
 
 $readme = Get-RequiredFileText 'README.md'
-Assert-Matches $readme "Current release:\s*__\[Release $escapedVersion\]\([^\)]*/releases/tag/v$escapedVersion\)__" 'README current-release block'
-Assert-Matches $readme "Tag:\s*$escapedReleaseTag" 'README current-release tag'
+
+# The README Current Release block represents the latest published GitHub
+# release. During release preparation the package version may be newer.
+# publish-release.yml advances this block after the GitHub release is published.
+$publishedReleaseMatch = [regex]::Match(
+    $readme,
+    'Current release:\s*__\[Release (?<labelVersion>\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)\]\([^\)]*/releases/tag/v(?<urlVersion>\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)\)__'
+)
+
+if (-not $publishedReleaseMatch.Success) {
+    Add-Failure 'README current-release block was not found or was malformed.'
+}
+else {
+    $publishedLabelVersion = $publishedReleaseMatch.Groups['labelVersion'].Value
+    $publishedUrlVersion = $publishedReleaseMatch.Groups['urlVersion'].Value
+    Assert-Equal $publishedUrlVersion $publishedLabelVersion 'README current-release URL version'
+
+    $publishedTagMatch = [regex]::Match(
+        $readme,
+        '(?m)^Tag:\s*\x60v(?<tagVersion>\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)\x60\s*$'
+    )
+
+    if (-not $publishedTagMatch.Success) {
+        Add-Failure 'README current-release tag was not found or was malformed.'
+    }
+    else {
+        Assert-Equal $publishedTagMatch.Groups['tagVersion'].Value $publishedLabelVersion 'README current-release tag version'
+    }
+}
+
 Assert-Matches $readme "$escapedPackageId\.$escapedVersion\.nupkg" 'README package install example'
 Assert-Matches $readme "Version $escapedVersion\. Zenodo\. MIT License\." 'README citation version'
 

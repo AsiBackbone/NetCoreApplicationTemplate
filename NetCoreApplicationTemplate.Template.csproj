@@ -13,8 +13,8 @@
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageReadmeFile>PACKAGE-README.md</PackageReadmeFile>
     <PackageIcon>PACKAGE-ICON.png</PackageIcon>
-    <PackageReleaseNotes>Patch 2.6.2 release of the NetCoreApplicationTemplate dotnet new template. This security maintenance release refreshes the pinned ASP.NET Core .NET 10 runtime container image to the patched .NET 10.0.11 servicing image after the release vulnerability gate detected CVE-2026-62901, while preserving the stable NetCoreApplicationTemplate package ID, template identities, supported template options, scaffold structure, configuration surface, and intended application behavior.</PackageReleaseNotes>
-    <VersionPrefix>2.6.2</VersionPrefix>
+    <PackageReleaseNotes>Minor 2.7.0 release of the NetCoreApplicationTemplate dotnet new template. This backward-compatible release modernizes the test stack with xUnit v4, strengthens deterministic restore and dependency maintenance, establishes clearer NCAT/Learning documentation ownership, adds automated DocFX and link-validation guardrails, refreshes ASP.NET Core, OpenTelemetry, testing, and GitHub Actions dependencies, and preserves the stable NetCoreApplicationTemplate package ID, template identities, supported template options, scaffold structure, configuration surface, and intended application behavior.</PackageReleaseNotes>
+    <VersionPrefix>2.7.0</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Version>$(VersionPrefix)</Version>
     <PackageType>Template</PackageType>
