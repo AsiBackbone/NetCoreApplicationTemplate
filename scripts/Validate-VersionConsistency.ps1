@@ -185,69 +185,7 @@ else {
 
     $publishedTagMatch = [regex]::Match(
         $readme,
-        '(?m)^Tag:\s*\x60v(?<tagVersion>\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)\x60\s*
-
-$packageReadme = Get-RequiredFileText 'PACKAGE-README.md'
-Assert-Matches $packageReadme "$escapedPackageId\.$escapedVersion\.nupkg" 'PACKAGE-README package install example'
-
-$citation = Get-RequiredFileText 'CITATION.cff'
-$citationVersion = Get-RegexGroupValue $citation '(?m)^version:\s*["'']?(?<version>[^"''\r\n]+)["'']?\s*$' 'version' 'CITATION.cff version metadata'
-if ($null -ne $citationVersion) {
-    Assert-Equal $citationVersion $ExpectedVersion 'CITATION.cff version metadata'
-}
-
-$changelog = Get-RequiredFileText 'CHANGELOG.md'
-$changelogMatch = [regex]::Match($changelog, '(?m)^##\s+(?<version>\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)\s+-\s+\d{4}-\d{2}-\d{2}\s*$')
-if ($changelogMatch.Success) {
-    Assert-Equal $changelogMatch.Groups['version'].Value $ExpectedVersion 'CHANGELOG latest released version heading'
-}
-else {
-    Add-Failure 'CHANGELOG latest released version heading was not found.'
-}
-
-if (-not [string]::IsNullOrWhiteSpace($TagName)) {
-    $tagMatch = [regex]::Match($TagName, '^v(?<version>\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)$')
-    if (-not $tagMatch.Success) {
-        Add-Failure "Tag '$TagName' is not a supported release tag. Use vMAJOR.MINOR.PATCH with an optional prerelease suffix."
-    }
-    else {
-        Assert-Equal $tagMatch.Groups['version'].Value $ExpectedVersion 'Git release tag version'
-    }
-}
-
-if (-not [string]::IsNullOrWhiteSpace($PackageDirectory)) {
-    $packageDirectoryPath = Resolve-RepositoryPath $PackageDirectory
-    if (-not (Test-Path -LiteralPath $packageDirectoryPath -PathType Container)) {
-        Add-Failure "Package directory was not found: $PackageDirectory"
-    }
-    else {
-        $packages = @(Get-ChildItem -LiteralPath $packageDirectoryPath -Filter '*.nupkg' -File)
-        $expectedPackageName = "NetCoreApplicationTemplate.$ExpectedVersion.nupkg"
-        $matchingPackages = @($packages | Where-Object { $_.Name -eq $expectedPackageName })
-        $driftedPackages = @($packages | Where-Object { $_.Name -ne $expectedPackageName })
-
-        if ($matchingPackages.Count -eq 0) {
-            Add-Failure "No generated package named '$expectedPackageName' was found in $PackageDirectory."
-        }
-
-        foreach ($package in $driftedPackages) {
-            Add-Failure "Generated package filename '$($package.Name)' does not match expected version '$ExpectedVersion'."
-        }
-    }
-}
-
-if ($failures.Count -gt 0) {
-    Write-Host 'Version consistency validation failed.'
-    foreach ($failure in $failures) {
-        Write-Host "::error::$failure"
-        Write-Host "- $failure"
-    }
-
-    exit 1
-}
-
-Write-Host "Version consistency validation passed for version $ExpectedVersion."
-
+        '(?m)^Tag:\s*\x60v(?<tagVersion>\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)\x60\s*$'
     )
 
     if (-not $publishedTagMatch.Success) {
