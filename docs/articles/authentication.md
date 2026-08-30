@@ -1,5 +1,16 @@
 # Authentication
 
+> **Scope:** This article is the NCAT implementation reference for generated behavior. Broader architectural rationale, alternatives, and tradeoffs live in [ASI Backbone Learning](https://asibackbone.github.io/Learning/); Learning is educational guidance, not a dependency of NCAT behavior.
+
+
+## Implementation Locations
+
+- Authentication registration/cookie baseline: [`AuthenticationServiceExtensions.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/Authentication/Extensions/AuthenticationServiceExtensions.cs)
+- Options/validation: [`Authentication/Options`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/tree/main/src/ProjectTemplate.Web/Authentication/Options)
+- Provider integrations: [`Authentication/Providers`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/tree/main/src/ProjectTemplate.Web/Authentication/Providers)
+- Login/logout and challenge endpoints: [`AccountController.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/Controllers/AccountController.cs), [`ExternalController.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/Controllers/ExternalController.cs)
+- Generated defaults: [`appsettings.json`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/appsettings.json)
+
 ## Default Authentication Posture
 
 The base application enables the application authentication module and local cookie authentication by default.
@@ -218,32 +229,9 @@ The application provides minimal account and external authentication endpoints:
 
 Return URLs are validated as local URLs before redirecting to avoid open redirect vulnerabilities. Unknown provider schemes are rejected safely. Provider secrets, tokens, cookies, and sensitive query-string values should not be logged.
 
-## External Social Provider Strategy and OpenIddict Client Evaluation
+## Current External Provider Implementation
 
-The application currently uses provider-specific ASP.NET Core authentication handlers for Microsoft, Google, and GitHub. This keeps the implementation simple, scheme-based, and consistent with the existing authentication module structure.
-
-Current provider-specific packages remain supported and are the active implementation path for this application. They are disabled by default, registered only when enabled, validated during startup, and configured through:
-
-```text
-ProjectTemplate:Authentication:Providers:Microsoft
-ProjectTemplate:Authentication:Providers:Google
-ProjectTemplate:Authentication:Providers:GitHub
-```
-OpenIddict Client was evaluated as a future external social provider architecture. OpenIddict Client provides a broader OAuth 2.0/OpenID Connect client stack with web-provider integrations for many external providers, including GitHub, Microsoft, and Google. It also provides stronger long-term capabilities such as OpenID Connect support, stateful client behavior, replay protections, discovery support, token introspection/revocation support, and resilient backchannel behavior.
-
-However, adopting OpenIddict Client would be an architectural migration rather than a direct package swap. A migration would need to account for:
-- OpenIddict client/core service registration.
-- Token/state storage requirements.
-- Provider-specific redirect endpoint design.
-- Callback endpoint/controller handling.
-- Existing `/External/Challenge` behavior.
-- Existing startup validation behavior.
-- Existing tests and documentation.
-- Compatibility with Microsoft, Google, GitHub, and future providers.
-
-OpenIddict Client may be implemented as the preferred candidate for a future broader social-provider architecture if the application later needs a unified OAuth/OIDC client model across many providers or advanced token-handling features.
-
-Any future migration would be handled through a dedicated implementation issue and should preserve the existing working Microsoft, Google, and GitHub behavior until a replacement path is fully tested.
+NCAT currently uses provider-specific ASP.NET Core authentication handlers for Microsoft, Google, and GitHub, plus dedicated OpenID Connect and SAML2 integrations. They register only when enabled and pass the startup-validation boundary above. Replacing them with a different client architecture would be an NCAT implementation change and is outside this current-behavior contract.
 
 ## Claims Transformation and Normalization
 
@@ -259,3 +247,11 @@ External identity providers often use different claim names for the same concept
 - `application:permission`
 
 Original provider claims are preserved by default. They are only removed when `ProjectTemplate:Authentication:ClaimsTransformation:RemoveOriginalClaims` is explicitly set to `true`.
+
+## Contract References
+
+See [`AuthenticationTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/AuthenticationTests.cs), [`AuthenticationProviderIntegrationTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/AuthenticationProviderIntegrationTests.cs), [`AuthenticationProviderOptionCoverageTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/AuthenticationProviderOptionCoverageTests.cs), [`AuthenticationCookieSecurePolicyTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/AuthenticationCookieSecurePolicyTests.cs), [`ExternalAuthenticationEndpointTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/ExternalAuthenticationEndpointTests.cs), and [`ClaimsTransformationTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/ClaimsTransformationTests.cs).
+
+## Learn the Pattern
+
+For general trust-boundary and secret-handling guidance, see [Trust Boundaries and Least Privilege](https://asibackbone.github.io/Learning/security/trust-boundaries-and-least-privilege.html) and [Secret Handling Across Trust Boundaries](https://asibackbone.github.io/Learning/security/secret-handling-across-trust-boundaries.html). NCAT's [Production Authentication Hardening Checklist](authentication-hardening.md) remains authoritative for template-specific production review.
