@@ -1,5 +1,7 @@
 # Health Checks
 
+> **Scope:** This article is the NCAT implementation reference for generated behavior. Broader architectural rationale, alternatives, and tradeoffs live in [ASI Backbone Learning](https://asibackbone.github.io/Learning/); Learning is educational guidance, not a dependency of NCAT behavior.
+
 The application includes baseline ASP.NET Core health check endpoints for local development, reverse proxy hosting, load balancers, container platforms, and future deployment scenarios.
 
 Health checks are registered during service configuration:
@@ -14,6 +16,14 @@ The endpoints are mapped during application startup:
 app.MapApplicationHealthChecks();
 ```
 
+
+## Implementation Locations
+
+- Registration and endpoint mapping: [`HealthCheckExtensions.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/Extensions/HealthCheckExtensions.cs)
+- Startup mapping: [`Program.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/Program.cs)
+- Audit-integrity check: [`ApplicationAuditIntegrityHealthCheck.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/HealthChecks/ApplicationAuditIntegrityHealthCheck.cs)
+- Security-header exclusions: [`appsettings.json`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/appsettings.json)
+
 ## Default Endpoints
 
 | Endpoint | Purpose |
@@ -24,7 +34,7 @@ app.MapApplicationHealthChecks();
 
 The baseline application provides the readiness endpoint shape. It does not, by itself, prove database, cache, queue, or external service availability.
 
-Each generated application must register the dependency checks that define production readiness for that service. Future modules, such as EF Core, SQL Server, authentication providers, or external integrations, can add tagged checks for readiness scenarios.
+The generated template does not add database, cache, queue, or external-service readiness checks automatically. Consuming applications must register the tagged dependency checks that define production readiness for their service.
 
 ## Access and Deployment Boundary
 
@@ -109,3 +119,11 @@ The default security header configuration excludes `/health`:
 ```
 
 Because the exclusion is prefix-based, `/health`, `/health/ready`, and `/health/live` are all excluded from security header application. This keeps health probe responses small and infrastructure-friendly.
+
+## Contract References
+
+[`HealthCheckTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/HealthCheckTests.cs) verifies the generated endpoint contract. `PipelineExtensions.cs` and `Program.cs` establish the relationship between the normal application pipeline and health-check endpoint mapping.
+
+## Learn the Pattern
+
+For broader secure operational defaults and deployment trust boundaries, see [Secure-by-Default ASP.NET Core Configuration](https://asibackbone.github.io/Learning/aspnetcore/secure-by-default-configuration.html) and [Trust Boundaries and Least Privilege](https://asibackbone.github.io/Learning/security/trust-boundaries-and-least-privilege.html).

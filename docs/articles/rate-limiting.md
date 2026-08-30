@@ -1,5 +1,7 @@
 # Rate Limiting
 
+> **Scope:** This article is the NCAT implementation reference for generated behavior. Broader architectural rationale, alternatives, and tradeoffs live in [ASI Backbone Learning](https://asibackbone.github.io/Learning/); Learning is educational guidance, not a dependency of NCAT behavior.
+
 The application includes baseline ASP.NET Core rate limiting support to help protect applications from accidental request floods, scraping, repeated automated requests, and concurrency-heavy operations.
 
 Rate limiting is registered through the application service extension:
@@ -15,6 +17,14 @@ app.UseRateLimiter();
 ```
 
 `UseRateLimiter()` is intentionally placed after routing so endpoint-specific rate limiting policies can be applied, and before endpoint execution so requests can be rejected before reaching controllers, Razor Pages, or minimal API handlers.
+
+
+## Implementation Locations
+
+- Limiter registration/policies/rejection/partitioning: [`RateLimitingServiceExtensions.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/Extensions/RateLimitingServiceExtensions.cs)
+- Option models: [`src/ProjectTemplate.Web/Options`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/tree/main/src/ProjectTemplate.Web/Options)
+- Named policy constants: [`ApplicationRateLimitingPolicyNames.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/Constants/ApplicationRateLimitingPolicyNames.cs)
+- Generated defaults: [`appsettings.json`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/appsettings.json)
 
 ## Default Behavior
 
@@ -167,3 +177,11 @@ This keeps production endpoints unchanged while allowing the tests to verify:
 - Client IP partition fallback behavior when `RemoteIpAddress` is unavailable.
 
 See [Runtime Readiness Baseline](runtime-readiness.md) for the consolidated release-readiness view.
+
+## Contract References
+
+[`RateLimitingTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/RateLimitingTests.cs) covers the generated global limiter, named policies, rejection shape, disable path, and unknown-client partition behavior. Forwarded-header tests and `PipelineExtensions.cs` establish the corrected client-IP boundary.
+
+## Learn the Pattern
+
+For broader secure-default and trust-boundary reasoning, see [Secure-by-Default ASP.NET Core Configuration](https://asibackbone.github.io/Learning/aspnetcore/secure-by-default-configuration.html) and [Trust Boundaries and Least Privilege](https://asibackbone.github.io/Learning/security/trust-boundaries-and-least-privilege.html).

@@ -1,8 +1,17 @@
 # Middleware Pipeline
 
+> **Scope:** This article is the NCAT implementation reference for generated behavior. Broader architectural rationale, alternatives, and tradeoffs live in [ASI Backbone Learning](https://asibackbone.github.io/Learning/); Learning is educational guidance, not a dependency of NCAT behavior.
+
 The application centralizes standard middleware ordering through `UseApplicationPipeline()` so `Program.cs` remains focused on application startup and service registration.
 
 The detailed architecture decision is recorded in [ADR-0002: Use Centralized Application Middleware Pipeline](../adr/0002-use-centralized-application-middleware-pipeline.md).
+
+
+## Implementation Locations
+
+- Exact generated order: [`PipelineExtensions.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/Extensions/PipelineExtensions.cs)
+- Startup composition: [`Program.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/Program.cs)
+- Architecture decision: [ADR-0002](../adr/0002-use-centralized-application-middleware-pipeline.md)
 
 ## Baseline Order
 
@@ -59,3 +68,11 @@ When adding custom middleware, use the invariant that describes the behavior the
 - Middleware that emits response headers should be reviewed against redirects, static files, error responses, and endpoint responses to confirm where those headers should appear.
 
 Pipeline changes that alter request identity, error handling coverage, security-header coverage, CORS preflight behavior, rate-limiting policy selection, authorization behavior, or health-check reachability should be treated as behavior changes and reviewed accordingly.
+
+## Contract References
+
+The generated order is authoritative in `PipelineExtensions.cs`. Order-sensitive behavior is exercised by the focused forwarded-header, security-header, rate-limiting, authentication/authorization, and health-check tests.
+
+## Learn the Pattern
+
+For general middleware-ordering theory and alternatives, see [Middleware Ordering Changes Behavior](https://asibackbone.github.io/Learning/aspnetcore/middleware-ordering-changes-behavior.html).

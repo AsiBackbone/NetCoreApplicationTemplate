@@ -1,5 +1,7 @@
 # Security Headers
 
+> **Scope:** This article is the NCAT implementation reference for generated behavior. Broader architectural rationale, alternatives, and tradeoffs live in [ASI Backbone Learning](https://asibackbone.github.io/Learning/); Learning is educational guidance, not a dependency of NCAT behavior.
+
 The application includes configurable security header middleware that applies common HTTP response headers to help reduce browser-based attack surface. The middleware is registered through the application extension pattern so `Program.cs` can remain clean and minimal.
 
 Security headers are registered during service configuration:
@@ -15,6 +17,13 @@ The pipeline calls:
 ```csharp
 app.UseApplicationSecurityHeaders();
 ```
+
+## Implementation Locations
+
+- Registration/validation: [`SecurityHeadersExtensions.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/Extensions/SecurityHeadersExtensions.cs)
+- Header emission: [`SecurityHeadersMiddleware.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/Middleware/SecurityHeadersMiddleware.cs)
+- Option model/defaults: [`ApplicationSecurityHeadersOptions.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/Options/ApplicationSecurityHeadersOptions.cs), [`appsettings.json`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/appsettings.json)
+
 ## v1.0 Security Header Contract
 
 This contract applies when `ProjectTemplate:SecurityHeaders:Enabled` is `true` and the request path does not match `ExcludedPathPrefixes`.
@@ -120,3 +129,11 @@ Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
 Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline';
 ```
 The exact CSP and Permissions-Policy values may differ if overridden by configuration.
+
+## Contract References
+
+[`SecurityHeadersTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/SecurityHeadersTests.cs) verifies enabled/disabled behavior, configured headers, and excluded paths. Pipeline placement is authoritative in `PipelineExtensions.cs`.
+
+## Learn the Pattern
+
+For broader secure-default and trust-boundary reasoning, see [Secure-by-Default ASP.NET Core Configuration](https://asibackbone.github.io/Learning/aspnetcore/secure-by-default-configuration.html) and [Trust Boundaries and Least Privilege](https://asibackbone.github.io/Learning/security/trust-boundaries-and-least-privilege.html).

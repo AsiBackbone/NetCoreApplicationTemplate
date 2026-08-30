@@ -1,15 +1,6 @@
 # Authorization
 
-Authentication and authorization are related but distinct:
-
-- **Authentication** establishes the caller's identity.
-- **Authorization** determines whether that identity may access an endpoint or operation.
-- The ASP.NET Core **default authorization policy** is used when authorization is requested without a named policy, such as `[Authorize]`.
-- The ASP.NET Core **fallback authorization policy** applies to routed endpoints that contain no authorization metadata.
-- **Explicit anonymous access** uses `[AllowAnonymous]`, `.AllowAnonymous()`, or equivalent metadata to exempt a route from authorization.
-- **Policy-based authorization** layers role, permission, claim, or custom requirements beyond the authenticated-user baseline.
-
-`DefaultPolicy` and `FallbackPolicy` are not interchangeable. The default policy governs endpoints that request authorization without naming a policy. The fallback policy governs endpoints that do not request authorization explicitly.
+NCAT registers ASP.NET Core authorization with named policies and, by default, an authenticated-user fallback policy. `DefaultPolicy` handles endpoints that explicitly request authorization without a named policy; `FallbackPolicy` protects routed endpoints with no authorization metadata. Explicit anonymous metadata bypasses the fallback policy.
 
 ## Role and Permission Authorization Policies
 
@@ -86,7 +77,7 @@ This is an application-wide security posture change. Prefer explicit anonymous m
 | Future routed endpoints | Authenticated by fallback | New routes remain protected unless an anonymous exception is reviewed and tested. |
 | Static files and browser assets | Static-file middleware | `UseStaticFiles` runs before routing. Sensitive files must not be placed under the public web root. |
 
-`AnonymousEndpointContractTests.RoutedEndpoints_ExposeOnlyReviewedAnonymousAllowlist` fails when the reviewed anonymous metadata set changes.
+The fallback-policy contract is exercised by `FallbackAuthorizationPolicyTests`, including explicit anonymous endpoints and unannotated controller/Razor Page behavior.
 
 ## Named Policy Usage Examples
 
@@ -131,3 +122,11 @@ A consuming application may integrate AsiBackbone for application-level policy d
 Authorization policies are designed to work with the claims transformation layer documented in [Authentication](authentication.md). External providers often emit different role, group, permission, or scope claim names. The template can normalize those claims into application-owned names so authorization policies remain stable across providers.
 
 See [Runtime Readiness Baseline](runtime-readiness.md) for the consolidated release-readiness view.
+
+## Contract References
+
+[`AuthorizationPolicyTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/AuthorizationPolicyTests.cs) verifies named policies. [`FallbackAuthorizationPolicyTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/FallbackAuthorizationPolicyTests.cs) verifies the closed-by-default fallback posture, explicit anonymous access, opt-out behavior, and invalid authentication/authorization combinations. [`ClaimsTransformationTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/ClaimsTransformationTests.cs) covers normalized claims.
+
+## Learn the Pattern
+
+See [When ASP.NET Core Authorization Is Enough](https://asibackbone.github.io/Learning/architecture/when-aspnet-core-authorization-is-enough.html) and [Role-Based, Claims-Based, and Capability-Based Authorization](https://asibackbone.github.io/Learning/architecture/role-based-claims-based-and-capability-based-authorization.html).
