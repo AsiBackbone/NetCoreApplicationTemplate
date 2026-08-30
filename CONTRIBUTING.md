@@ -146,6 +146,8 @@ Long-term architectural decisions should be captured in an Architecture Decision
 | [AsiBackbone/Learning](https://asibackbone.github.io/Learning/) | Teaches general software architecture or ASP.NET Core concepts; defines educational terminology; presents tutorials or labs; compares alternatives and tradeoffs; or explains secure-by-default principles that are useful beyond NCAT. |
 | **NCAT** | Documents template installation or options; generated structure; exact middleware order; concrete configuration keys; authentication or authorization defaults; EF Core implementation or migrations; deployment/runtime behavior; repository ADRs; package/public surface; release compatibility; or other behavior a consumer must be able to rely on for a specific NCAT version. |
 
+> **Documentation ownership rule:** If a document primarily explains a general software-architecture principle, tradeoff, comparison, or teaching pattern, it belongs in Learning. If it documents what NetCoreApplicationTemplate generates, configures, guarantees, exposes, or records as a repository decision, it belongs in NCAT.
+
 When both repositories are relevant:
 
 1. Put the reusable architectural lesson, alternatives, and tradeoff discussion in Learning.
@@ -160,6 +162,21 @@ Direct references:
 - [ASI Backbone Learning — published site](https://asibackbone.github.io/Learning/)
 - [AsiBackbone/Learning — source repository](https://github.com/AsiBackbone/Learning)
 - [NCAT Documentation Ownership](docs/articles/documentation-ownership.md)
+
+### Preserve Public Documentation URLs
+
+Treat an established NCAT documentation URL as a compatibility surface. When reusable educational content moves to Learning, preserve the existing NCAT path whenever practical as an implementation-focused page or concise transition page rather than deleting it.
+
+For documentation moves or major refactors:
+
+1. Verify the canonical Learning destination exists before changing the NCAT page.
+2. Preserve the existing NCAT URL when it has been published, linked from a README or ADR, referenced by Learning, or may be indexed/bookmarked externally.
+3. Keep enough NCAT-specific content at that URL to state the current implementation contract and link outward for broader education.
+4. Update inbound links only after the continuity path is in place.
+5. Do not create a circular canonical-link pattern where an NCAT transition page sends readers to Learning and the Learning page sends them back to NCAT as its sole destination. Learning may link back to NCAT as an implementation specimen, while NCAT remains authoritative for runtime/template/ADR truth.
+6. Keep release, migration, ADR, and other historical evidence available at stable paths or through an explicit archive/transition strategy.
+
+The [Documentation Link Validation workflow](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/.github/workflows/link-validation.yml) builds the NCAT DocFX site, checks important NCAT-to-Learning links and generated reference surfaces, and validates selected Learning-to-NCAT backlinks. Documentation pull requests should keep that workflow green.
 
 ## Dependency Update Expectations
 

@@ -1,0 +1,107 @@
+name: Documentation Link Validation
+
+on:
+  workflow_dispatch:
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '**/*.md'
+      - 'docs/**'
+      - 'lychee.toml'
+      - '.github/workflows/link-validation.yml'
+
+  push:
+    branches:
+      - main
+    paths:
+      - '**/*.md'
+      - 'docs/**'
+      - 'lychee.toml'
+      - '.github/workflows/link-validation.yml'
+
+  # Detect cross-repository and external link rot even when NCAT
+  # documentation has not recently changed.
+  schedule:
+    - cron: '23 13 * * 0'
+
+permissions: {}
+
+concurrency:
+  group: documentation-link-validation-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-links:
+    name: Validate documentation links
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout NCAT
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Checkout Learning reference
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: AsiBackbone/Learning
+          ref: main
+          path: .external/Learning
+          persist-credentials: false
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Restore local tools
+        run: dotnet tool restore
+
+      - name: Build NCAT DocFX site
+        run: dotnet tool run docfx -- docs/docfx.json
+
+      - name: Add coverage publication placeholder
+        shell: pwsh
+        run: |
+          # publish-docs.yml injects the generated coverage site after DocFX.
+          # Add only the landing-page placeholder here so rendered NCAT links
+          # can be checked without running the full test/coverage pipeline twice.
+          New-Item -ItemType Directory -Path "./docs/_site/coverage" -Force | Out-Null
+          Set-Content -LiteralPath "./docs/_site/coverage/index.html" -Value "<!doctype html><title>Coverage publication placeholder</title>"
+
+      - name: Validate NCAT publication and Learning links
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          args: >-
+            --root-dir "${{ github.workspace }}"
+            --remap "^https://github\\.com/AsiBackbone/NetCoreApplicationTemplate/blob/main file://${{ github.workspace }}"
+            './README.md'
+            './CONTRIBUTING.md'
+            './docs/_site/index.html'
+            './docs/_site/articles/index.html'
+            './docs/_site/articles/documentation-ownership.html'
+            './docs/_site/articles/optional-application-domain-layers.html'
+            './docs/_site/articles/middleware.html'
+            './docs/_site/adr/index.html'
+            './docs/_site/articles/v1-migration-guide.html'
+            './docs/_site/api/index.html'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fail: true
+          jobSummary: true
+
+      - name: Validate Learning backlinks to NCAT
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          args: >-
+            --root-dir "${{ github.workspace }}/.external/Learning"
+            --remap "^https://github\\.com/AsiBackbone/Learning/blob/main file://${{ github.workspace }}/.external/Learning"
+            './.external/Learning/docs/architecture/growing-beyond-a-simple-application-structure.md'
+            './.external/Learning/docs/aspnetcore/netcoreapplicationtemplate-adr-case-study.md'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fail: true
+          jobSummary: true

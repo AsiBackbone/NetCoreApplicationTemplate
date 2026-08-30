@@ -63,6 +63,44 @@ Ask one question first:
 - If **no** because it describes a concrete NCAT option, generated behavior, version, configuration key, local decision, or operational contract, it belongs in NCAT.
 - If the answer is **both**, split the reusable lesson from the implementation reference and cross-link them.
 
+## URL Continuity and Transition Pages
+
+Published NCAT documentation paths are compatibility surfaces for readers, README links, Learning case studies, search indexes, release notes, and external bookmarks. Moving the reusable lesson to Learning must not silently remove the NCAT path that previously carried it.
+
+Use these rules when educational content moves or an NCAT article is substantially narrowed:
+
+1. **Create or verify the Learning destination first.** Do not replace the NCAT page with a pointer to a destination that is not yet published or otherwise stable.
+2. **Preserve the NCAT URL whenever practical.** Retain the original Markdown path as an implementation-focused article or concise transition page so the published DocFX URL remains valid.
+3. **Keep runtime authority in NCAT.** A transition page should still identify the NCAT behavior, decision, or extension boundary that remains locally authoritative.
+4. **Link outward for education, not authority transfer.** Learning is canonical for the reusable architectural lesson; NCAT remains canonical for template/runtime/ADR truth.
+5. **Avoid circular canonical links.** A Learning page may link back to NCAT as a working implementation or ADR source, but a transition page must not send readers to a Learning page that simply sends them back as the sole canonical destination.
+6. **Protect historical evidence.** Release, migration, ADR, compatibility, and other historical pages should be archived or annotated rather than removed without a verified continuity strategy.
+7. **Audit inbound references before deletion.** Removing an established page requires an explicit review of repository links, Learning links, releases, and external references plus a verified redirect/continuity mechanism.
+
+The retained [Application and Domain Extension Boundaries](optional-application-domain-layers.md) page is the preferred pattern: the original NCAT URL remains useful for the generated template while the broader architecture lesson lives in Learning.
+
+## Cross-Repository Link Validation
+
+NCAT uses a dedicated [Documentation Link Validation workflow](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/.github/workflows/link-validation.yml) as a lightweight guardrail against link rot and ownership drift.
+
+The workflow:
+
+- builds the NCAT DocFX site so generated API/reference links and internal navigation are validated from rendered output;
+- checks representative NCAT pages that link to Learning's architecture, ASP.NET Core, and tutorial material;
+- checks current release, migration, ADR, and transition surfaces;
+- checks selected Learning source pages that are expected to link back to canonical NCAT implementation/ADR references; and
+- runs on relevant pull requests, on main-branch documentation changes, manually, and on a weekly schedule to detect external link rot.
+
+Learning keeps its own link-validation workflow as the first line of defense for Learning changes. The NCAT check is intentionally focused on the cross-repository contract and NCAT publication surfaces rather than attempting to classify document content automatically.
+
+Key educational entry points are:
+
+- [Learning Architecture](https://asibackbone.github.io/Learning/architecture/)
+- [Learning ASP.NET Core](https://asibackbone.github.io/Learning/aspnetcore/)
+- [Learning Tutorials](https://asibackbone.github.io/Learning/tutorials/)
+
+Key NCAT continuity surfaces include the [ADR index](../adr/index.md), [v1.0 migration guide](v1-migration-guide.md), [latest release](https://github.com/AsiBackbone/NetCoreApplicationTemplate/releases/latest), and generated API reference.
+
 ## Canonical Links
 
 - [ASI Backbone Learning — published educational site](https://asibackbone.github.io/Learning/)
