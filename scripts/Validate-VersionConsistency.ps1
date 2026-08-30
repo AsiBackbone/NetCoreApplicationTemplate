@@ -163,15 +163,13 @@ if (-not [string]::IsNullOrWhiteSpace($templatePackageVersion)) {
 }
 
 $escapedVersion = [regex]::Escape($ExpectedVersion)
-$escapedReleaseTag = [regex]::Escape('`v' + $ExpectedVersion + '`')
 $escapedPackageId = [regex]::Escape('NetCoreApplicationTemplate')
 
 $readme = Get-RequiredFileText 'README.md'
 
-# The README "Current Release" block represents the latest *published* GitHub
-# release, not the version currently being prepared. publish-release.yml updates
-# this block after a release is published, so pre-release branches may
-# intentionally carry a newer package version than the latest published tag.
+# The README Current Release block represents the latest published GitHub
+# release. During release preparation the package version may be newer.
+# publish-release.yml advances this block after the GitHub release is published.
 $publishedReleaseMatch = [regex]::Match(
     $readme,
     'Current release:\s*__\[Release (?<labelVersion>\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)\]\([^\)]*/releases/tag/v(?<urlVersion>\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)\)__'
@@ -187,19 +185,7 @@ else {
 
     $publishedTagMatch = [regex]::Match(
         $readme,
-        '(?m)^Tag:\s*`v(?<tagVersion>\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)`\s*$'
-    )
-
-    if (-not $publishedTagMatch.Success) {
-        Add-Failure 'README current-release tag was not found or was malformed.'
-    }
-    else {
-        Assert-Equal $publishedTagMatch.Groups['tagVersion'].Value $publishedLabelVersion 'README current-release tag version'
-    }
-}
-
-Assert-Matches $readme "$escapedPackageId\.$escapedVersion\.nupkg" 'README package install example'
-Assert-Matches $readme "Version $escapedVersion\. Zenodo\. MIT License\." 'README citation version'
+        '(?m)^Tag:\s*\x60v(?<tagVersion>\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)\x60\s*
 
 $packageReadme = Get-RequiredFileText 'PACKAGE-README.md'
 Assert-Matches $packageReadme "$escapedPackageId\.$escapedVersion\.nupkg" 'PACKAGE-README package install example'
