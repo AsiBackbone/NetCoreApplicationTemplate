@@ -1,5 +1,16 @@
 # Data Access
 
+> **Scope:** This article is the NCAT implementation reference for generated behavior. Broader architectural rationale, alternatives, and tradeoffs live in [ASI Backbone Learning](https://asibackbone.github.io/Learning/); Learning is educational guidance, not a dependency of NCAT behavior.
+
+
+## Implementation Locations
+
+- Web-layer registration: [`DataAccessServiceExtensions.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/Extensions/DataAccessServiceExtensions.cs)
+- EF Core provider registration/startup validation: [`InfrastructureDataAccessServiceExtensions.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Infrastructure/Data/Extensions/InfrastructureDataAccessServiceExtensions.cs)
+- Provider/default option contract: [`DataAccessOptions.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Infrastructure/Data/Options/DataAccessOptions.cs)
+- DbContext/save pipeline: [`ApplicationDbContext.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Infrastructure/Data/ApplicationDbContext.cs), [`ApplicationSaveChangesPipeline.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Infrastructure/Data/ApplicationSaveChangesPipeline.cs)
+- Generated defaults: [`appsettings.json`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/appsettings.json)
+
 ## EF Core, SQLite, and Database Updates
 
 The application includes an initial EF Core data access foundation using SQLite as the default local development provider.
@@ -352,53 +363,15 @@ Do not store local time in system/audit `*Utc` columns.
 
 ## Decimal Precision and Scale
 
-The baseline template currently does not define persisted `decimal` entity properties.
+The generated baseline currently defines no persisted `decimal` entity properties. NCAT's model-validation contract requires future persisted decimal properties to declare precision and scale explicitly rather than inheriting provider defaults. `ApplicationDbContextDecimalPrecisionTests` fails when that invariant is violated.
 
-Future applications that add persisted decimal values should configure precision and scale explicitly with EF Core instead of relying on provider defaults. This is especially important for values that represent money, percentages, rates, measurements, thresholds, scores, limits, or other business-sensitive quantities.
-
-Recommended default patterns:
-
-| Value type | Suggested precision | Notes |
-|---|---:|---|
-| Money-like values | `decimal(18, 2)` or `HasPrecision(18, 2)` | Common default for currency-style values. Domain-specific financial applications may require different precision, rounding, or minor-unit storage rules. |
-| Percentage values | `decimal(9, 4)` or `HasPrecision(9, 4)` | Useful when storing percentages such as `12.3456`. Decide whether the value is stored as `12.3456` or `0.123456` before choosing precision. |
-| Rates and ratios | `decimal(18, 6)` or `HasPrecision(18, 6)` | Useful for tax rates, interest rates, thresholds, and ratios where more fractional precision may matter. |
-| Measurements | `decimal(18, 4)` or domain-specific precision | Use precision appropriate to the measurement unit and required tolerance. |
-| Scores or weights | `decimal(9, 4)` or domain-specific precision | Useful for scoring, ranking, confidence, or weighting values when deterministic decimal behavior is preferred. |
-
-Example entity configuration:
-
-```csharp
-builder.Property(x => x.Amount)
-    .HasPrecision(18, 2);
-
-builder.Property(x => x.Rate)
-    .HasPrecision(18, 6);
-```
-
-SQLite and SQL Server handle decimal storage differently. SQL Server enforces decimal precision and scale through column types such as `decimal(18,2)`. SQLite has dynamic typing and does not enforce the same decimal semantics in the same way. For this reason, consuming applications should still validate decimal range, scale, and rounding rules in the application/domain layer when those rules matter.
-
-Do not use `double` or `float` for money-like values. Use `decimal` with explicit precision/scale, or use integer minor units such as cents when that better fits the domain.
-
-The template includes a model validation test that fails when persisted decimal properties are added without explicit precision and scale.
+Consuming applications remain responsible for domain-appropriate precision, scale, range, and rounding semantics.
 
 ## Raw SQL and Parameterization Safety
 
-The template does not currently require raw SQL command construction for its baseline data-access behavior.
+The generated baseline does not require raw SQL command construction. The NCAT contract is that dynamic database values are parameterized rather than concatenated into SQL text; `RawSqlSafetyTests` guards that boundary.
 
-When database access is needed, prefer EF Core LINQ queries and normal EF Core change tracking. These APIs generate parameterized database commands for application values and avoid manual SQL string construction.
-
-If raw SQL is required for a future feature, dynamic values must not be inserted into SQL command text through string concatenation, `string.Format`, or unsafe interpolation.
-
-Preferred approaches are:
-
-- Use `FromSqlInterpolated` for raw SQL queries with dynamic values.
-- Use `ExecuteSqlInterpolated` for raw SQL commands with dynamic values.
-- Use explicit provider parameters such as `DbParameter` when provider-specific command construction is required.
-- Keep raw SQL command text static except for reviewed schema identifiers that cannot be parameterized.
-- Do not rely on input encoding, persisted string canonicalization, or output encoding as the primary SQL injection defense.
-
-Persisted string canonicalization supports consistency and defense-in-depth. SQL injection protection remains based on parameterized database access, safe query construction, validation, and avoiding manually concatenated SQL.
+If a consuming application adds raw SQL, use EF Core interpolated/parameter APIs or explicit provider parameters. Persisted-string canonicalization is not a substitute for SQL parameterization.
 
 ## Optimistic Concurrency
 
@@ -512,3 +485,13 @@ The external login persistence model stores:
 - Created, updated, and last-login timestamps
 
 Provider tokens are not stored by default. Applications that need token persistence should add that behavior intentionally and review the security, encryption, rotation, and retention requirements before enabling it.
+
+## Contract References
+
+Representative contracts are covered by [`DataAccessServiceExtensionsTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/DataAccessServiceExtensionsTests.cs), [`InfrastructureDataAccessServiceExtensionsTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/InfrastructureDataAccessServiceExtensionsTests.cs), concurrency/timestamp/decimal tests, [`RawSqlSafetyTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/RawSqlSafetyTests.cs), and [ADR-0004](../adr/0004-keep-composite-savechanges-interceptor.md).
+
+For deeper NCAT implementation detail, see [EF Core Save Pipeline](ef-core-save-pipeline.md) and [DbContext Audit State Isolation](dbcontext-audit-state-isolation.md).
+
+## Learn the Pattern
+
+For general EF Core boundary design and transaction reasoning, see [Data-Access Boundaries and Transaction Reasoning with EF Core](https://asibackbone.github.io/Learning/aspnetcore/data-access-boundaries-and-transaction-reasoning.html).
