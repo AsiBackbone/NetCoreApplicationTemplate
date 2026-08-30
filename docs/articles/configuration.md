@@ -1,8 +1,19 @@
 # Configuration
 
+> **Scope:** This article is the NCAT implementation reference for generated behavior. Broader architectural rationale, alternatives, and tradeoffs live in [ASI Backbone Learning](https://asibackbone.github.io/Learning/); Learning is educational guidance, not a dependency of NCAT behavior.
+
 This section documents the application configuration strategy used by the .NET Core Application Template.
 
 The template uses ASP.NET Core configuration conventions and groups application-owned options under the `ProjectTemplate` configuration section. Shared defaults live in `appsettings.json`, while environment-specific files, environment variables, user secrets, or deployment secret stores can override values for a specific environment.
+
+
+## Implementation Locations
+
+- Shared generated defaults: [`appsettings.json`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/appsettings.json)
+- Development overrides: [`appsettings.Development.json`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/appsettings.Development.json)
+- Web option models: [`src/ProjectTemplate.Web/Options`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/tree/main/src/ProjectTemplate.Web/Options)
+- Authentication option models: [`Authentication/Options`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/tree/main/src/ProjectTemplate.Web/Authentication/Options)
+- Data-access options: [`DataAccessOptions.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Infrastructure/Data/Options/DataAccessOptions.cs)
 
 ## Configuration Sources
 
@@ -227,3 +238,11 @@ Before production release, review:
 [ ] Logging destinations, retention, and sensitive-data exposure are reviewed.
 [ ] Database provider and migration strategy are documented for the environment.
 ```
+
+## Contract References
+
+Feature-specific startup-validation tests establish the generated configuration contract, including authentication, forwarded headers, rate limiting, OpenTelemetry, and data-access tests.
+
+## Learn the Pattern
+
+For broader configuration and secret-management reasoning, see [Secure-by-Default ASP.NET Core Configuration](https://asibackbone.github.io/Learning/aspnetcore/secure-by-default-configuration.html) and [Secret Handling Across Trust Boundaries](https://asibackbone.github.io/Learning/security/secret-handling-across-trust-boundaries.html).
