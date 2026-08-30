@@ -1,5 +1,7 @@
 # Telemetry
 
+> **Scope:** This article is the NCAT implementation reference for generated behavior. Broader architectural rationale, alternatives, and tradeoffs live in [ASI Backbone Learning](https://asibackbone.github.io/Learning/); Learning is educational guidance, not a dependency of NCAT behavior.
+
 The application includes baseline [OpenTelemetry](https://opentelemetry.io/) support for tracing and metrics.
 
 OpenTelemetry is registered through:
@@ -38,6 +40,13 @@ http://localhost:4318
 ```
 
 The OTLP exporter can also be configured through standard OpenTelemetry environment variables such as `OTEL_EXPORTER_OTLP_ENDPOINT` and `OTEL_EXPORTER_OTLP_PROTOCOL`.
+
+
+## Implementation Locations
+
+- OpenTelemetry registration/instrumentation/OTLP export: [`OpenTelemetryServiceExtensions.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/Extensions/OpenTelemetryServiceExtensions.cs)
+- Option models: [`ApplicationOpenTelemetryOptions.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/Options/ApplicationOpenTelemetryOptions.cs), [`ApplicationOtlpExporterOptions.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/Options/ApplicationOtlpExporterOptions.cs)
+- Generated defaults: [`appsettings.json`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/appsettings.json)
 
 ## Runtime Baseline
 
@@ -85,3 +94,11 @@ Metrics are collected through OpenTelemetry instrumentation and can be exported 
 A direct scraping endpoint should not be added casually because it may expose operational metadata and may need network restrictions, authentication, request logging exclusions, and security-header review.
 
 See [Runtime Readiness Baseline](runtime-readiness.md) for the consolidated release-readiness view.
+
+## Contract References
+
+[`OpenTelemetryTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/OpenTelemetryTests.cs) and [`OpenTelemetryServiceExtensionsCoverageTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/OpenTelemetryServiceExtensionsCoverageTests.cs) establish the generated registration/configuration contract. Problem Details tests cover the error-response side of trace/request correlation.
+
+## Learn the Pattern
+
+For broader observability event design and trust-boundary handling, see [Structured Logging Without Sensitive-Data Sprawl](https://asibackbone.github.io/Learning/aspnetcore/structured-logging-without-sensitive-data-sprawl.html) and [Secure Logging Across Trust Boundaries](https://asibackbone.github.io/Learning/security/secure-logging-across-trust-boundaries.html).
