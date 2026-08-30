@@ -1,5 +1,7 @@
 # Error Handling
 
+> **Scope:** This article is the NCAT implementation reference for generated behavior. Broader architectural rationale, alternatives, and tradeoffs live in [ASI Backbone Learning](https://asibackbone.github.io/Learning/); Learning is educational guidance, not a dependency of NCAT behavior.
+
 The application includes centralized error handling for both unhandled exceptions and HTTP status code responses.
 
 Error handling is configured through the application pipeline using:
@@ -17,6 +19,13 @@ The error handling behavior is environment-aware:
 - Error responses are user-safe and do not expose exception details in production.
 - Error events are logged using source-generated `LoggerMessage` methods.
 - The request ID displayed on the error page matches the request ID written to the application logs.
+
+
+## Implementation Locations
+
+- Environment-aware exception/status-code middleware: [`ApplicationBuilderExtensions.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/Extensions/ApplicationBuilderExtensions.cs)
+- API exception conversion: [`ProblemDetailsExceptionHandler.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/ErrorHandling/ProblemDetailsExceptionHandler.cs)
+- Problem Details customization/classification: [`ProblemDetailsExtensions.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/ErrorHandling/ProblemDetailsExtensions.cs), [`ProblemDetailsRequestClassifier.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/ErrorHandling/ProblemDetailsRequestClassifier.cs)
 
 ## Status Code Pages
 
@@ -99,3 +108,11 @@ An unexpected error occurred. Contact support with the request ID.
 This message gives operators a correlation handle without exposing application internals to the client. Full exception details remain in server-side logs, subject to logging configuration and secret-handling policy.
 
 See [Runtime Readiness Baseline](runtime-readiness.md) for the consolidated release-readiness view.
+
+## Contract References
+
+See [`ProblemDetailsExceptionHandlerTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/ProblemDetailsExceptionHandlerTests.cs), [`ProblemDetailsExtensionsCustomizationTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/ProblemDetailsExtensionsCustomizationTests.cs), and [ADR-0002](../adr/0002-use-centralized-application-middleware-pipeline.md).
+
+## Learn the Pattern
+
+For general centralized error-boundary design and alternatives, see [Centralized Error Handling and Problem Details](https://asibackbone.github.io/Learning/aspnetcore/centralized-error-handling-and-problem-details.html).
