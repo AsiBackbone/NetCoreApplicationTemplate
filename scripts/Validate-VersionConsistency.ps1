@@ -187,7 +187,19 @@ else {
 
     $publishedTagMatch = [regex]::Match(
         $readme,
-        '(?m)^Tag:\s*`v(?<tagVersion>\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)`\s*
+        '(?m)^Tag:\s*`v(?<tagVersion>\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)`\s*$'
+    )
+
+    if (-not $publishedTagMatch.Success) {
+        Add-Failure 'README current-release tag was not found or was malformed.'
+    }
+    else {
+        Assert-Equal $publishedTagMatch.Groups['tagVersion'].Value $publishedLabelVersion 'README current-release tag version'
+    }
+}
+
+Assert-Matches $readme "$escapedPackageId\.$escapedVersion\.nupkg" 'README package install example'
+Assert-Matches $readme "Version $escapedVersion\. Zenodo\. MIT License\." 'README citation version'
 
 $packageReadme = Get-RequiredFileText 'PACKAGE-README.md'
 Assert-Matches $packageReadme "$escapedPackageId\.$escapedVersion\.nupkg" 'PACKAGE-README package install example'
