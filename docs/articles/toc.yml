@@ -1,92 +1,92 @@
 - name: Documentation Home
   href: index.md
 
-- name: Getting Started
-  href: getting-started.md
-
-- name: Documentation Ownership
-  href: documentation-ownership.md
-
-- name: Release Readiness and Compatibility
+- name: Get Started
   items:
-    - name: v1.0 Migration Guide
-      href: v1-migration-guide.md
-    - name: Public Surface
-      href: public-surface-v1.md
-    - name: Production Deployment Checklist
-      href: production-deployment-checklist.md
-    - name: Runtime Readiness
-      href: runtime-readiness.md
-    - name: Build Quality and Reproducibility
-      href: build-quality.md
-    - name: Container Release Publishing
-      href: container-publish.md
-    - name: Template Packaging
+    - name: Install, Generate, and Template Options
       href: template-packaging.md
+    - name: Build, Test, and First Run
+      href: getting-started.md
 
-- name: Application Basics
+- name: Generated Application Reference
   items:
     - name: Project Structure
       href: project-structure.md
-    - name: Optional Application and Domain Layers
-      href: optional-application-domain-layers.md
     - name: Configuration
       href: configuration.md
-    - name: Deployment Notes
-      href: deployment.md
-    - name: Docker Development
-      href: docker.md
-
-- name: Middleware Pipeline
-  items:
     - name: Middleware Pipeline
       href: middleware.md
-    - name: Error Handling
-      href: error-handling.md
-    - name: Security Headers
-      href: security-headers.md
-    - name: Forwarded Headers
-      href: forwarded-headers.md
-    - name: Rate Limiting
-      href: rate-limiting.md
-    - name: Health Checks
-      href: health-checks.md
-
-- name: API Versioning
-  href: api-versioning.md
-
-- name: Observability
-  items:
-    - name: Logging
-      href: logging.md
-    - name: Telemetry
-      href: telemetry.md
-
-- name: Authentication and Authorization
-  items:
     - name: Authentication
       href: authentication.md
     - name: Production Authentication Hardening
       href: authentication-hardening.md
     - name: Authorization
       href: authorization.md
-
-- name: Data Access
-  items:
+    - name: Error Handling
+      href: error-handling.md
+    - name: Logging
+      href: logging.md
+    - name: Telemetry
+      href: telemetry.md
+    - name: Security and Request Protection
+      items:
+        - name: Security Headers
+          href: security-headers.md
+        - name: Forwarded Headers
+          href: forwarded-headers.md
+        - name: Rate Limiting
+          href: rate-limiting.md
+        - name: Health Checks
+          href: health-checks.md
+    - name: API Versioning
+      href: api-versioning.md
     - name: Data Access
-      href: data-access.md
-    - name: EF Core Diagnostics
-      href: ef-core-diagnostics.md
-    - name: EF Core Save Pipeline
-      href: ef-core-save-pipeline.md
-    - name: Audit Accountability Integration
-      href: audit-accountability-integration.md
-    - name: DbContext Audit State Isolation
-      href: dbcontext-audit-state-isolation.md
-    - name: Durable Audit-Completion Outbox
-      href: audit-completion-outbox.md
-    - name: Audit Reconciliation and Recovery
-      href: audit-reconciliation.md
+      items:
+        - name: Data Access Overview
+          href: data-access.md
+        - name: EF Core Diagnostics
+          href: ef-core-diagnostics.md
+        - name: EF Core Save Pipeline
+          href: ef-core-save-pipeline.md
+        - name: Audit Accountability Integration
+          href: audit-accountability-integration.md
+        - name: DbContext Audit State Isolation
+          href: dbcontext-audit-state-isolation.md
+        - name: Durable Audit-Completion Outbox
+          href: audit-completion-outbox.md
+        - name: Audit Reconciliation and Recovery
+          href: audit-reconciliation.md
 
-- name: GitHub Workflow
-  href: github-workflow.md
+- name: Extensibility
+  items:
+    - name: Optional Application and Domain Layers
+      href: optional-application-domain-layers.md
+    - name: Public Surface and Compatibility Boundaries
+      href: public-surface-v1.md
+
+- name: Deployment & Operations
+  items:
+    - name: Deployment Notes
+      href: deployment.md
+    - name: Docker Development
+      href: docker.md
+    - name: Production Deployment Checklist
+      href: production-deployment-checklist.md
+    - name: Runtime Readiness
+      href: runtime-readiness.md
+
+- name: Release & Compatibility
+  items:
+    - name: v1.0 Migration Guide
+      href: v1-migration-guide.md
+    - name: Build Quality and Reproducibility
+      href: build-quality.md
+    - name: Container Release Publishing
+      href: container-publish.md
+    - name: GitHub Workflow
+      href: github-workflow.md
+
+- name: Documentation Scope
+  items:
+    - name: Documentation Ownership
+      href: documentation-ownership.md
