@@ -11,7 +11,7 @@ Current policy:
 ```json
 {
   "sdk": {
-    "version": "10.0.300",
+    "version": "10.0.400",
     "rollForward": "latestPatch",
     "allowPrerelease": false
   }

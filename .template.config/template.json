@@ -9,8 +9,8 @@
     "Security",
     "Template"
   ],
-  "identity": "CDCavell.NetCoreApplicationTemplate.CSharp",
-  "groupIdentity": "CDCavell.NetCoreApplicationTemplate",
+  "identity": "AsiBackbone.NetCoreApplicationTemplate.CSharp",
+  "groupIdentity": "AsiBackbone.NetCoreApplicationTemplate",
   "name": ".NET Core Application Template",
   "shortName": "netcoreapp-template",
   "sourceName": "ProjectTemplate",
