@@ -97,6 +97,12 @@ View container logs:
 docker compose logs -f projecttemplate.web
 ```
 
+## Data Protection Keys
+
+The application persists ASP.NET Core Data Protection keys under `/app/data-protection-keys`. Docker Compose mounts that path from the `projecttemplate-data-protection-keys` named volume so authentication cookies and antiforgery tokens remain valid when the container is replaced.
+
+Do not delete this volume while protected payloads must remain valid. Production deployments with multiple replicas must use storage shared by every replica and must restrict access to the application identity. See [Deployment Notes](deployment.md#data-protection-key-ring) for key-ring security and Kubernetes guidance.
+
 ## Forwarded Headers
 
 The application already supports forwarded headers through the `ProjectTemplate:ForwardedHeaders` configuration section.

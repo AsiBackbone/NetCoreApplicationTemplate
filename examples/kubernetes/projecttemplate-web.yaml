@@ -1,3 +1,17 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: projecttemplate-data-protection-keys
+  labels:
+    app.kubernetes.io/name: projecttemplate-web
+    app.kubernetes.io/part-of: netcoreapplicationtemplate
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 128Mi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -36,6 +50,10 @@ spec:
               value: http://+:8080
             - name: DOTNET_RUNNING_IN_CONTAINER
               value: "true"
+            - name: ProjectTemplate__DataProtection__ApplicationName
+              value: ProjectTemplate.Web
+            - name: ProjectTemplate__DataProtection__KeyRingPath
+              value: /app/data-protection-keys
           livenessProbe:
             httpGet:
               path: /health/live
@@ -69,11 +87,16 @@ spec:
           volumeMounts:
             - name: app-data
               mountPath: /app/data
+            - name: data-protection-keys
+              mountPath: /app/data-protection-keys
             - name: app-logs
               mountPath: /app/Logs
       volumes:
         - name: app-data
           emptyDir: {}
+        - name: data-protection-keys
+          persistentVolumeClaim:
+            claimName: projecttemplate-data-protection-keys
         - name: app-logs
           emptyDir: {}
 ---

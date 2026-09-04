@@ -31,7 +31,7 @@ EXPOSE 8080
 
 COPY --from=build /app/publish .
 
-RUN mkdir -p /app/Logs /app/data && chown -R $APP_UID:$APP_UID /app
+RUN mkdir -p /app/Logs /app/data /app/data-protection-keys && chown -R $APP_UID:$APP_UID /app
 
 USER $APP_UID
 

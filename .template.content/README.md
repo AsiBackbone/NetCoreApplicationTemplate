@@ -13,6 +13,7 @@ The generated solution includes a production-oriented baseline for common web ap
 - Centralized exception and status-code handling.
 - Problem Details responses.
 - Cookie authentication and authenticated-by-default routed endpoints in the default scaffold.
+- Persistent ASP.NET Core Data Protection keys for authentication cookies and antiforgery tokens.
 - Named role and permission policies for policy-based authorization.
 - EF Core-ready data access structure.
 - Health checks.
@@ -140,6 +141,7 @@ Do not commit `.env` files that contain local or production environment-specific
 
 The generated `appsettings.json` includes baseline configuration for:
 
+- Data Protection key persistence and application isolation.
 - Forwarded headers.
 - Security headers.
 - Rate limiting.
@@ -165,6 +167,8 @@ The generated `appsettings.json` includes baseline configuration for:
 The default scaffold enables application authentication with local cookie authentication. External providers such as OpenID Connect, SAML2, Microsoft, Google, and GitHub are present as disabled placeholders.
 
 Enable external providers intentionally and store provider-specific values outside committed configuration. Authentication establishes identity; it does not by itself grant endpoint access.
+
+ASP.NET Core Data Protection keys default to `DataProtection-Keys` under the application content root. Keep this directory durable and access-restricted. All replicas of the same application must share the key ring and use the same `ProjectTemplate:DataProtection:ApplicationName`; changing either invalidates existing authentication cookies and antiforgery tokens. The generated Docker Compose file supplies a persistent named volume for the container key-ring path.
 
 ### Endpoint access contract
 

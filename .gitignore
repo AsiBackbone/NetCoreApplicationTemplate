@@ -22,6 +22,9 @@ docs/api/
 *.db-shm
 *.db-wal
 
+# Local ASP.NET Core Data Protection key rings
+DataProtection-Keys/
+
 # Mono auto generated files
 mono_crash.*
 

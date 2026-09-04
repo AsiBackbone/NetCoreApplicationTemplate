@@ -17,6 +17,9 @@ services:
 
       ConnectionStrings__ApplicationDatabase: ${CONNECTIONSTRINGS_APPLICATIONDATABASE:-Data Source=/app/data/application-dev.db}
 
+      ProjectTemplate__DataProtection__ApplicationName: ProjectTemplate.Web
+      ProjectTemplate__DataProtection__KeyRingPath: /app/data-protection-keys
+
       ProjectTemplate__ForwardedHeaders__Enabled: ${PROJECTTEMPLATE_FORWARDEDHEADERS_ENABLED:-true}
       ProjectTemplate__ForwardedHeaders__Headers__0: XForwardedFor
       ProjectTemplate__ForwardedHeaders__Headers__1: XForwardedProto
@@ -28,8 +31,10 @@ services:
       ProjectTemplate__ForwardedHeaders__ClearKnownNetworksAndProxies: ${PROJECTTEMPLATE_FORWARDEDHEADERS_CLEARKNOWNNETWORKSANDPROXIES:-true}
     volumes:
       - projecttemplate-data:/app/data
+      - projecttemplate-data-protection-keys:/app/data-protection-keys
       - projecttemplate-logs:/app/Logs
 
 volumes:
   projecttemplate-data:
+  projecttemplate-data-protection-keys:
   projecttemplate-logs:
