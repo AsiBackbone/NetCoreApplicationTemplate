@@ -69,7 +69,10 @@ jobs:
         run: dotnet --info
 
       - name: Restore dependencies
-        run: dotnet restore ${{ env.SOLUTION_FILE }} --locked-mode
+        shell: pwsh
+        run: |
+          ./eng/Test-PackageLockFiles.ps1
+          dotnet restore ${{ env.SOLUTION_FILE }} --locked-mode
 
       - name: Build solution
         run: dotnet build ${{ env.SOLUTION_FILE }} --configuration ${{ env.CONFIGURATION }} --no-restore /p:ContinuousIntegrationBuild=true
@@ -215,6 +218,7 @@ jobs:
         shell: pwsh
         run: |
           ./eng/Validate-ScaffoldManifest.ps1 -ScaffoldRoot ./artifacts/scaffold/ContosoSecurityPortal
+          ./eng/Test-PackageLockFiles.ps1 -Root ./artifacts/scaffold/ContosoSecurityPortal
 
           $migrationPath = './artifacts/scaffold/ContosoSecurityPortal/src/ContosoSecurityPortal.Infrastructure/Data/Migrations'
           if (-not (Test-Path -LiteralPath $migrationPath -PathType Container)) {
@@ -388,6 +392,8 @@ jobs:
               Write-Error "SQL Server scaffold contains tests that reference the omitted SQLite migration namespace."
               exit 1
           }
+
+          ./eng/Test-PackageLockFiles.ps1 -Root ./artifacts/scaffold/ContosoNoAuthSqlServer
 
       - name: Build non-default scaffolded output
         if: runner.os == 'Linux'

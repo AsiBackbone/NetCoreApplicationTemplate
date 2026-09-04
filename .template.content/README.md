@@ -94,8 +94,10 @@ When `--dbProvider none` is used, the generated data access configuration select
 ## Restore
 
 ```powershell
-dotnet restore
+dotnet restore --locked-mode
 ```
+
+Each project includes a checked-in `packages.lock.json`. Locked mode restores the exact dependency graph recorded in those files and fails when project dependencies and lock files no longer agree. After intentionally changing package dependencies, run `dotnet restore --force-evaluate`, review the lock-file changes, and commit them with the dependency update.
 
 ## Build
 

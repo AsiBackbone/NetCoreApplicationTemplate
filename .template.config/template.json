@@ -180,7 +180,6 @@
         "**/*.filelist",
         "**/*.user",
         "**/*.suo",
-        "**/*.lock.json",
         "**/Logs/**",
         "**/*.log",
         "CHANGELOG.md",

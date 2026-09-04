@@ -8,7 +8,9 @@ COPY ["global.json", "./"]
 COPY ["Directory.Build.props", "./"]
 COPY ["Directory.Packages.props", "./"]
 COPY ["src/ProjectTemplate.Infrastructure/ProjectTemplate.Infrastructure.csproj", "src/ProjectTemplate.Infrastructure/"]
+COPY ["src/ProjectTemplate.Infrastructure/packages.lock.json", "src/ProjectTemplate.Infrastructure/"]
 COPY ["src/ProjectTemplate.Web/ProjectTemplate.Web.csproj", "src/ProjectTemplate.Web/"]
+COPY ["src/ProjectTemplate.Web/packages.lock.json", "src/ProjectTemplate.Web/"]
 
 RUN dotnet restore "src/ProjectTemplate.Web/ProjectTemplate.Web.csproj" --locked-mode
 
