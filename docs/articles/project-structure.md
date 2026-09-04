@@ -36,7 +36,6 @@ The .NET Core Application Template is organized as a compact, production-oriente
 │   └── Validate-ScaffoldManifest.ps1
 │
 ├── scripts/
-│   ├── migration.sql
 │   └── Validate-VersionConsistency.ps1
 │
 ├── .template.config/
