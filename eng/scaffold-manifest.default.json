@@ -20,8 +20,11 @@
     "nuget.config",
     "scripts/migration.sql",
     "src/ContosoSecurityPortal.Infrastructure/ContosoSecurityPortal.Infrastructure.csproj",
+    "src/ContosoSecurityPortal.Infrastructure/packages.lock.json",
     "src/ContosoSecurityPortal.Web/ContosoSecurityPortal.Web.csproj",
-    "tests/ContosoSecurityPortal.Web.Tests/ContosoSecurityPortal.Web.Tests.csproj"
+    "src/ContosoSecurityPortal.Web/packages.lock.json",
+    "tests/ContosoSecurityPortal.Web.Tests/ContosoSecurityPortal.Web.Tests.csproj",
+    "tests/ContosoSecurityPortal.Web.Tests/packages.lock.json"
   ],
   "expectedDirectories": [
     "scripts",

@@ -34,6 +34,12 @@ Project files should reference packages without inline `Version` attributes unle
 
 This keeps package drift visible, makes dependency review easier, and ensures scaffolded consumer output can restore with the same package policy as the source repository.
 
+## NuGet Lock Files
+
+`RestorePackagesWithLockFile` is enabled for every project. Each project therefore keeps a `packages.lock.json` beside its project file, including projects emitted by the `dotnet new` template.
+
+Repository, generated-scaffold, and Docker restores use `dotnet restore --locked-mode`. CI first verifies that every project has a lock file so a missing file cannot be silently generated during a supposedly locked restore. After an intentional dependency change, run `dotnet restore --force-evaluate`, review the lock-file diff, and commit it with the dependency update.
+
 ## Shared Build Properties
 
 Common build settings live in `Directory.Build.props`.

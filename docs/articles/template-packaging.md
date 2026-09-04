@@ -26,6 +26,7 @@ The scaffolded output intentionally includes:
 
 - Source projects under `src/`.
 - Baseline tests under `tests/`.
+- Checked-in `packages.lock.json` files for every generated project.
 - Docker support files.
 - `LICENSE.txt`.
 - `ASSETS-LICENSES.md`.
@@ -156,10 +157,12 @@ This mode is appropriate for lightweight applications, workers, external modules
 
 ```powershell
 cd ContosoSecurityPortal
-dotnet restore
+dotnet restore --locked-mode
 dotnet build --configuration Release
 dotnet test --configuration Release
 ```
+
+Every generated project includes a checked-in `packages.lock.json`. Use `--locked-mode` in CI and other repeatable builds so restore fails when declared dependencies and the recorded graph differ. After an intentional dependency change, run `dotnet restore --force-evaluate`, review the resulting lock-file changes, and commit them with the package update.
 
 ## Update the Installed Template
 
@@ -203,11 +206,11 @@ Local repository install is useful during template development, but package-base
 
 ## CI Smoke Test
 
-The CI workflow packs the template package, installs the generated `.nupkg`, scaffolds a new project with `dotnet new netcoreapp-template`, validates the scaffolded output against the golden manifest, builds the generated output, runs generated tests, and uninstalls the template package.
+The CI workflow packs the template package, installs the generated `.nupkg`, scaffolds a new project with `dotnet new netcoreapp-template`, validates the scaffolded output and its required lock files against the golden manifest, restores in locked mode, builds the generated output, runs generated tests, and uninstalls the template package.
 
 The smoke test runs on Linux, Windows, and macOS so path handling and package install behavior are validated across supported runner environments.
 
-On Linux runners, CI also validates the Docker consumer path from the generated scaffolded output. This Docker smoke test builds the generated Docker image, validates `docker compose config`, starts the generated Compose application, verifies `/health/live`, captures Compose logs for diagnostics, and tears down the Compose stack during cleanup.
+On Linux runners, CI also validates the Docker consumer path from the generated scaffolded output. The Docker restore layer copies each required project lock file before running `dotnet restore --locked-mode`. This Docker smoke test builds the generated Docker image, validates `docker compose config`, starts the generated Compose application, verifies `/health/live`, captures Compose logs for diagnostics, and tears down the Compose stack during cleanup.
 
 Docker runtime validation is intentionally limited to Linux runners. The goal is to prove that Docker files emitted by the template are usable by a generated consumer project, not to certify Docker host behavior across every operating system.
 
