@@ -33,7 +33,8 @@ internal sealed class ApplicationWebApplicationFactory(IReadOnlyDictionary<strin
 
         Dictionary<string, string?> testConfiguration = new()
         {
-            ["ProjectTemplate:Authorization:RequireAuthenticatedUserByDefault"] = "false"
+            ["ProjectTemplate:Authorization:RequireAuthenticatedUserByDefault"] = "false",
+            ["ProjectTemplate:ForwardedHeaders:KnownProxies:0"] = "::1"
         };
 
         foreach ((string key, string? value) in _configurationValues)

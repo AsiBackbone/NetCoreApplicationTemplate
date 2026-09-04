@@ -187,6 +187,10 @@ External-provider callback paths are handled by their authentication middleware 
 
 Health endpoints are anonymous at the application layer so deployment probes do not depend on browser authentication. Restrict production reachability through ingress, firewall, reverse-proxy, load-balancer, or service-mesh policy as appropriate.
 
+### Forwarded headers and client-IP rate limiting
+
+Outside Development, startup fails when forwarded client-IP processing and rate limiting are enabled without a configured `KnownProxies` or `KnownNetworks` trust boundary. Configure the narrow proxy addresses or ingress CIDR used by the deployment, or disable forwarded headers when the application is reached directly. This prevents all clients behind an untrusted proxy from silently sharing the proxy's rate-limit partition.
+
 ### Data access
 
 The default scaffold selects SQLite with `ConnectionStrings:ApplicationDatabase`.

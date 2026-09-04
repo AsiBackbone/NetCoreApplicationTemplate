@@ -14,7 +14,7 @@ Configuration is controlled through `appsettings.json`:
 "ProjectTemplate": {
   "ForwardedHeaders": {
     "Enabled": true,
-    "RequireExplicitProxyTrust": false,
+    "RequireExplicitProxyTrust": true,
     "Headers": [
       "XForwardedFor",
       "XForwardedProto"
@@ -53,19 +53,18 @@ headers directly.
 
 ## Startup Trust Diagnostic
 
-Outside the Development environment, the application emits a startup warning when all of the
+Outside the Development environment, the application fails startup by default when all of the
 following are true:
 
 - forwarded headers are enabled and include `X-Forwarded-For`;
 - application rate limiting is enabled; and
 - neither `KnownProxies` nor `KnownNetworks` contains a deployment-specific trust entry.
 
-ASP.NET Core continues to ignore forwarded values from untrusted senders. The warning does not
-weaken that protection. It highlights that `RemoteIpAddress` may remain the proxy address, causing
-multiple downstream clients to share one rate-limit partition and causing client-IP logs to identify
-the proxy rather than the originating client.
+This fail-fast default prevents `RemoteIpAddress` from silently remaining the ingress address and
+placing every downstream client into one rate-limit partition. It also prevents client-IP logs from
+silently identifying the proxy rather than the originating client.
 
-Deployments that require an explicit trust boundary can opt into fail-fast startup validation:
+Configure a deployment-specific trust boundary before running outside Development:
 
 ```json
 "ForwardedHeaders": {
@@ -78,6 +77,9 @@ Deployments that require an explicit trust boundary can opt into fail-fast start
 `RequireExplicitProxyTrust` is ignored in Development so the template's normal loopback and local
 scenarios continue to work. In every other environment, strict mode fails startup when forwarded
 client-IP processing and rate limiting are active without a configured trusted proxy or network.
+Setting `RequireExplicitProxyTrust` to `false` restores warning-only behavior, but production
+deployments should prefer configuring the actual proxy trust boundary or disabling forwarded
+headers when no proxy is present.
 
 `UseForwardedHeaders()` must run before middleware that depends on the client IP, request scheme,
 host, or path base. The template's centralized pipeline applies forwarded headers before request

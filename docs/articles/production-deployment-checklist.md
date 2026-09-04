@@ -44,7 +44,9 @@ Related docs:
 ```text
 [ ] Reverse proxy, load balancer, ingress, or gateway topology is documented.
 [ ] Forwarded headers are enabled only when required.
+[ ] Explicit proxy trust validation remains enabled outside Development.
 [ ] Trusted proxies or known networks are configured.
+[ ] Kubernetes ingress proxy CIDRs replace any example network ranges.
 [ ] Forward limit matches the deployment topology.
 [ ] Host forwarding is enabled only when required.
 [ ] Public HTTPS scheme is preserved correctly.

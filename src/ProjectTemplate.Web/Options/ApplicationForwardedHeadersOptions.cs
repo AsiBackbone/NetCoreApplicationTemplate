@@ -19,7 +19,7 @@ public sealed class ApplicationForwardedHeadersOptions
     /// Gets or sets a value indicating whether startup must fail outside Development when forwarded
     /// client IP processing and rate limiting are enabled without an explicitly configured trusted proxy or network.
     /// </summary>
-    public bool RequireExplicitProxyTrust { get; set; }
+    public bool RequireExplicitProxyTrust { get; set; } = true;
 
     /// <summary>
     /// Forwarded header values to process.

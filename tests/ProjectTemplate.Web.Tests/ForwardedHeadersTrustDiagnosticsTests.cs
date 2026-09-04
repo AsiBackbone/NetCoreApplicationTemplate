@@ -14,7 +14,10 @@ public sealed class ForwardedHeadersTrustDiagnosticsTests
         RecordingLogger<ForwardedHeadersTrustDiagnosticsHostedService> logger = new();
         ForwardedHeadersTrustDiagnosticsHostedService service = CreateService(
             Environments.Production,
-            new ApplicationForwardedHeadersOptions(),
+            new ApplicationForwardedHeadersOptions
+            {
+                RequireExplicitProxyTrust = false
+            },
             new ApplicationRateLimitingOptions(),
             logger);
 
@@ -32,10 +35,7 @@ public sealed class ForwardedHeadersTrustDiagnosticsTests
     {
         ForwardedHeadersTrustDiagnosticsHostedService service = CreateService(
             Environments.Production,
-            new ApplicationForwardedHeadersOptions
-            {
-                RequireExplicitProxyTrust = true
-            },
+            new ApplicationForwardedHeadersOptions(),
             new ApplicationRateLimitingOptions(),
             new RecordingLogger<ForwardedHeadersTrustDiagnosticsHostedService>());
 
