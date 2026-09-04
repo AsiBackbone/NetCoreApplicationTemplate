@@ -213,7 +213,14 @@ jobs:
 
       - name: Validate scaffolded consumer manifest
         shell: pwsh
-        run: ./eng/Validate-ScaffoldManifest.ps1 -ScaffoldRoot ./artifacts/scaffold/ContosoSecurityPortal
+        run: |
+          ./eng/Validate-ScaffoldManifest.ps1 -ScaffoldRoot ./artifacts/scaffold/ContosoSecurityPortal
+
+          $migrationPath = './artifacts/scaffold/ContosoSecurityPortal/src/ContosoSecurityPortal.Infrastructure/Data/Migrations'
+          if (-not (Test-Path -LiteralPath $migrationPath -PathType Container)) {
+              Write-Error "Default SQLite scaffold did not include its migration history."
+              exit 1
+          }
 
       - name: Build scaffolded output
         shell: pwsh
@@ -349,6 +356,36 @@ jobs:
 
           if ($projectSettings.DataAccess.ConnectionStringName -ne "ApplicationSqlServer") {
               Write-Error "Expected ${projectName}:DataAccess:ConnectionStringName to be ApplicationSqlServer."
+              exit 1
+          }
+
+          $migrationPath = "./artifacts/scaffold/$projectName/src/$projectName.Infrastructure/Data/Migrations"
+          if (Test-Path -LiteralPath $migrationPath) {
+              Write-Error "SQL Server scaffold must not include the SQLite migration history."
+              exit 1
+          }
+
+          $migrationTests = @(
+              Get-ChildItem `
+                  -LiteralPath "./artifacts/scaffold/$projectName/tests/$projectName.Web.Tests" `
+                  -Filter '*MigrationTests.cs' `
+                  -File
+          )
+          if ($migrationTests.Count -ne 0) {
+              Write-Error "SQL Server scaffold must not include SQLite migration-specific tests: $($migrationTests.Name -join ', ')"
+              exit 1
+          }
+
+          $migrationReferences = @(
+              Get-ChildItem `
+                  -LiteralPath "./artifacts/scaffold/$projectName/tests/$projectName.Web.Tests" `
+                  -Filter '*.cs' `
+                  -File `
+                  -Recurse |
+                  Select-String -SimpleMatch "$projectName.Infrastructure.Data.Migrations"
+          )
+          if ($migrationReferences.Count -ne 0) {
+              Write-Error "SQL Server scaffold contains tests that reference the omitted SQLite migration namespace."
               exit 1
           }
 

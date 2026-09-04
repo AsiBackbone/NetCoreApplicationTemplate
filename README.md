@@ -116,6 +116,8 @@ Template options:
 | `--dbProvider` | `sqlite` | `sqlite`, `sqlserver`, `none` | Selects the generated EF Core data access mode. |
 | `--skipRestore` | `false` | `true`, `false` | Skips the post-create restore action. |
 
+SQL Server scaffolds omit the SQLite-specific migration history. Generate a fresh SQL Server migration before applying database updates; see [Data Access](https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/data-access.html).
+
 Build and test generated output:
 
 ```powershell

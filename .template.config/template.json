@@ -191,6 +191,16 @@
         "SECURITY.md",
         "scripts/Validate-VersionConsistency.ps1"
       ],
+      "modifiers": [
+        {
+          "condition": "(dbProvider == \"sqlserver\")",
+          "exclude": [
+            "src/ProjectTemplate.Infrastructure/Data/Migrations/**/*",
+            "tests/ProjectTemplate.Web.Tests/*MigrationTests.cs",
+            "tests/ProjectTemplate.Web.Tests/EfCoreMigrationCoverageTests.cs"
+          ]
+        }
+      ],
       "rename": {
         "NetCoreApplicationTemplate.slnx": "ProjectTemplate.slnx"
       }
