@@ -32,6 +32,8 @@ The scaffolded output intentionally includes:
 - `ASSETS-LICENSES.md`.
 - A consumer-oriented `README.md` generated from `.template.content/README.md`.
 
+The repository-level `ASSETS-LICENSES.md` inventories package, documentation, NuGet icon, and generated-application assets. Generated projects receive `.template.content/ASSETS-LICENSES.md`, which retains the applicable package and application-favicon notices without referring to repository-only `docs/images/` or `PACKAGE-ICON.png` paths. Update both inventories when generated dependencies change; update the repository inventory when repository or package image assets change.
+
 The scaffolded output intentionally excludes repository-maintainer content such as:
 
 - `.github/` workflow and issue-template files.

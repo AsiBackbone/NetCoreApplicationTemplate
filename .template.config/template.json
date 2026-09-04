@@ -156,7 +156,6 @@
         ".env.example",
         ".gitattributes",
         ".gitignore",
-        "ASSETS-LICENSES.md",
         "Directory.Build.props",
         "Directory.Packages.props",
         "Dockerfile",
@@ -206,6 +205,7 @@
       "source": "./.template.content/",
       "target": "./",
       "include": [
+        "ASSETS-LICENSES.md",
         "README.md",
         "nuget.config",
         "src/ProjectTemplate.Web/appsettings.json"

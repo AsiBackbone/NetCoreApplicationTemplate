@@ -33,7 +33,7 @@
     <Content Include=".gitignore" Pack="true" PackagePath="content/" />
     <Content Include=".template.config/**/*" Pack="true" PackagePath="content/.template.config/%(RecursiveDir)%(Filename)%(Extension)" />
     <Content Include=".template.content/**/*" Pack="true" PackagePath="content/.template.content/%(RecursiveDir)%(Filename)%(Extension)" />
-    <Content Include="ASSETS-LICENSES.md" Pack="true" PackagePath="content/" />
+    <Content Include="ASSETS-LICENSES.md" Pack="true" PackagePath="" />
     <Content Include="Directory.Build.props" Pack="true" PackagePath="content/" />
     <Content Include="Directory.Packages.props" Pack="true" PackagePath="content/" />
     <Content Include="Dockerfile" Pack="true" PackagePath="content/" />
