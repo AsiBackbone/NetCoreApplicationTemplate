@@ -54,6 +54,13 @@ spec:
               value: ProjectTemplate.Web
             - name: ProjectTemplate__DataProtection__KeyRingPath
               value: /app/data-protection-keys
+            - name: ProjectTemplate__ForwardedHeaders__RequireExplicitProxyTrust
+              value: "true"
+            - name: ProjectTemplate__ForwardedHeaders__ClearKnownNetworksAndProxies
+              value: "true"
+            # Replace this example range with the narrow CIDR used by the cluster's ingress proxies.
+            - name: ProjectTemplate__ForwardedHeaders__KnownNetworks__0
+              value: 10.244.0.0/16
           livenessProbe:
             httpGet:
               path: /health/live

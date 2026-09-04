@@ -84,6 +84,8 @@ The fixed-window limiters partition clients by `HttpContext.Connection.RemoteIpA
 
 The rate limiter does **not** parse or trust raw `X-Forwarded-For` values directly. Raw forwarded headers are client-controllable unless ASP.NET Core has first validated them through trusted `KnownProxies` or `KnownNetworks` configuration.
 
+Outside Development, the generated application fails startup by default when forwarded client-IP processing and rate limiting are enabled without either trust setting. This prevents all users behind an ingress from silently sharing the ingress address's rate-limit bucket.
+
 When `RemoteIpAddress` is unavailable, the default behavior is to use a per-request fallback partition based on `UnknownClientPartitionKey` and the request trace identifier. This avoids silently collapsing unrelated unresolved clients into one shared bucket.
 
 Set `UseSharedUnknownClientPartition` to `true` only when you intentionally want every unresolved client to share the configured `UnknownClientPartitionKey` bucket:

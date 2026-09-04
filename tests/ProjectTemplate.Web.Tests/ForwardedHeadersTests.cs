@@ -30,6 +30,18 @@ public sealed class ForwardedHeadersTests
     }
 
     /// <summary>
+    /// Verifies that non-development deployments fail closed when forwarded client IP processing and rate limiting
+    /// are enabled without an explicitly configured proxy trust boundary.
+    /// </summary>
+    [Fact]
+    public void ApplicationForwardedHeadersOptions_RequireExplicitProxyTrustByDefault()
+    {
+        var options = new ApplicationForwardedHeadersOptions();
+
+        Assert.True(options.RequireExplicitProxyTrust);
+    }
+
+    /// <summary>
     /// Verifies that forwarded headers processing is disabled when application forwarded headers are disabled.
     /// </summary>
     [Fact]
@@ -119,6 +131,7 @@ public sealed class ForwardedHeadersTests
             ["ProjectTemplate:ForwardedHeaders:Headers:1"] = "XForwardedProto",
             ["ProjectTemplate:ForwardedHeaders:ForwardLimit"] = "2",
             ["ProjectTemplate:ForwardedHeaders:RequireHeaderSymmetry"] = "true",
+            ["ProjectTemplate:ForwardedHeaders:RequireExplicitProxyTrust"] = "false",
             ["ProjectTemplate:ForwardedHeaders:ClearKnownNetworksAndProxies"] = "true",
             ["ProjectTemplate:ForwardedHeaders:KnownProxies:0"] = "203.0.113.10",
             ["ProjectTemplate:ForwardedHeaders:KnownNetworks:0"] = "10.10.0.0/16"
@@ -133,6 +146,7 @@ public sealed class ForwardedHeadersTests
         Assert.Contains("XForwardedProto", options.Headers);
         Assert.Equal(2, options.ForwardLimit);
         Assert.True(options.RequireHeaderSymmetry);
+        Assert.False(options.RequireExplicitProxyTrust);
         Assert.True(options.ClearKnownNetworksAndProxies);
         Assert.Equal(["203.0.113.10"], options.KnownProxies);
         Assert.Equal(["10.10.0.0/16"], options.KnownNetworks);

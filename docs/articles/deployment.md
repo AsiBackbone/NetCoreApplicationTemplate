@@ -47,7 +47,9 @@ Production deployments should explicitly configure trusted proxy addresses or ne
 "ProjectTemplate": {
   "ForwardedHeaders": {
     "Enabled": true,
+    "RequireExplicitProxyTrust": true,
     "ForwardLimit": 1,
+    "ClearKnownNetworksAndProxies": true,
     "KnownProxies": [
       "10.0.0.10"
     ],
@@ -64,11 +66,14 @@ Production deployments should explicitly configure trusted proxy addresses or ne
 Recommended production posture:
 
 - Enable forwarded headers only when the application is actually behind trusted infrastructure.
+- Keep `RequireExplicitProxyTrust` enabled outside Development so missing trust configuration fails before the application serves traffic.
 - Keep `ForwardLimit` as low as the deployment topology allows.
 - Prefer explicit `KnownProxies` or `KnownNetworks` values.
 - Avoid clearing known proxy and network restrictions unless the hosting environment requires it and another trusted boundary is present.
 - Only enable host forwarding when required.
 - Configure `AllowedHosts` when host forwarding is enabled.
+
+The Kubernetes manifest includes `10.244.0.0/16` only as an example ingress proxy network. Replace it with the narrow CIDR actually used by the target cluster before deployment; an incorrect range either leaves forwarded client addresses untrusted or trusts more senders than intended.
 
 See [Forwarded Headers and Proxy Support](forwarded-headers.md) for the detailed forwarded header configuration model.
 
