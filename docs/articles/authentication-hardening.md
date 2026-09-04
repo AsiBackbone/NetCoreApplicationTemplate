@@ -67,6 +67,12 @@ Startup validation rejects `ProjectTemplate:Authentication:Cookie:AllowInsecureH
 - Document sliding expiration, absolute expiration, and session timeout.
 - Verify logout clears the intended local cookie.
 
+## Data Protection Key Persistence
+
+Authentication cookies and antiforgery tokens depend on ASP.NET Core Data Protection. Persist the configured key ring on durable, access-restricted storage, and ensure every replica uses the same key ring and `ProjectTemplate:DataProtection:ApplicationName`. A container-local or pod-local key ring causes active sessions to fail after replacement and allows replicas to reject one another's cookies.
+
+Treat key-ring files as security-sensitive material. Protect them at rest using organization-approved storage or key management controls, retain them for the lifetime of protected payloads, and test sign-in plus antiforgery flows across replica boundaries and rolling restarts. See [Deployment Notes](deployment.md#data-protection-key-ring) for configuration and volume guidance.
+
 ## Claims Translation and Authorization
 
 Do not wire raw external claims directly into application authorization without a translation strategy.

@@ -181,6 +181,9 @@ Related docs:
 
 ```text
 [ ] Cookie settings are production appropriate.
+[ ] Data Protection keys persist across restarts and deployments.
+[ ] Every replica shares the same Data Protection key ring and application name.
+[ ] Data Protection key storage is access-restricted, backed up, and encrypted at rest according to organizational requirements.
 [ ] External provider client IDs are configured.
 [ ] External provider client secrets are supplied by secret storage.
 [ ] Redirect and callback URLs match the public HTTPS origin.
@@ -227,6 +230,7 @@ Use this section when deploying with containers.
 [ ] Secrets are not baked into the image.
 [ ] Container health probe uses the documented path.
 [ ] Container logs are captured by the platform.
+[ ] The Data Protection key-ring path is mounted on durable storage shared by all replicas.
 [ ] Docker Compose or orchestrator configuration has been validated.
 ```
 

@@ -213,6 +213,7 @@ Validated configuration areas include:
 - `ProjectTemplate:ApiVersioning`
 - `ProjectTemplate:Authentication`
 - `ProjectTemplate:Authorization`
+- `ProjectTemplate:DataProtection`
 - `ProjectTemplate:DataAccess`
 - `ProjectTemplate:ForwardedHeaders`
 - `ProjectTemplate:OpenTelemetry`
@@ -230,6 +231,7 @@ Before production release, review:
 [ ] ASPNETCORE_ENVIRONMENT is set correctly.
 [ ] AllowedHosts matches the public host names.
 [ ] Forwarded header settings match the proxy or load balancer topology.
+[ ] Data Protection application name and durable key-ring storage match the deployment topology.
 [ ] Production connection strings come from environment or secret storage.
 [ ] Data access provider, audit storage mode, and audit retention/export expectations are documented.
 [ ] External authentication provider secrets are not committed.

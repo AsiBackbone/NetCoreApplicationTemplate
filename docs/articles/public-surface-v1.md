@@ -97,6 +97,7 @@ The following ProjectTemplate:* sections are part of the public surface.
 
 |Section|Contract|
 |:---|:---|
+|`ProjectTemplate:DataProtection`|Persistent key-ring path and application isolation boundary.|
 |`ProjectTemplate:ForwardedHeaders`|Reverse proxy and forwarded header behavior.|
 |`ProjectTemplate:SecurityHeaders`|Security header and CSP behavior.|
 |`ProjectTemplate:RateLimiting`|Global, fixed-window, and concurrency rate-limiting options.|

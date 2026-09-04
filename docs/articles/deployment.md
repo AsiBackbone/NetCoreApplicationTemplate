@@ -127,6 +127,30 @@ When TLS terminates at a reverse proxy or load balancer, confirm that:
 
 When TLS terminates directly in Kestrel, configure certificates through the hosting environment or approved certificate management process.
 
+## Data Protection Key Ring
+
+ASP.NET Core Data Protection secures authentication cookies, antiforgery tokens, and other protected application payloads. The template persists its key ring using `ProjectTemplate:DataProtection`:
+
+```json
+"ProjectTemplate": {
+  "DataProtection": {
+    "ApplicationName": "ProjectTemplate.Web",
+    "KeyRingPath": "/app/data-protection-keys"
+  }
+}
+```
+
+`ApplicationName` is the isolation boundary for protected payloads. Every replica of the same application must use the same value and the same key-ring storage. `KeyRingPath` may be absolute or relative to the application content root.
+
+For containers and orchestrated deployments:
+
+- Mount the key-ring path on durable storage that survives container and pod replacement.
+- Share the same key ring across all replicas. The Kubernetes example uses a `ReadWriteMany` persistent volume claim; select a storage class that supports multi-writer access, or replace filesystem persistence with an approved shared Data Protection provider.
+- Restrict read and write access to the application identity. Key-ring files are security-sensitive and should be encrypted at rest with an organization-approved certificate, key management system, or storage control.
+- Back up and retain active keys for at least as long as protected payloads may remain valid. Deleting the key ring or changing `ApplicationName` invalidates existing authentication cookies and antiforgery tokens.
+
+The Docker Compose example mounts `/app/data-protection-keys` from a named volume. This provides restart persistence for local Compose deployments; production replicas require genuinely shared durable storage rather than one volume per host.
+
 ## Production Content Security Policy Review
 
 The template includes configurable security headers and a conservative baseline Content Security Policy. Production applications should review the CSP before release.
@@ -211,6 +235,7 @@ Use this checklist before production release:
 [ ] Confirm production secrets are not stored in committed files.
 [ ] Confirm production connection strings come from environment or secret storage.
 [ ] Confirm HTTPS redirects and callback URLs work externally.
+[ ] Confirm the Data Protection key ring is durable, access-restricted, and shared by all replicas using the same application name.
 [ ] Confirm Content Security Policy works with deployed assets and auth flows.
 [ ] Confirm rate limits match expected traffic and monitoring behavior.
 [ ] Confirm health checks are reachable by infrastructure but do not leak sensitive details.
