@@ -74,6 +74,8 @@ dotnet new netcoreapp-template --name ContosoNoAuthSqlServer --authProvider none
 | `--dbProvider` | `sqlite` | `sqlite`, `sqlserver`, `none` | Selects the generated EF Core provider configuration. |
 | `--skipRestore` | `false` | `true`, `false` | Skips the post-create NuGet restore action when set to `true`. |
 
+SQL Server scaffolds omit the SQLite-specific migration history and migration tests. Generate provider-compatible SQL Server migrations before applying database updates.
+
 ## Build and test generated output
 
 ```text

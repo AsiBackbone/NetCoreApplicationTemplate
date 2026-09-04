@@ -77,6 +77,18 @@ Authentication and authorization tests that intentionally exercise protected end
 
 When `--dbProvider sqlserver` is used, the generated data access configuration selects `SqlServer` and `ApplicationSqlServer`. The generated `ConnectionStrings:ApplicationSqlServer` value is a local development example and should be replaced through environment-specific configuration before production use.
 
+EF Core migrations are provider-specific. SQL Server scaffolds therefore omit the template's SQLite `Data/Migrations` history and its SQLite migration-specific tests. Generate a fresh SQL Server migration before applying database updates:
+
+```powershell
+dotnet ef migrations add InitialCreate `
+  --project src/ProjectTemplate.Infrastructure `
+  --startup-project src/ProjectTemplate.Web `
+  --context ApplicationDbContext `
+  --output-dir Data/Migrations
+```
+
+If an existing generated application is switched from SQLite to SQL Server before deployment, delete its SQLite migration folder and regenerate the migration history for SQL Server. Do not delete or replace migrations that have already been applied to a shared or production database without an explicit migration and data-preservation plan.
+
 When `--dbProvider none` is used, the generated data access configuration selects `None`. EF Core application data access services are not registered, and no data access connection string is required unless the consuming application adds its own persistence strategy.
 
 ## Restore
@@ -196,6 +208,8 @@ Outside Development, startup fails when forwarded client-IP processing and rate 
 The default scaffold selects SQLite with `ConnectionStrings:ApplicationDatabase`.
 
 SQL Server scaffolds select `ConnectionStrings:ApplicationSqlServer`.
+
+SQL Server scaffolds intentionally start without migrations. Generate the initial migration after setting the real SQL Server connection string and reviewing the model. SQLite scaffolds retain the template's checked-in SQLite migration history.
 
 The EF Core model includes baseline optimistic concurrency support for entities that inherit from the shared data entity base type. Concurrency conflicts are surfaced through EF Core rather than silently overwriting stale updates.
 

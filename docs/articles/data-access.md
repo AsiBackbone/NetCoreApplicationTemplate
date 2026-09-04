@@ -462,8 +462,9 @@ If migrations are not discovered, confirm that the command uses:
 
 If data access provider configuration fails, confirm that `ProjectTemplate:DataAccess:Provider` is configured. Use `Sqlite` or `SqlServer` when EF Core data access is required. Use `None` or `Disabled` only when the application intentionally does not need EF Core registrations.
 
-Future database providers, such as SQL Server, can be added by extending the data access registration configuration.
-SQLite remains the default development provider. SQL Server can be selected through configuration. Because EF Core migrations are provider-specific, production SQL Server deployments should generate and maintain SQL Server-compatible migrations before applying database updates.
+SQLite remains the default development provider and retains the template's checked-in migration history. A project generated with `--dbProvider sqlserver` omits the SQLite `Data/Migrations` folder and SQLite migration-specific tests. Generate and review a fresh SQL Server migration before applying database updates.
+
+When changing an existing generated application from SQLite to SQL Server before deployment, delete the SQLite migration folder and regenerate the history with the SQL Server provider selected. Do not delete or replace migrations that have already been applied to a shared or production database without an explicit migration and data-preservation plan.
 
 ## External Login Account Linking Persistence
 

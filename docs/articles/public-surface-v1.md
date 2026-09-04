@@ -37,7 +37,7 @@ The following template symbols are part of the public surface.
 |:---|:---|:---|:---|:---|
 | `skipRestore` | `bool` | `false` | `true`, `false` | Controls whether the post-create NuGet restore action runs. |
 | `authProvider` | `choice` | `cookie` | `cookie`, `none` | Selects the generated authentication baseline. `cookie` generates the default cookie-authentication-ready baseline. `none` generates the application with application authentication disabled by default. |
-| `dbProvider` | `choice` | `sqlite` | `sqlite`, `sqlserver`, `none` | Selects the generated data access mode. `sqlite` generates the default SQLite development configuration. `sqlserver` generates the SQL Server provider configuration. `none` generates the application with EF Core data access disabled. |
+| `dbProvider` | `choice` | `sqlite` | `sqlite`, `sqlserver`, `none` | Selects the generated data access mode. `sqlite` includes the default SQLite migration history. `sqlserver` configures SQL Server and omits SQLite-specific migrations and migration tests. `none` generates the application with EF Core data access disabled. |
 
 Breaking changes include renaming a symbol, removing it, removing a documented supported value, inverting its meaning, changing its default in a behavior-changing way, or making generated output depend on it differently without a migration path.
 

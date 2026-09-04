@@ -140,6 +140,10 @@ The `--authProvider none` option generates the application with `ProjectTemplate
 
 The application still includes the authentication and authorization infrastructure so consumers can enable or replace authentication later. Test cases that intentionally exercise protected endpoints may enable test authentication through in-memory test configuration.
 
+### SQL Server variant
+
+The `--dbProvider sqlserver` option excludes the SQLite-specific `Data/Migrations` history and migration tests from generated output. Consumers must create provider-compatible SQL Server migrations before running `dotnet ef database update`.
+
 ### Data-access-disabled variant
 
 The `--dbProvider none` option generates the application with `ProjectTemplate:DataAccess:Provider` set to `None`.
