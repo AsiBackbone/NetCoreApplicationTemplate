@@ -43,7 +43,6 @@
     <Content Include="LICENSE.txt" Pack="true" PackagePath="" />
     <Content Include="NetCoreApplicationTemplate.slnx" Pack="true" PackagePath="content/" />
     <Content Include="PACKAGE-README.md" Pack="true" PackagePath="" />
-    <Content Include="scripts/migration.sql" Pack="true" PackagePath="content/scripts/" />
     <Content Include="src/**/*" Pack="true" PackagePath="content/src/%(RecursiveDir)%(Filename)%(Extension)" Exclude="src/**/bin/**;src/**/obj/**;src/**/Logs/**" />
     <Content Include="tests/**/*" Pack="true" PackagePath="content/tests/%(RecursiveDir)%(Filename)%(Extension)" Exclude="tests/**/bin/**;tests/**/obj/**;tests/**/Logs/**" />
     <Content Include="PACKAGE-ICON.png" Pack="true" PackagePath="" />

@@ -76,6 +76,8 @@ dotnet new netcoreapp-template --name ContosoNoAuthSqlServer --authProvider none
 
 SQL Server scaffolds omit the SQLite-specific migration history and migration tests. Generate provider-compatible SQL Server migrations before applying database updates.
 
+Scaffolds do not include a pre-generated SQL migration script. Generate and review SQL from the consuming application's current provider-specific migrations before deployment.
+
 ## Build and test generated output
 
 ```text

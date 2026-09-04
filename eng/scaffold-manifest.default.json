@@ -18,7 +18,6 @@
     "docker-compose.yml",
     "global.json",
     "nuget.config",
-    "scripts/migration.sql",
     "src/ContosoSecurityPortal.Infrastructure/ContosoSecurityPortal.Infrastructure.csproj",
     "src/ContosoSecurityPortal.Infrastructure/packages.lock.json",
     "src/ContosoSecurityPortal.Web/ContosoSecurityPortal.Web.csproj",
@@ -27,7 +26,6 @@
     "tests/ContosoSecurityPortal.Web.Tests/packages.lock.json"
   ],
   "expectedDirectories": [
-    "scripts",
     "src",
     "src/ContosoSecurityPortal.Infrastructure",
     "src/ContosoSecurityPortal.Web",
@@ -52,7 +50,8 @@
     "NetCoreApplicationTemplate.Template.csproj",
     "PACKAGE-README.md",
     "RELEASE.md",
-    "SECURITY.md"
+    "SECURITY.md",
+    "scripts"
   ],
   "forbiddenContentPatterns": [
     {
