@@ -63,6 +63,11 @@
       "path": "README.md",
       "pattern": "Current release:",
       "description": "repository maintainer release block"
+    },
+    {
+      "path": "ASSETS-LICENSES.md",
+      "pattern": "docs/images/|PACKAGE-ICON\\.png",
+      "description": "repository-only image paths"
     }
   ]
 }
