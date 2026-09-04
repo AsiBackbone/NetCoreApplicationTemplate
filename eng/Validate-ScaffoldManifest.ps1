@@ -109,7 +109,8 @@ if ($Generate) {
             'NetCoreApplicationTemplate.Template.csproj',
             'PACKAGE-README.md',
             'RELEASE.md',
-            'SECURITY.md'
+            'SECURITY.md',
+            'scripts'
         )
         forbiddenContentPatterns = @(
             [ordered]@{

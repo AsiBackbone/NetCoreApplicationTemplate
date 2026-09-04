@@ -55,7 +55,6 @@ The following generated structure is part of the public surface.
 │   └── ProjectTemplate.Infrastructure/
 ├── tests/
 │   └── ProjectTemplate.Web.Tests/
-├── scripts/
 ├── Dockerfile
 ├── docker-compose.yml
 ├── Directory.Build.props

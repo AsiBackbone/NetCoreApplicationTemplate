@@ -164,7 +164,6 @@
         "global.json",
         "LICENSE.txt",
         "NetCoreApplicationTemplate.slnx",
-        "scripts/**/*",
         "src/**/*",
         "tests/**/*"
       ],
@@ -187,8 +186,7 @@
         "CONTRIBUTING.md",
         "NetCoreApplicationTemplate.Template.csproj",
         "PACKAGE-README.md",
-        "SECURITY.md",
-        "scripts/Validate-VersionConsistency.ps1"
+        "SECURITY.md"
       ],
       "modifiers": [
         {

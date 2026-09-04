@@ -38,7 +38,10 @@ The scaffolded output intentionally excludes repository-maintainer content such 
 - `.template.config/` and `.template.content/` authoring files.
 - DocFX documentation source and ADRs.
 - Changelog, citation, contribution, security, and release-management files.
+- Repository maintenance scripts and pre-generated SQL migration scripts.
 - Repository maintainer badges and release instructions.
+
+The scaffold does not ship a pre-generated SQL migration script. SQL is provider-specific and a checked-in generated artifact can become stale as migrations evolve. Consumers should generate and review a script from the migrations in their generated application for the target provider and deployment state.
 
 ## Golden Scaffold Manifest
 
@@ -51,10 +54,10 @@ The manifest check fails when:
 - An expected consumer file is missing.
 - An expected consumer directory is missing.
 - An unexpected root-level file is generated.
-- A maintainer-only path such as `.github/`, `.template.config/`, `.template.content/`, `docs/`, `eng/`, `CHANGELOG.md`, `CITATION.cff`, `CONTRIBUTING.md`, `RELEASE.md`, or `SECURITY.md` appears in the scaffolded output.
+- A maintainer-only path such as `.github/`, `.template.config/`, `.template.content/`, `docs/`, `eng/`, `scripts/`, `CHANGELOG.md`, `CITATION.cff`, `CONTRIBUTING.md`, `RELEASE.md`, or `SECURITY.md` appears in the scaffolded output.
 - The generated consumer README contains repository maintainer content such as workflow badges or the current-release block.
 
-The manifest intentionally allows recursive content under `src/`, `tests/`, and `scripts/` because those folders are part of the consumer scaffold surface. Root-level additions should be added to `expectedFiles` only when they are intended public scaffold files.
+The manifest intentionally allows recursive content under `src/` and `tests/` because those folders are part of the consumer scaffold surface. Root-level additions should be added to `expectedFiles` only when they are intended public scaffold files.
 
 ### Validate a Generated Scaffold Locally
 

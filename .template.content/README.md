@@ -213,6 +213,8 @@ SQL Server scaffolds select `ConnectionStrings:ApplicationSqlServer`.
 
 SQL Server scaffolds intentionally start without migrations. Generate the initial migration after setting the real SQL Server connection string and reviewing the model. SQLite scaffolds retain the template's checked-in SQLite migration history.
 
+The scaffold does not include a pre-generated SQL migration script. Generate and review SQL from the current migrations in the application so the script matches its selected provider, application version, and intended database state.
+
 The EF Core model includes baseline optimistic concurrency support for entities that inherit from the shared data entity base type. Concurrency conflicts are surfaced through EF Core rather than silently overwriting stale updates.
 
 The scaffold does not run EF Core migrations automatically during startup. Apply migrations intentionally as part of local setup or deployment.

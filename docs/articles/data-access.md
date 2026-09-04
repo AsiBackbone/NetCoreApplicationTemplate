@@ -164,6 +164,9 @@ dotnet ef migrations script `
   --context ApplicationDbContext `
   --output migration.sql
 ```
+
+The template does not distribute a pre-generated SQL script. Generate the script from the current migrations in the consuming application so it matches the selected provider, application version, and intended database state.
+
 ## Connection String Resolution
 
 Migration commands use the startup project to resolve configuration.
@@ -422,10 +425,10 @@ dotnet ef migrations script `
   --project src/ProjectTemplate.Infrastructure `
   --startup-project src/ProjectTemplate.Web `
   --context ApplicationDbContext `
-  --idempotent `
   --output migration.sql
 ```
-The `--idempotent` option is useful for deployment scenarios where the target database may already have some migrations applied.
+
+SQLite does not support EF Core's `--idempotent` script option. Generate a script for the known source and target migration state, review it, and apply it through the controlled deployment process. After creating provider-compatible SQL Server migrations, SQL Server consumers can add `--idempotent` when the target database may have only some migrations applied.
 
 ## SQLite Development Flow
 A common local development flow is:
