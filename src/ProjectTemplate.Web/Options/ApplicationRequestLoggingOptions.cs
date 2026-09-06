@@ -29,12 +29,22 @@ public sealed class ApplicationRequestLoggingOptions
     /// <summary>
     /// Gets or sets a value indicating whether authenticated user names should be logged.
     /// </summary>
-    public bool IncludeUserName { get; set; } = true;
+    /// <remarks>
+    /// Disabled by default. A user name identifies a person, and request logs are typically shipped and retained for
+    /// longer than the data they describe. Enable this when the application has decided that request attribution is
+    /// needed and its log retention accounts for personal data.
+    /// </remarks>
+    public bool IncludeUserName { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the remote IP address should be logged.
     /// </summary>
-    public bool IncludeRemoteIpAddress { get; set; } = true;
+    /// <remarks>
+    /// Disabled by default for the same reason as <see cref="IncludeUserName" />. A client IP address is treated as
+    /// personal data under several privacy regimes. Enable this when incident response or abuse handling needs it,
+    /// and note that the value is only meaningful once forwarded headers are configured with trusted proxies.
+    /// </remarks>
+    public bool IncludeRemoteIpAddress { get; set; }
 
     /// <summary>
     /// Gets or sets path prefixes that should be excluded from normal request logging.

@@ -62,8 +62,8 @@ public sealed class ApplicationDbContextSaveHookBranchCoverageTests
         Assert.Equal("Git&Hub", currentValues.RootElement.GetProperty(nameof(ExternalLoginAccount.ProviderName)).GetString());
         Assert.Equal("GIT&HUB", currentValues.RootElement.GetProperty(nameof(ExternalLoginAccount.NormalizedProviderName)).GetString());
         Assert.Equal("external-user'250", currentValues.RootElement.GetProperty(nameof(ExternalLoginAccount.ProviderUserId)).GetString());
-        Assert.Equal(string.Empty, currentValues.RootElement.GetProperty(nameof(ExternalLoginAccount.DisplayName)).GetString());
-        Assert.Equal(string.Empty, currentValues.RootElement.GetProperty(nameof(ExternalLoginAccount.Email)).GetString());
+        Assert.Equal("***", currentValues.RootElement.GetProperty(nameof(ExternalLoginAccount.DisplayName)).GetString());
+        Assert.Equal("***", currentValues.RootElement.GetProperty(nameof(ExternalLoginAccount.Email)).GetString());
         Assert.Equal(account.ConcurrencyStamp, currentValues.RootElement.GetProperty(nameof(DataEntity.ConcurrencyStamp)).GetString());
     }
 
@@ -104,8 +104,8 @@ public sealed class ApplicationDbContextSaveHookBranchCoverageTests
         using var originalValues = JsonDocument.Parse(auditRecord.OriginalValues);
         using var currentValues = JsonDocument.Parse(auditRecord.CurrentValues);
 
-        Assert.Equal("Original User", originalValues.RootElement.GetProperty(nameof(ExternalLoginAccount.DisplayName)).GetString());
-        Assert.Equal("Modified & User", currentValues.RootElement.GetProperty(nameof(ExternalLoginAccount.DisplayName)).GetString());
+        Assert.Equal("***", originalValues.RootElement.GetProperty(nameof(ExternalLoginAccount.DisplayName)).GetString());
+        Assert.Equal("***", currentValues.RootElement.GetProperty(nameof(ExternalLoginAccount.DisplayName)).GetString());
 
         Assert.Equal(originalStamp, originalValues.RootElement.GetProperty(nameof(DataEntity.ConcurrencyStamp)).GetString());
         Assert.Equal(account.ConcurrencyStamp, currentValues.RootElement.GetProperty(nameof(DataEntity.ConcurrencyStamp)).GetString());
@@ -213,8 +213,8 @@ public sealed class ApplicationDbContextSaveHookBranchCoverageTests
 
         Assert.Equal("Google", originalValues.RootElement.GetProperty(nameof(ExternalLoginAccount.ProviderName)).GetString());
         Assert.Equal("deleted-user", originalValues.RootElement.GetProperty(nameof(ExternalLoginAccount.ProviderUserId)).GetString());
-        Assert.Equal("Deleted User", originalValues.RootElement.GetProperty(nameof(ExternalLoginAccount.DisplayName)).GetString());
-        Assert.Equal("deleted@example.com", originalValues.RootElement.GetProperty(nameof(ExternalLoginAccount.Email)).GetString());
+        Assert.Equal("***", originalValues.RootElement.GetProperty(nameof(ExternalLoginAccount.DisplayName)).GetString());
+        Assert.Equal("***", originalValues.RootElement.GetProperty(nameof(ExternalLoginAccount.Email)).GetString());
     }
 
     [Fact]
