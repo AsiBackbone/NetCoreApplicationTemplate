@@ -27,9 +27,16 @@ public sealed class AdvertisedBehaviorTestController : ControllerBase
     /// <summary>
     /// Throws an argument exception to verify API-style Problem Details handling.
     /// </summary>
+    /// <returns>Never returns; the action always throws.</returns>
     /// <exception cref="ArgumentException">Always thrown for test coverage.</exception>
+    /// <remarks>
+    /// This must stay an instance method. MVC does not discover static methods as actions, so declaring it static
+    /// made the route unreachable and every request to it returned 404 instead of exercising the error pipeline.
+    /// </remarks>
+#pragma warning disable CA1822 // Mark members as static
     [HttpGet("problem-details")]
-    public static IActionResult ProblemDetailsException()
+    public IActionResult ProblemDetailsException()
+#pragma warning restore CA1822
     {
         throw new ArgumentException("Invalid advertised behavior test request.");
     }

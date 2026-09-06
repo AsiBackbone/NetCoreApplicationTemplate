@@ -19,17 +19,18 @@ The pipeline order is:
 
 1. Forwarded headers
 2. Structured request logging
-3. Centralized error handling
-4. Problem Details handling
-5. Security headers
-6. HTTPS redirection
-7. Static files
-8. Routing
-9. CORS
-10. Rate limiting
-11. Authentication
-12. Authorization
-13. Controller and Razor Page endpoint mapping
+3. Centralized error handling, including Problem Details classification
+4. Security headers
+5. HTTPS redirection
+6. Static files
+7. Routing
+8. CORS
+9. Rate limiting
+10. Authentication
+11. Authorization
+12. Controller and Razor Page endpoint mapping
+
+Error handling is one step, not two. `UseProblemDetails()` adds the developer exception page in Development, or the production exception handler and HSTS outside it, and then branches status-code handling between Problem Details responses and the re-executed browser error page. Registering a second environment-aware error-handling extension alongside it would add a duplicate exception handler, a duplicate HSTS middleware, and an unconditional status-code re-execute wrapping the classified one.
 
 This order keeps proxy correction early, request logging close to the beginning of the request, error handling ahead of most application behavior, and endpoint-specific features such as CORS and rate limiting after routing.
 
