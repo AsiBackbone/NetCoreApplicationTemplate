@@ -905,7 +905,7 @@
           "OpenTelemetry.Extensions.Hosting": "[1.18.0, )",
           "OpenTelemetry.Instrumentation.AspNetCore": "[1.18.0, )",
           "OpenTelemetry.Instrumentation.Http": "[1.18.0, )",
-          "ProjectTemplate.Infrastructure": "[2.7.0, )",
+          "ProjectTemplate.Infrastructure": "[2.8.0, )",
           "SQLitePCLRaw.bundle_e_sqlite3": "[3.0.4, )",
           "Serilog.AspNetCore": "[10.0.0, )",
           "Serilog.Enrichers.Environment": "[3.0.1, )",
