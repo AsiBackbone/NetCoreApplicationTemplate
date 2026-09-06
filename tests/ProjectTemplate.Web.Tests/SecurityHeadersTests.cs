@@ -214,7 +214,7 @@ public sealed class SecurityHeadersTests
     /// <returns>A configured <see cref="ApplicationWebApplicationFactory"/> instance.</returns>
     private static ApplicationWebApplicationFactory CreateFactory(IReadOnlyDictionary<string, string?> configurationValues)
     {
-        return new ApplicationWebApplicationFactory(configurationValues);
+        return ApplicationWebApplicationFactory.CreateAllowingAnonymousAccess(configurationValues);
     }
 
     private static void AssertSecurityHeadersMissing(HttpResponseMessage response)

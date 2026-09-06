@@ -9,7 +9,7 @@ public sealed class RootEndpointTests
     [Fact]
     public async Task RootEndpoint_ReturnsLandingPage()
     {
-        using ApplicationWebApplicationFactory factory = new(new Dictionary<string, string?>());
+        using var factory = ApplicationWebApplicationFactory.CreateAllowingAnonymousAccess();
         using HttpClient client = factory.CreateHttpsClient();
 
         using HttpResponseMessage response = await client.GetAsync("/", TestContext.Current.CancellationToken);

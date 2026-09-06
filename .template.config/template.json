@@ -184,7 +184,16 @@
         "CONTRIBUTING.md",
         "NetCoreApplicationTemplate.Template.csproj",
         "PACKAGE-README.md",
-        "SECURITY.md"
+        "SECURITY.md",
+        "tests/ProjectTemplate.Web.Tests/RepositoryLintTests.cs",
+        "tests/ProjectTemplate.Web.Tests/ApplicationDbContextBranchGapTests.cs",
+        "tests/ProjectTemplate.Web.Tests/ApplicationDbContextSaveHookBranchCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/ApplicationSaveChangesInterceptorBranchCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/AuthenticationProviderOptionCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/EfCoreMigrationCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/ForwardedHeadersExtensionsCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/OpenTelemetryServiceExtensionsCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/RequestLoggingExtensionsBranchGapTests.cs"
       ],
       "modifiers": [
         {

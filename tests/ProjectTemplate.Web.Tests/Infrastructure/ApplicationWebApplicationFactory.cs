@@ -19,6 +19,37 @@ internal sealed class ApplicationWebApplicationFactory(IReadOnlyDictionary<strin
 {
     private readonly IReadOnlyDictionary<string, string?> _configurationValues = configurationValues;
 
+    private const string _requireAuthenticatedUserByDefaultKey =
+        "ProjectTemplate:Authorization:RequireAuthenticatedUserByDefault";
+
+    /// <summary>
+    /// Creates a factory whose application allows anonymous requests, for tests that exercise middleware rather than
+    /// authorization.
+    /// </summary>
+    /// <param name="configurationValues">Additional configuration values, applied after the anonymous-access setting.</param>
+    /// <returns>A factory configured without the authorization fallback policy.</returns>
+    /// <remarks>
+    /// The factory otherwise matches the scaffold, which ships
+    /// <c>RequireAuthenticatedUserByDefault</c> enabled, so a test that needs anonymous access says so here rather
+    /// than inheriting it silently. Tests using this are asserting middleware behavior — security headers, rate
+    /// limiting, error handling, API versioning — on endpoints a real application would expose anonymously.
+    /// </remarks>
+    internal static ApplicationWebApplicationFactory CreateAllowingAnonymousAccess(
+        IReadOnlyDictionary<string, string?>? configurationValues = null)
+    {
+        Dictionary<string, string?> values = new()
+        {
+            [_requireAuthenticatedUserByDefaultKey] = "false"
+        };
+
+        foreach ((string key, string? value) in configurationValues ?? new Dictionary<string, string?>())
+        {
+            values[key] = value;
+        }
+
+        return new ApplicationWebApplicationFactory(values);
+    }
+
     /// <summary>
     /// Configures the web host builder with test-specific settings, including environment, configuration, and services.
     /// </summary>
@@ -31,9 +62,11 @@ internal sealed class ApplicationWebApplicationFactory(IReadOnlyDictionary<strin
     {
         builder.UseEnvironment("Testing");
 
+        // Matches the shipped scaffold default so integration tests run in the posture a generated application
+        // actually has. Tests that need anonymous access opt out through CreateAllowingAnonymousAccess.
         Dictionary<string, string?> testConfiguration = new()
         {
-            ["ProjectTemplate:Authorization:RequireAuthenticatedUserByDefault"] = "false",
+            [_requireAuthenticatedUserByDefaultKey] = "true",
             ["ProjectTemplate:ForwardedHeaders:KnownProxies:0"] = "::1"
         };
 

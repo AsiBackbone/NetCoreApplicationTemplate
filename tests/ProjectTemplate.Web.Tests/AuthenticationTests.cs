@@ -705,7 +705,7 @@ public sealed class AuthenticationTests
     /// <returns>A configured <see cref="ApplicationWebApplicationFactory"/> instance.</returns>
     private static ApplicationWebApplicationFactory CreateFactory(IReadOnlyDictionary<string, string?> configurationValues)
     {
-        return new ApplicationWebApplicationFactory(configurationValues);
+        return ApplicationWebApplicationFactory.CreateAllowingAnonymousAccess(configurationValues);
     }
 
     private static Dictionary<string, string?> CreateEnabledAuthenticationConfiguration(string providerName)
