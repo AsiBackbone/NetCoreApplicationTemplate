@@ -1,0 +1,19 @@
+@{
+    string title = ViewData["Title"] as string ?? "ProjectTemplate";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@title - ProjectTemplate</title>
+    <link rel="stylesheet" href="~/css/landing.css" asp-append-version="true" />
+</head>
+<body>
+    <main class="landing-shell">
+        <div class="hero-card">
+            @RenderBody()
+        </div>
+    </main>
+</body>
+</html>
