@@ -37,6 +37,26 @@ updates:
           - "AspNet.Security.OAuth.GitHub"
           - "Sustainsys.Saml2.AspNetCore2"
 
+  # The Dockerfile pins both base images by digest, which nothing bumps automatically without this.
+  # Digest pins do not drift, so a patched base image is only picked up when the pin is updated.
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+      time: "15:15"
+      timezone: "America/Chicago"
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    groups:
+      dotnet-base-images:
+        patterns:
+          - "mcr.microsoft.com/dotnet/*"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
