@@ -62,11 +62,13 @@ internal sealed class ApplicationWebApplicationFactory(IReadOnlyDictionary<strin
     {
         builder.UseEnvironment("Testing");
 
-        // Matches the shipped scaffold default so integration tests run in the posture a generated application
-        // actually has. Tests that need anonymous access opt out through CreateAllowingAnonymousAccess.
+        // RequireAuthenticatedUserByDefault is deliberately not set here, so tests run under whatever the
+        // application's own appsettings ships. That value is not fixed across scaffolds: generating with
+        // --authProvider none produces both it and Authentication:Enabled as false, and setting it to true there
+        // fails options validation at startup. Tests needing anonymous access opt out through
+        // CreateAllowingAnonymousAccess, which sets false and is valid under either configuration.
         Dictionary<string, string?> testConfiguration = new()
         {
-            [_requireAuthenticatedUserByDefaultKey] = "true",
             ["ProjectTemplate:ForwardedHeaders:KnownProxies:0"] = "::1"
         };
 
