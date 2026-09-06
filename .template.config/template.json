@@ -21,6 +21,15 @@
     "type": "project"
   },
   "symbols": {
+    "projectNameUpper": {
+      "type": "generated",
+      "generator": "casing",
+      "parameters": {
+        "source": "name",
+        "toLower": false
+      },
+      "replaces": "PROJECTTEMPLATE"
+    },
     "skipRestore": {
       "type": "parameter",
       "datatype": "bool",

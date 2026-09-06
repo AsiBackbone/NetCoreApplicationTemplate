@@ -88,10 +88,11 @@ $scaffoldFiles = @(Get-ScaffoldFiles $resolvedScaffoldRoot)
 $scaffoldDirectories = @(Get-ScaffoldDirectories $resolvedScaffoldRoot)
 
 if ($Generate) {
+    $templateName = Split-Path -Leaf $resolvedScaffoldRoot
     $manifest = [ordered]@{
         '$schema' = './scaffold-manifest.schema.json'
         description = 'Approved default consumer scaffold surface for dotnet new netcoreapp-template.'
-        templateName = Split-Path -Leaf $resolvedScaffoldRoot
+        templateName = $templateName
         expectedFiles = $scaffoldFiles
         expectedDirectories = $scaffoldDirectories
         allowedFilePatterns = @()
@@ -122,6 +123,21 @@ if ($Generate) {
                 path = 'README.md'
                 pattern = 'Current release:'
                 description = 'repository maintainer release block'
+            },
+            [ordered]@{
+                path = '.env.example'
+                pattern = 'PROJECTTEMPLATE_'
+                description = 'unresolved uppercase project-name tokens'
+            },
+            [ordered]@{
+                path = 'docker-compose.yml'
+                pattern = 'PROJECTTEMPLATE_'
+                description = 'unresolved uppercase project-name tokens'
+            },
+            [ordered]@{
+                path = "src/$templateName.Web/Program.cs"
+                pattern = 'Template\.Web application'
+                description = 'unresolved bootstrap application name'
             }
         )
     }
