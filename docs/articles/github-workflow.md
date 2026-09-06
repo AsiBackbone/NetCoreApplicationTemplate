@@ -145,7 +145,10 @@ The repository uses Dependabot to monitor supported dependency ecosystems.
 Dependabot is configured in `.github/dependabot.yml` for:
 
 - NuGet packages used by project files.
+- Docker base images used by the `Dockerfile`.
 - GitHub Actions used by workflow files.
+
+The `Dockerfile` pins both base images by digest. A digest never drifts, so a patched base image is only picked up when the pin is updated; the `docker` ecosystem is what opens that pull request.
 
 Dependabot runs weekly on Monday morning in the `America/Chicago` timezone.
 
@@ -159,6 +162,8 @@ NuGet updates are grouped by related package families where practical:
 - OpenTelemetry packages.
 - Test dependencies.
 - External authentication dependencies.
+
+Docker base image updates are grouped as `dotnet-base-images` so an SDK and runtime image bump arrives as one pull request.
 
 GitHub Actions updates are grouped together so workflow action updates can be reviewed as a focused maintenance pull request.
 

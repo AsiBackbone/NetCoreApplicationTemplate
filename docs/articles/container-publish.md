@@ -36,7 +36,9 @@ Recommended environment settings:
 
 ## Build and Scan Flow
 
-The workflow builds the Docker image from the repository Dockerfile, scans the built image, generates release evidence, and only then publishes.
+The workflow builds the Docker image from the repository Dockerfile, exports it to a tar archive, scans that archive, generates release evidence, and only then publishes.
+
+Scanning runs through `aquasecurity/trivy-action`, pinned by commit SHA like every other action in this repository. Two properties follow from that. The scanner reads the exported archive rather than querying the Docker daemon, so no step mounts `/var/run/docker.sock` into a scanner container. And the Trivy version comes from the pinned action rather than a mutable image tag, so Dependabot's `github-actions` ecosystem proposes scanner updates alongside every other action.
 
 Release evidence includes:
 

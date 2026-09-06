@@ -13,7 +13,6 @@ permissions: {}
 env:
   IMAGE_NAME: ghcr.io/asibackbone/netcoreapplicationtemplate
   LOCAL_IMAGE_NAME: netcoreapplicationtemplate-release
-  TRIVY_IMAGE: aquasec/trivy:0.58.2
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -82,23 +81,24 @@ jobs:
             .
 
       - name: Prepare release evidence directory
-        run: mkdir -p artifacts/container-release .trivy-cache
+        run: mkdir -p artifacts/container-release
 
-      - name: Generate vulnerability scan SARIF
+      # The image is exported before scanning so every Trivy step reads the same tar archive.
+      # Scanning the archive is what removes the need to mount /var/run/docker.sock into the scanner.
+      - name: Save built image for scanning
         env:
           LOCAL_IMAGE: ${{ steps.version.outputs.local_image }}
-        run: |
-          docker run --rm \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            -v "$GITHUB_WORKSPACE/artifacts/container-release:/reports" \
-            -v "$GITHUB_WORKSPACE/.trivy-cache:/root/.cache" \
-            "$TRIVY_IMAGE" image \
-            --format sarif \
-            --output /reports/trivy-results.sarif \
-            --severity HIGH,CRITICAL \
-            --ignore-unfixed=false \
-            --exit-code 0 \
-            "$LOCAL_IMAGE"
+        run: docker save "$LOCAL_IMAGE" --output artifacts/container-image.tar
+
+      - name: Generate vulnerability scan SARIF
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          input: artifacts/container-image.tar
+          format: sarif
+          output: artifacts/container-release/trivy-results.sarif
+          severity: HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: '0'
 
       - name: Upload vulnerability SARIF
         if: always()
@@ -108,19 +108,12 @@ jobs:
           category: container-image
 
       - name: Generate SPDX SBOM
-        env:
-          RELEASE_VERSION: ${{ steps.version.outputs.version }}
-          LOCAL_IMAGE: ${{ steps.version.outputs.local_image }}
-        run: |
-          docker run --rm \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            -v "$GITHUB_WORKSPACE/artifacts/container-release:/reports" \
-            -v "$GITHUB_WORKSPACE/.trivy-cache:/root/.cache" \
-            "$TRIVY_IMAGE" image \
-            --format spdx-json \
-            --output "/reports/netcoreapplicationtemplate-$RELEASE_VERSION.spdx.json" \
-            --exit-code 0 \
-            "$LOCAL_IMAGE"
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          input: artifacts/container-image.tar
+          format: spdx-json
+          output: artifacts/container-release/netcoreapplicationtemplate-${{ steps.version.outputs.version }}.spdx.json
+          exit-code: '0'
 
       - name: Upload release evidence artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -131,23 +124,13 @@ jobs:
           retention-days: 30
 
       - name: Enforce container vulnerability threshold
-        env:
-          LOCAL_IMAGE: ${{ steps.version.outputs.local_image }}
-        run: |
-          docker run --rm \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            -v "$GITHUB_WORKSPACE/.trivy-cache:/root/.cache" \
-            "$TRIVY_IMAGE" image \
-            --format table \
-            --severity HIGH,CRITICAL \
-            --ignore-unfixed=false \
-            --exit-code 1 \
-            "$LOCAL_IMAGE"
-
-      - name: Save scanned image
-        env:
-          LOCAL_IMAGE: ${{ steps.version.outputs.local_image }}
-        run: docker save "$LOCAL_IMAGE" --output artifacts/container-image.tar
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          input: artifacts/container-image.tar
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: '1'
 
       - name: Upload scanned image artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
