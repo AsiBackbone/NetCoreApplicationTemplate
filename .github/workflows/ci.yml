@@ -80,6 +80,10 @@ jobs:
       - name: Verify formatting
         run: dotnet format ${{ env.SOLUTION_FILE }} --verify-no-changes --verbosity minimal
 
+      - name: Validate template content overlay
+        shell: pwsh
+        run: ./eng/Validate-TemplateContentOverlay.ps1
+
       - name: Run tests
         shell: pwsh
         run: |

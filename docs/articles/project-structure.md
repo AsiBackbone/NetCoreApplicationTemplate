@@ -33,7 +33,8 @@ The .NET Core Application Template is organized as a compact, production-oriente
 │   ├── security-critical-coverage.json
 │   ├── scaffold-manifest.default.json
 │   ├── scaffold-manifest.schema.json
-│   └── Validate-ScaffoldManifest.ps1
+│   ├── Validate-ScaffoldManifest.ps1
+│   └── Validate-TemplateContentOverlay.ps1
 │
 ├── scripts/
 │   └── Validate-VersionConsistency.ps1
