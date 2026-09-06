@@ -129,6 +129,34 @@ public sealed class RepositoryLintTests
         Assert.Empty(configuration.Descendants("packageSourceMapping"));
     }
 
+    /// <summary>
+    /// Verifies that recursive template package inputs exclude local SQLite database artifacts.
+    /// </summary>
+    /// <param name="contentRoot">The recursive content root declared by the template package project.</param>
+    [Theory]
+    [InlineData("src")]
+    [InlineData("tests")]
+    public void TemplatePackageContent_ExcludesSqliteDatabaseArtifacts(string contentRoot)
+    {
+        string solutionRoot = GetSolutionRoot();
+        string projectPath = Path.Combine(solutionRoot, "NetCoreApplicationTemplate.Template.csproj");
+        var project = System.Xml.Linq.XDocument.Load(projectPath);
+
+        System.Xml.Linq.XElement content = Assert.Single(
+            project.Descendants("Content"),
+            item => string.Equals(
+                item.Attribute("Include")?.Value,
+                $"{contentRoot}/**/*",
+                StringComparison.Ordinal));
+
+        string[] excludedPaths = (content.Attribute("Exclude")?.Value ?? string.Empty)
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        Assert.Contains($"{contentRoot}/**/*.db", excludedPaths);
+        Assert.Contains($"{contentRoot}/**/*.db-shm", excludedPaths);
+        Assert.Contains($"{contentRoot}/**/*.db-wal", excludedPaths);
+    }
+
     private static string GetSolutionRoot()
     {
         DirectoryInfo? directory = new(AppContext.BaseDirectory);

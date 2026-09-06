@@ -23,7 +23,7 @@ try
     WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
     builder.AddApplicationSerilog();
-    Log.Information("Bootstrapping Template.Web application");
+    Log.Information("Bootstrapping ProjectTemplate.Web application");
     builder.Services.AddControllersWithViews();
     builder.Services.AddApplicationApiVersioning(builder.Configuration);
     builder.Services.AddRazorPages();
