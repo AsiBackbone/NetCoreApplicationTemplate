@@ -96,4 +96,70 @@ public sealed class ErrorHandlingPipelineTests
         Assert.DoesNotContain("Invalid advertised behavior test request.", body, StringComparison.Ordinal);
         Assert.DoesNotContain("ArgumentException", body, StringComparison.Ordinal);
     }
+
+    /// <summary>
+    /// Verifies that a direct request to the error route does not receive the status code it asked for.
+    /// </summary>
+    /// <param name="requestedStatusCode">The status code supplied in the route.</param>
+    /// <returns>A task that represents the asynchronous test operation.</returns>
+    /// <remarks>
+    /// The error route is anonymous because it serves errors for unauthenticated requests. Honoring its route
+    /// value let any caller select the response status, including values outside the range the error page
+    /// serves, and produce an error-page log entry per request.
+    /// </remarks>
+    [Theory]
+    [InlineData(0)]
+    [InlineData(200)]
+    [InlineData(418)]
+    [InlineData(500)]
+    [InlineData(999)]
+    public async Task DirectRequestToErrorRoute_DoesNotHonorTheRequestedStatusCode(int requestedStatusCode)
+    {
+        using ApplicationWebApplicationFactory factory = new(new Dictionary<string, string?>());
+        using HttpClient client = factory.CreateHttpsClient();
+
+        using HttpResponseMessage response = await client.GetAsync(
+            new Uri($"/Home/Error/{requestedStatusCode}", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    /// <summary>
+    /// Verifies that a direct request to the error route with no status code is also treated as not found.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous test operation.</returns>
+    [Fact]
+    public async Task DirectRequestToErrorRouteWithoutStatusCode_IsNotFound()
+    {
+        using ApplicationWebApplicationFactory factory = new(new Dictionary<string, string?>());
+        using HttpClient client = factory.CreateHttpsClient();
+
+        using HttpResponseMessage response = await client.GetAsync(
+            new Uri("/Home/Error", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    /// <summary>
+    /// Verifies that a genuine missing page still reaches the error page with its real status code.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous test operation.</returns>
+    [Fact]
+    public async Task GenuineMissingPage_StillReachesTheErrorPageWithItsRealStatusCode()
+    {
+        using ApplicationWebApplicationFactory factory = new(new Dictionary<string, string?>());
+        using HttpClient client = factory.CreateHttpsClient();
+
+        using HttpResponseMessage response = await client.GetAsync(
+            new Uri("/no-such-browser-page", UriKind.Relative),
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal("text/html", response.Content.Headers.ContentType?.MediaType);
+
+        string body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        Assert.Contains("Request ID", body, StringComparison.OrdinalIgnoreCase);
+    }
 }

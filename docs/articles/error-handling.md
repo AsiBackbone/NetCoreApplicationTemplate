@@ -17,6 +17,7 @@ The error handling behavior is environment-aware:
 - In Development, the application uses the developer exception page.
 - In non-development environments, unhandled exceptions are routed to `/Home/Error/500`.
 - HTTP status code responses are re-executed through `/Home/Error/{statusCode}` for browser-oriented requests.
+- The error route serves only requests the pipeline routed to it. A request sent to `/Home/Error/{statusCode}` directly is answered as not found, so the route value cannot select the response status code.
 - API, AJAX, and JSON-oriented requests receive Problem Details responses.
 - Error responses are user-safe and do not expose exception details in production.
 - Error events are logged using source-generated `LoggerMessage` methods.
@@ -86,6 +87,8 @@ Log event IDs are centralized in `ApplicationLogEventIds` to keep application lo
 The application uses centralized error handling to provide consistent responses for both browser and API-style requests.
 
 Browser requests are routed to the standard application error page, such as `/Home/Error/{statusCode}`. API, AJAX, and JSON-oriented requests receive a Problem Details response using the ASP.NET Core `IProblemDetailsService`.
+
+The error action is anonymous because it serves errors for unauthenticated requests, so it does not trust the status code in its own route. It reads `IStatusCodeReExecuteFeature` and `IExceptionHandlerPathFeature` to confirm the pipeline routed the request, takes the status code from `OriginalStatusCode` where available, and constrains it to the 400–599 range the error page serves. A request that arrives without either feature is answered as not found and produces no error-page log entry, which keeps a caller from choosing the response status or generating warning-level entries by requesting the route directly.
 
 Problem Details responses include safe metadata such as:
 
