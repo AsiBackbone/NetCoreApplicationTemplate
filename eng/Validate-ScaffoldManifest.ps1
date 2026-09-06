@@ -179,6 +179,21 @@ foreach ($path in $forbiddenPaths) {
     }
 }
 
+foreach ($solutionPath in Get-ChildItem -LiteralPath $resolvedScaffoldRoot -Filter '*.slnx' -File -Recurse) {
+    [xml]$solution = Get-Content -LiteralPath $solutionPath.FullName -Raw
+
+    foreach ($item in $solution.SelectNodes('//File[@Path] | //Project[@Path]')) {
+        $referencedPath = Join-Path $solutionPath.DirectoryName $item.Path
+        if (-not (Test-Path -LiteralPath $referencedPath -PathType Leaf)) {
+            $relativeSolutionPath = Convert-ToManifestPath (
+                [System.IO.Path]::GetRelativePath($resolvedScaffoldRoot, $solutionPath.FullName))
+            $relativeReferencedPath = Convert-ToManifestPath $item.Path
+            $failures.Add(
+                "Scaffolded solution '$relativeSolutionPath' references a missing file: $relativeReferencedPath")
+        }
+    }
+}
+
 foreach ($check in @($manifest.forbiddenContentPatterns)) {
     $relativePath = Convert-ToManifestPath $check.path
     $fullPath = Join-Path $resolvedScaffoldRoot $relativePath

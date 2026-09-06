@@ -6,7 +6,6 @@
   </Folder>
   <Folder Name="/documentation/">
     <File Path="ASSETS-LICENSES.md" />
-    <File Path="CITATION.cff" />
     <File Path="LICENSE.txt" />
     <File Path="README.md" />
   </Folder>
