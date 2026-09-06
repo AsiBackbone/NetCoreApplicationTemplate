@@ -110,6 +110,25 @@ public sealed class RepositoryLintTests
         }
     }
 
+    /// <summary>
+    /// Verifies that repository restores do not require credentials for a private package source.
+    /// </summary>
+    [Fact]
+    public void RepositoryNuGetConfig_UsesOnlyNuGetOrg()
+    {
+        string solutionRoot = GetSolutionRoot();
+        string nugetConfigPath = Path.Combine(solutionRoot, "nuget.config");
+        var configuration = System.Xml.Linq.XDocument.Load(nugetConfigPath);
+
+        System.Xml.Linq.XElement packageSources = Assert.Single(configuration.Descendants("packageSources"));
+        Assert.Single(packageSources.Elements("clear"));
+
+        System.Xml.Linq.XElement source = Assert.Single(packageSources.Elements("add"));
+        Assert.Equal("nuget.org", source.Attribute("key")?.Value);
+        Assert.Equal("https://api.nuget.org/v3/index.json", source.Attribute("value")?.Value);
+        Assert.Empty(configuration.Descendants("packageSourceMapping"));
+    }
+
     private static string GetSolutionRoot()
     {
         DirectoryInfo? directory = new(AppContext.BaseDirectory);
