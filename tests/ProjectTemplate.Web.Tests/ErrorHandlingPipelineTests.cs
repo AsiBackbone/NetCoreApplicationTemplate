@@ -25,7 +25,7 @@ public sealed class ErrorHandlingPipelineTests
     [Fact]
     public async Task UnhandledException_OnApiShapedRequest_ReturnsProblemDetails()
     {
-        using ApplicationWebApplicationFactory factory = new(new Dictionary<string, string?>());
+        using var factory = ApplicationWebApplicationFactory.CreateAllowingAnonymousAccess();
         using HttpClient client = factory.CreateHttpsClient();
 
         using var request = new HttpRequestMessage(
@@ -54,7 +54,7 @@ public sealed class ErrorHandlingPipelineTests
     [Fact]
     public async Task UnhandledException_OnBrowserShapedRequest_ReturnsErrorPage()
     {
-        using ApplicationWebApplicationFactory factory = new(new Dictionary<string, string?>());
+        using var factory = ApplicationWebApplicationFactory.CreateAllowingAnonymousAccess();
         using HttpClient client = factory.CreateHttpsClient();
 
         using var request = new HttpRequestMessage(
@@ -78,7 +78,7 @@ public sealed class ErrorHandlingPipelineTests
     [Fact]
     public async Task UnhandledException_DoesNotLeakExceptionDetail()
     {
-        using ApplicationWebApplicationFactory factory = new(new Dictionary<string, string?>());
+        using var factory = ApplicationWebApplicationFactory.CreateAllowingAnonymousAccess();
         using HttpClient client = factory.CreateHttpsClient();
 
         using var request = new HttpRequestMessage(
@@ -115,7 +115,7 @@ public sealed class ErrorHandlingPipelineTests
     [InlineData(999)]
     public async Task DirectRequestToErrorRoute_DoesNotHonorTheRequestedStatusCode(int requestedStatusCode)
     {
-        using ApplicationWebApplicationFactory factory = new(new Dictionary<string, string?>());
+        using var factory = ApplicationWebApplicationFactory.CreateAllowingAnonymousAccess();
         using HttpClient client = factory.CreateHttpsClient();
 
         using HttpResponseMessage response = await client.GetAsync(
@@ -132,7 +132,7 @@ public sealed class ErrorHandlingPipelineTests
     [Fact]
     public async Task DirectRequestToErrorRouteWithoutStatusCode_IsNotFound()
     {
-        using ApplicationWebApplicationFactory factory = new(new Dictionary<string, string?>());
+        using var factory = ApplicationWebApplicationFactory.CreateAllowingAnonymousAccess();
         using HttpClient client = factory.CreateHttpsClient();
 
         using HttpResponseMessage response = await client.GetAsync(
@@ -149,7 +149,7 @@ public sealed class ErrorHandlingPipelineTests
     [Fact]
     public async Task GenuineMissingPage_StillReachesTheErrorPageWithItsRealStatusCode()
     {
-        using ApplicationWebApplicationFactory factory = new(new Dictionary<string, string?>());
+        using var factory = ApplicationWebApplicationFactory.CreateAllowingAnonymousAccess();
         using HttpClient client = factory.CreateHttpsClient();
 
         using HttpResponseMessage response = await client.GetAsync(

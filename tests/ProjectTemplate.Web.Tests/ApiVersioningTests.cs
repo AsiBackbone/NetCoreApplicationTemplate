@@ -118,8 +118,7 @@ public sealed class ApiVersioningTests
     private static ApplicationWebApplicationFactory CreateFactory(
         IReadOnlyDictionary<string, string?>? configurationValues = null)
     {
-        return new ApplicationWebApplicationFactory(
-            configurationValues ?? new Dictionary<string, string?>());
+        return ApplicationWebApplicationFactory.CreateAllowingAnonymousAccess(configurationValues);
     }
 
     private sealed record ApplicationInformationResponse(

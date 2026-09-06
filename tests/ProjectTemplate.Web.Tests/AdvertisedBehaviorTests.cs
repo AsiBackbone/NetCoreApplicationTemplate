@@ -109,6 +109,6 @@ public sealed class AdvertisedBehaviorTests
 
     private static ApplicationWebApplicationFactory CreateFactory(IReadOnlyDictionary<string, string?> configurationValues)
     {
-        return new ApplicationWebApplicationFactory(configurationValues);
+        return ApplicationWebApplicationFactory.CreateAllowingAnonymousAccess(configurationValues);
     }
 }

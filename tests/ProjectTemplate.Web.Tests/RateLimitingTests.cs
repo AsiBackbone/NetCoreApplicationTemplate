@@ -365,7 +365,7 @@ public sealed class RateLimitingTests
     /// <returns>A configured <see cref="ApplicationWebApplicationFactory"/> instance.</returns>
     private static ApplicationWebApplicationFactory CreateFactory(IReadOnlyDictionary<string, string?> configurationValues)
     {
-        return new ApplicationWebApplicationFactory(configurationValues);
+        return ApplicationWebApplicationFactory.CreateAllowingAnonymousAccess(configurationValues);
     }
 
     private static OptionsValidationException AssertRateLimitingOptionsValidationFails(

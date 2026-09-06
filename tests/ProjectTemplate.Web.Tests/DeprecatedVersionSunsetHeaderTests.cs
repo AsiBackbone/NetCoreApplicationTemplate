@@ -23,7 +23,7 @@ public sealed class DeprecatedVersionSunsetHeaderTests
     [Fact]
     public async Task DeprecatedVersion_OmitsSunsetHeaderWhenNoDateIsConfigured()
     {
-        using ApplicationWebApplicationFactory factory = new(new Dictionary<string, string?>());
+        using var factory = ApplicationWebApplicationFactory.CreateAllowingAnonymousAccess();
         using HttpClient client = factory.CreateHttpsClient();
 
         using HttpResponseMessage response = await client.GetAsync(
@@ -42,7 +42,7 @@ public sealed class DeprecatedVersionSunsetHeaderTests
     [Fact]
     public async Task DeprecatedVersion_AdvertisesConfiguredSunsetDate()
     {
-        using ApplicationWebApplicationFactory factory = new(new Dictionary<string, string?>
+        using var factory = ApplicationWebApplicationFactory.CreateAllowingAnonymousAccess(new Dictionary<string, string?>
         {
             [$"{ApplicationApiVersioningOptions.SectionName}:DeprecatedVersionSunset"] = "2099-06-30T23:59:59+00:00"
         });
@@ -68,7 +68,7 @@ public sealed class DeprecatedVersionSunsetHeaderTests
     [Fact]
     public async Task CurrentVersion_AdvertisesNoDeprecationOrSunsetEvenWhenConfigured()
     {
-        using ApplicationWebApplicationFactory factory = new(new Dictionary<string, string?>
+        using var factory = ApplicationWebApplicationFactory.CreateAllowingAnonymousAccess(new Dictionary<string, string?>
         {
             [$"{ApplicationApiVersioningOptions.SectionName}:DeprecatedVersionSunset"] = "2099-06-30T23:59:59+00:00"
         });
