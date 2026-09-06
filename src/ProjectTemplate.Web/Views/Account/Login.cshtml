@@ -6,18 +6,20 @@
 
 <h1>Sign In</h1>
 
-<p>
-    Select an external authentication provider to continue.
-</p>
-
 @if (Model.ExternalProviders.Count == 0)
 {
     <p>
-        No external authentication providers are currently configured.
+        No sign-in provider is configured. Cookie authentication stores authenticated sessions, but it does not create
+        user accounts or verify credentials. Enable and configure an external provider or add a host-owned identity flow
+        before requiring users to sign in.
     </p>
 }
 else
 {
+    <p>
+        Select an external authentication provider to continue.
+    </p>
+
     <ul>
         @foreach (ProjectTemplate.Web.Models.ExternalAuthenticationProviderViewModel provider in Model.ExternalProviders)
         {

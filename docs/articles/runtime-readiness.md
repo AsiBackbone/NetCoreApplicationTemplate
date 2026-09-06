@@ -60,15 +60,15 @@ API, AJAX, and JSON-oriented requests receive Problem Details responses. Outside
 
 ## Authentication Baseline
 
-Authentication establishes the caller's identity. Application authentication is enabled by default with local cookie authentication:
+Authentication establishes the caller's identity. Application authentication is enabled by default with a cookie session handler:
 
 - `ProjectTemplate:Authentication:Enabled` is `true`.
 - The default authenticate, challenge, and sign-in schemes use `Cookies`.
-- Local cookie authentication is enabled.
+- The cookie handler can store an authenticated session after a sign-in flow succeeds.
 - External OpenID Connect, SAML2, Microsoft, Google, and GitHub providers are disabled until explicitly configured.
 - Enabled external providers are validated during startup and fail fast when required values are missing.
 
-External provider secrets and real identity-provider metadata must be supplied through protected configuration sources.
+The default scaffold does not include local user accounts, a credential form, a seeded user, or an enabled sign-in provider. Cookie authentication does not verify credentials or provide a login path by itself, so protected routes remain unavailable until the consuming application enables an external provider or supplies its own identity flow. External provider secrets and real identity-provider metadata must be supplied through protected configuration sources.
 
 ## Authorization Baseline
 
