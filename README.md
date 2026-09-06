@@ -18,9 +18,9 @@ A reusable, production-oriented ASP.NET Core application template with structure
 ## Current Release
 
 <!-- BEGIN LATEST_RELEASE -->
-Current release: __[Release 2.7.0](https://github.com/AsiBackbone/NetCoreApplicationTemplate/releases/tag/v2.7.0)__
+Current release: __[Release 2.8.0](https://github.com/AsiBackbone/NetCoreApplicationTemplate/releases/tag/v2.8.0)__
 
-Tag: `v2.7.0`
+Tag: `v2.8.0`
 <!-- END LATEST_RELEASE -->
 
 ## Default Security Posture
