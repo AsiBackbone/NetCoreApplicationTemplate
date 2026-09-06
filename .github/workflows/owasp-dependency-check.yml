@@ -2,6 +2,13 @@
 # by a third party and governed by separate terms, privacy policies, and support.
 # OWASP Dependency-Check scans the restored NuGet dependency graph and uploads
 # SARIF results to GitHub code scanning.
+#
+# This workflow reports; it does not gate. It is deliberately not invoked with
+# --failOnCVSS. It runs weekly, on demand, and on pushes to main that touch
+# project or lock files, so it never runs before a merge; a hard failure here
+# would block main rather than the change that introduced the finding. Findings
+# are triaged through code scanning, and RELEASE.md requires explicit
+# confirmation that none are release-blocking before a stable tag.
 
 name: OWASP Dependency-Check software composition analysis
 
