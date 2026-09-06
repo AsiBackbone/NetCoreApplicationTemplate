@@ -45,6 +45,20 @@ The scaffolded output intentionally excludes repository-maintainer content such 
 
 The scaffold does not ship a pre-generated SQL migration script. SQL is provider-specific and a checked-in generated artifact can become stale as migrations evolve. Consumers should generate and review a script from the migrations in their generated application for the target provider and deployment state.
 
+## Template Content Overlay
+
+`.template.content/` holds files that replace their `src/` counterparts during scaffolding. An overlay file shadows the repository file entirely, so a setting added to `src/ProjectTemplate.Web/appsettings.json` and not to the overlay is absent from every generated project. Nothing fails when that happens: the overlay is still valid JSON, and the missing key falls back to its code default, so the drift is only visible by comparing the two files.
+
+`eng/Validate-TemplateContentOverlay.ps1` compares the JSON key structure of each overlay file against its `src` counterpart and fails when a key exists in one and not the other. Values are compared as well, except where the overlay holds a template token such as `TemplateAuthEnabled`, `TemplateDataProvider`, or `TemplateDataConnectionStringName`, since those are substituted during scaffolding and are expected to differ.
+
+CI runs it on every build. Run it locally after changing either file:
+
+```powershell
+./eng/Validate-TemplateContentOverlay.ps1
+```
+
+Overlay files with no `src` counterpart, such as `nuget.config` and `README.md`, are scaffold-specific by design and are skipped.
+
 ## Golden Scaffold Manifest
 
 The approved default scaffold surface is tracked in `eng/scaffold-manifest.default.json`.
