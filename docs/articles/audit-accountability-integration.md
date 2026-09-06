@@ -109,7 +109,11 @@ Supported dispositions are:
 - `Omit`
 - `Truncate`
 
-The default policy preserves the previous NCAT behavior and includes values unchanged. Production applications should replace it when entities may contain credentials, tokens, protected document bodies, personal information, or other regulated data.
+The default policy includes values unchanged except for the contact fields on the `ExternalLoginAccount` entity the template ships — `Email`, `NormalizedEmail`, and `DisplayName` — which are masked. Without that, a generated application persists an end user's email address and display name into durable audit history the first time an external login is created or updated, before the consumer has made any decision about it. Masking still records that the property changed, so the audit trail keeps its accountability value without carrying the value.
+
+Masking is used rather than hashing for these fields. The `Hash` disposition is an unsalted SHA-256, which does not protect a low-entropy value such as an email address: anyone holding the audit table can recover addresses by hashing candidates. `Hash` suits high-entropy identifiers where correlating the same value across records matters more than concealing it.
+
+The default covers only the entity the template ships. Production applications should replace the policy when their own entities may contain credentials, tokens, protected document bodies, personal information, or other regulated data. Replace it rather than extend it, since the fields worth protecting depend on the application's model.
 
 ```csharp
 services.AddScoped<IApplicationAuditValuePolicy, ApplicationAuditValuePolicy>();

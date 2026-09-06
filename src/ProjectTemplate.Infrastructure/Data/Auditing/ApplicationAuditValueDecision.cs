@@ -8,4 +8,9 @@ public sealed record ApplicationAuditValueDecision(
     int? MaximumLength = null)
 {
     public static ApplicationAuditValueDecision Include { get; } = new(ApplicationAuditValueDisposition.Include);
+
+    /// <summary>
+    /// Gets a decision that records the property as changed while replacing its value with a fixed mask.
+    /// </summary>
+    public static ApplicationAuditValueDecision Mask { get; } = new(ApplicationAuditValueDisposition.Mask);
 }

@@ -96,10 +96,10 @@ public sealed class ApplicationDbContextBranchGapTests
         using var originalValues = JsonDocument.Parse(auditRecord.OriginalValues);
         using var currentValues = JsonDocument.Parse(auditRecord.CurrentValues);
 
-        Assert.Equal("original@example.com", originalValues.RootElement.GetProperty(nameof(ExternalLoginAccount.Email)).GetString());
-        Assert.Equal("New&User@example.com", currentValues.RootElement.GetProperty(nameof(ExternalLoginAccount.Email)).GetString());
-        Assert.Equal("ORIGINAL@EXAMPLE.COM", originalValues.RootElement.GetProperty(nameof(ExternalLoginAccount.NormalizedEmail)).GetString());
-        Assert.Equal("NEW&USER@EXAMPLE.COM", currentValues.RootElement.GetProperty(nameof(ExternalLoginAccount.NormalizedEmail)).GetString());
+        Assert.Equal("***", originalValues.RootElement.GetProperty(nameof(ExternalLoginAccount.Email)).GetString());
+        Assert.Equal("***", currentValues.RootElement.GetProperty(nameof(ExternalLoginAccount.Email)).GetString());
+        Assert.Equal("***", originalValues.RootElement.GetProperty(nameof(ExternalLoginAccount.NormalizedEmail)).GetString());
+        Assert.Equal("***", currentValues.RootElement.GetProperty(nameof(ExternalLoginAccount.NormalizedEmail)).GetString());
         Assert.Equal(originalStamp, originalValues.RootElement.GetProperty(nameof(DataEntity.ConcurrencyStamp)).GetString());
         Assert.Equal(account.ConcurrencyStamp, currentValues.RootElement.GetProperty(nameof(DataEntity.ConcurrencyStamp)).GetString());
 

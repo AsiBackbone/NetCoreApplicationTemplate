@@ -138,8 +138,8 @@ Configuration is controlled through `appsettings.json`:
   "RequestLogging": {
     "Enabled": true,
     "CorrelationHeaderName": "X-Correlation-ID",
-    "IncludeQueryString": false,
-    "IncludeUserName": true,
+    "IncludeUserName": false,
+    "IncludeRemoteIpAddress": false,
     "IncludeRemoteIpAddress": true,
     "ExcludedPathPrefixes": [
       "/health",
@@ -155,6 +155,15 @@ Configuration is controlled through `appsettings.json`:
 ```
 
 Query string logging is disabled by default because query strings may contain sensitive values. Applications should avoid logging request bodies, response bodies, cookies, authorization headers, access tokens, refresh tokens, or authentication payloads unless a specific, reviewed diagnostic need exists.
+
+User name and remote IP address logging are disabled by default for the same reason. Both identify a person, and request logs are commonly shipped to a central system and retained for longer than the data they describe, so enabling them is a decision about personal data rather than a diagnostic convenience. Enable either when the application needs request attribution and its log retention accounts for that:
+
+```json
+"IncludeUserName": true,
+"IncludeRemoteIpAddress": true
+```
+
+A logged remote IP address is only meaningful behind a proxy once forwarded headers are configured with trusted proxies or networks; see [Forwarded Headers](forwarded-headers.md). Without that, the value recorded is the proxy's address rather than the client's.
 
 See [Runtime Readiness Baseline](runtime-readiness.md) for the consolidated release-readiness view.
 
