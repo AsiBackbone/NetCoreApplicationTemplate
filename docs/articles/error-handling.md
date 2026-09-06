@@ -7,8 +7,10 @@ The application includes centralized error handling for both unhandled exception
 Error handling is configured through the application pipeline using:
 
 ```csharp
-app.UseApplicationErrorHandling();
+app.UseProblemDetails();
 ```
+
+This is the single error-handling registration. It adds the developer exception page in Development, or the production exception handler and HSTS outside it, and then branches status-code handling between Problem Details responses and the re-executed browser error page.
 
 The error handling behavior is environment-aware:
 
@@ -23,7 +25,7 @@ The error handling behavior is environment-aware:
 
 ## Implementation Locations
 
-- Environment-aware exception/status-code middleware: [`ApplicationBuilderExtensions.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/Extensions/ApplicationBuilderExtensions.cs)
+- Pipeline registration order: [`PipelineExtensions.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/Extensions/PipelineExtensions.cs)
 - API exception conversion: [`ProblemDetailsExceptionHandler.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/ErrorHandling/ProblemDetailsExceptionHandler.cs)
 - Problem Details customization/classification: [`ProblemDetailsExtensions.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/ErrorHandling/ProblemDetailsExtensions.cs), [`ProblemDetailsRequestClassifier.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/src/ProjectTemplate.Web/ErrorHandling/ProblemDetailsRequestClassifier.cs)
 

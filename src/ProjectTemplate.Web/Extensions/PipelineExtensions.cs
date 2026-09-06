@@ -28,8 +28,9 @@ public static class PipelineExtensions
         // 2. Structured request logging should see corrected scheme, host, and client IP.
         app.UseApplicationRequestLogging();
 
-        // 3. Centralized exception handling.
-        app.UseApplicationErrorHandling();
+        // 3. Centralized exception and status-code handling. This is the single registration: it adds the
+        //    developer exception page or the production exception handler and HSTS, then branches status-code
+        //    handling between Problem Details responses and the re-executed browser error page.
         app.UseProblemDetails();
 
         // 4. Optional security response headers.
