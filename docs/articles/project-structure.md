@@ -62,7 +62,7 @@ The .NET Core Application Template is organized as a compact, production-oriente
 ├── ASSETS-LICENSES.md
 ├── CHANGELOG.md
 ├── CITATION.cff
-├── CODE_OF_CONDUCT.md
+├── COMMUNITY_STANDARDS.md
 ├── CONTRIBUTING.md
 ├── Directory.Build.props
 ├── Directory.Packages.props

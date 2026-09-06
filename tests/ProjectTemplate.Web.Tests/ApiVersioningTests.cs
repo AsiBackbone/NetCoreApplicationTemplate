@@ -62,8 +62,11 @@ public sealed class ApiVersioningTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.True(response.Headers.Contains("api-deprecated-versions"));
         Assert.True(response.Headers.Contains("Deprecation"));
-        Assert.True(response.Headers.Contains("Sunset"));
         Assert.True(response.Headers.Contains("Link"));
+
+        // No Sunset date is configured by default, so no removal date is advertised. A template cannot supply a
+        // meaningful one; see DeprecatedVersionSunsetHeaderTests for the configured case.
+        Assert.False(response.Headers.Contains("Sunset"));
 
         ApplicationInformationResponse? body =
             await response.Content.ReadFromJsonAsync<ApplicationInformationResponse>(

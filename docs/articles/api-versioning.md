@@ -18,7 +18,8 @@ The default API version is configured under `ProjectTemplate:ApiVersioning`.
       "ReportApiVersions": true,
       "EnableUrlSegmentVersioning": true,
       "EnableHeaderVersioning": true,
-      "HeaderName": "X-API-Version"
+      "HeaderName": "X-API-Version",
+      "DeprecatedVersionSunset": null
     }
   }
 }
@@ -59,6 +60,16 @@ If an endpoint should also support header-based versioning without the version i
 ## Response Headers
 
 When `ReportApiVersions` is enabled, responses include API version headers that help clients discover supported and deprecated versions.
+
+A request for a deprecated version also receives `Deprecation: true` and a `Link` header naming the successor version.
+
+The `Sunset` header is advertised only when `DeprecatedVersionSunset` is configured, and is omitted otherwise. A sunset date commits to callers about when a version stops being served, so the template ships none: a date hard-coded here is arbitrary while it is in the future, and misleading once it passes, because every generated application would advertise a removal that already happened. Set it when the application actually retires a version:
+
+```json
+"DeprecatedVersionSunset": "2027-06-30T23:59:59+00:00"
+```
+
+The value is emitted in RFC 1123 form, as the `Sunset` header requires.
 
 ## Release Compatibility
 
