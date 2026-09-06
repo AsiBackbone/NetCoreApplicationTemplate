@@ -30,11 +30,13 @@ The application uses `src/ProjectTemplate.Web/appsettings.json` and normal envir
 
 ## Understand the Default Access Posture
 
-The default scaffold enables local cookie authentication. Authentication establishes the caller's identity.
+The default scaffold enables cookie authentication to store authenticated sessions, but it does not include local user accounts, a credential form, a seeded user, or an enabled external provider. Cookie authentication does not establish identity by itself.
 
 Authorization determines whether that identity may access an endpoint or operation. The default scaffold configures a fallback authorization policy requiring authentication for routed endpoints without authorization metadata. Intentionally public routes use explicit anonymous metadata such as `[AllowAnonymous]` or `.AllowAnonymous()`.
 
 Anonymous browser requests to protected MVC or Razor Page routes are redirected to `/Account/Login`. Protected API routes return an authentication challenge response appropriate to API callers.
+
+With the default provider configuration, the login page explains that no sign-in provider is configured. Enable and configure an external provider or add a host-owned identity flow before testing protected routes. If the application is intentionally unauthenticated while being developed, generate it with `--authProvider none` instead of treating the cookie session scheme as a login provider.
 
 The `--authProvider none` template option is an explicit opt-out. It disables application authentication, cookie authentication, and the authenticated fallback policy. Unannotated routed endpoints are public in that generated variant until another authentication and authorization posture is added.
 

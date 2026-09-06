@@ -1,6 +1,6 @@
 # Production Authentication Hardening Checklist
 
-The template enables local cookie authentication in the default scaffold and provides starter configuration for optional external providers. Production authentication remains provider-specific and environment-specific.
+The template enables a local cookie session handler in the default scaffold and provides starter configuration for optional external providers. It does not include local user accounts, a credential form, a seeded user, or an enabled sign-in provider. Production authentication remains provider-specific and environment-specific.
 
 Authentication establishes identity. Authorization determines whether that identity may access an endpoint or operation. The default scaffold also requires authentication for unannotated routed endpoints through the fallback authorization policy, but neither that policy nor starter provider configuration completes a production security model.
 
@@ -29,9 +29,9 @@ Before deployment, confirm:
 
 ## Authentication Cookie Secure Policy
 
-The local authentication cookie uses `CookieSecurePolicy.Always` by default. The cookie therefore receives the `Secure` attribute independently of the request scheme perceived by the application. Production deployments must serve authentication flows over HTTPS; a reverse-proxy or forwarded-header misconfiguration does not downgrade this cookie to a non-secure cookie.
+The authentication session cookie uses `CookieSecurePolicy.Always` by default. The cookie therefore receives the `Secure` attribute independently of the request scheme perceived by the application. Production deployments must serve authentication flows over HTTPS; a reverse-proxy or forwarded-header misconfiguration does not downgrade this cookie to a non-secure cookie.
 
-Local plain-HTTP authentication is available only through an explicit Development-only override:
+Local plain-HTTP session cookies are available only through an explicit Development-only override:
 
 ```json
 {

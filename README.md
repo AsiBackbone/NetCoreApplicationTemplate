@@ -25,9 +25,11 @@ Tag: `v2.7.0`
 
 ## Default Security Posture
 
-The default scaffold enables local cookie authentication. Authentication establishes the caller's identity.
+The default scaffold enables cookie authentication as the session handler. It does not include local user accounts, a credential form, a seeded user, or an enabled external provider. Cookie authentication stores an identity after a sign-in flow succeeds; it does not verify credentials or provide a login path by itself.
 
 Authorization determines whether that identity may access an endpoint or operation. NCAT configures a fallback authorization policy requiring an authenticated user for routed endpoints without authorization metadata. Intentionally public routes use explicit anonymous metadata such as `[AllowAnonymous]` or `.AllowAnonymous()`.
+
+With the default provider configuration, `/Account/Login` therefore explains that no sign-in provider is configured, and protected routes remain unavailable to anonymous users. Before testing protected application routes, enable and configure an external provider or add a host-owned identity flow. Use `--authProvider none` only when an intentionally unauthenticated scaffold is appropriate.
 
 The template also includes named policies for authenticated-user, administrator-role, and manage-application-permission requirements. These policy-based authorization controls layer stronger requirements beyond the authenticated-user baseline.
 
@@ -112,7 +114,7 @@ Template options:
 
 | Option | Default | Supported values | Behavior |
 |:---|:---|:---|:---|
-| `--authProvider` | `cookie` | `cookie`, `none` | Selects either local cookie authentication with authenticated fallback access, or the explicit authentication-disabled opt-out. |
+| `--authProvider` | `cookie` | `cookie`, `none` | Selects either the cookie session handler with authenticated fallback access, or the explicit authentication-disabled opt-out. The cookie option still requires a configured sign-in provider or host-owned identity flow. |
 | `--dbProvider` | `sqlite` | `sqlite`, `sqlserver`, `none` | Selects the generated EF Core data access mode. |
 | `--skipRestore` | `false` | `true`, `false` | Skips the post-create restore action. |
 

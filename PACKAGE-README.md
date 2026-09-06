@@ -12,7 +12,7 @@ This README is intended for NuGet package consumers. The full repository README 
 |---|---|
 | Package ID | `NetCoreApplicationTemplate` |
 | Template short name | `netcoreapp-template` |
-| Default authentication provider | `cookie` |
+| Default authentication session scheme | `cookie` (no default sign-in provider) |
 | Default data provider | `sqlite` |
 
 ## Install
@@ -37,7 +37,7 @@ Create a default scaffold:
 dotnet new netcoreapp-template -n ContosoSecurityPortal
 ```
 
-The default scaffold enables local cookie authentication and a fallback authorization policy that requires an authenticated user for routed endpoints without authorization metadata. Intentionally public routes must use explicit anonymous metadata such as `[AllowAnonymous]` or `.AllowAnonymous()`.
+The default scaffold enables cookie authentication as its session handler and a fallback authorization policy that requires an authenticated user for routed endpoints without authorization metadata. It does not include local user accounts, a credential form, a seeded user, or an enabled external provider. Cookie authentication does not verify credentials by itself, so protected routes remain unavailable until the consuming application enables an external provider or supplies its own identity flow. Intentionally public routes must use explicit anonymous metadata such as `[AllowAnonymous]` or `.AllowAnonymous()`.
 
 Generate with application authentication disabled:
 

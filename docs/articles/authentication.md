@@ -13,18 +13,20 @@
 
 ## Default Authentication Posture
 
-The base application enables the application authentication module and local cookie authentication by default.
+The base application enables the application authentication module and cookie session authentication by default.
 
 By default:
 
 - `ProjectTemplate:Authentication:Enabled` is `true`.
 - The default authenticate, challenge, and sign-in schemes use `Cookies`.
-- Local cookie authentication is enabled.
+- Cookie authentication is enabled to store an authenticated session after a configured sign-in flow succeeds.
 - External providers such as OpenID Connect, SAML2, Microsoft, Google, and GitHub are disabled.
 
-This gives applications a working local authentication baseline while keeping external identity provider integration opt-in.
+The default scaffold does not include ASP.NET Core Identity, local user accounts, a credential form, a seeded user, or an enabled external provider. Cookie authentication does not authenticate credentials by itself. Consequently, the default `/Account/Login` page has no sign-in action and protected routes remain unavailable to anonymous users until the consuming application enables an external provider or supplies its own identity flow. The login page states this condition explicitly instead of presenting the cookie session handler as a local login provider.
 
 To enable an external provider, keep application authentication enabled and set only the required provider configuration to enabled. For example, OIDC requires `ProjectTemplate:Authentication:Providers:OpenIdConnect:Enabled` to be set to `true` along with valid authority, client ID, and client secret values.
+
+For an intentionally public local scaffold that does not yet need identity, generate with `--authProvider none`. This explicitly disables authentication and the authenticated fallback policy; it is not a production identity configuration.
 
 Before enabling any real provider in production, review the [Production Authentication Hardening Checklist](authentication-hardening.md). Generated provider settings are starter configuration and must be bound to the consuming application's production URLs, provider registrations, claims contract, token policy, secret-management approach, session behavior, and MFA expectations.
 

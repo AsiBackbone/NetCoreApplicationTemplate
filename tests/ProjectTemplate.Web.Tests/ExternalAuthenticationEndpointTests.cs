@@ -115,6 +115,28 @@ public sealed class ExternalAuthenticationEndpointTests
     }
 
     /// <summary>
+    /// Verifies that the default login page explains that cookie authentication alone does not provide a sign-in path.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous test operation.</returns>
+    [Fact]
+    public async Task AccountLogin_WithDefaultProviderConfiguration_ExplainsMissingSignInPath()
+    {
+        using ApplicationWebApplicationFactory factory = new(new Dictionary<string, string?>());
+        using HttpClient client = factory.CreateHttpsClient();
+
+        using HttpResponseMessage response = await client.GetAsync(
+            "/Account/Login",
+            TestContext.Current.CancellationToken);
+
+        string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("No sign-in provider is configured.", content, StringComparison.Ordinal);
+        Assert.Contains("Cookie authentication stores authenticated sessions", content, StringComparison.Ordinal);
+        Assert.DoesNotContain("/External/Challenge", content, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// Verifies that the login page rejects external return URLs.
     /// </summary>
     /// <returns>A task that represents the asynchronous test operation.</returns>
