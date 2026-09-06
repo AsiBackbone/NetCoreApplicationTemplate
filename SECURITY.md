@@ -6,7 +6,7 @@ Security fixes are applied to the current stable line unless otherwise noted in 
 
 | Version line | Supported | Notes |
 |:---|:---:|:---|
-| `2.0.x` | Yes | Current stable line under the `NetCoreApplicationTemplate` NuGet package identity. |
+| `2.x` | Yes | Current stable line under the `NetCoreApplicationTemplate` NuGet package identity. |
 | `1.0.x` | Best effort | Legacy stable line under the previous `CDCavell.NetCoreApplicationTemplate` NuGet package identity. Upgrade to the current stable package when practical. |
 | Pre-1.0 releases | Best effort | Preview releases are not guaranteed to receive backported security fixes. Upgrade to the current stable release when practical. |
 | Older releases | Best effort | Support depends on severity, reproducibility, release impact, and maintainer availability. |

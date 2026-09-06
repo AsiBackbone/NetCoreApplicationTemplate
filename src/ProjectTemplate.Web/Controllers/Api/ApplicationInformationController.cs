@@ -1,5 +1,7 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using ProjectTemplate.Web.Options;
 
 namespace ProjectTemplate.Web.Controllers.Api;
 
@@ -11,13 +13,14 @@ namespace ProjectTemplate.Web.Controllers.Api;
 [ApiVersion("0.9", Deprecated = true)]
 [Route("api/v{version:apiVersion}/application-information")]
 [Route("api/application-information")]
-public sealed class ApplicationInformationController : ControllerBase
+public sealed class ApplicationInformationController(
+    IOptions<ApplicationApiVersioningOptions> apiVersioningOptions) : ControllerBase
 {
     private const string _deprecationHeaderName = "Deprecation";
     private const string _sunsetHeaderName = "Sunset";
 
-    private static readonly DateTimeOffset _deprecatedVersionSunsetDate =
-        new(2026, 12, 31, 23, 59, 59, TimeSpan.Zero);
+    private readonly ApplicationApiVersioningOptions _apiVersioningOptions =
+        apiVersioningOptions?.Value ?? throw new ArgumentNullException(nameof(apiVersioningOptions));
 
     /// <summary>
     /// Returns application API information for the requested API version.
@@ -53,8 +56,15 @@ public sealed class ApplicationInformationController : ControllerBase
     private void AppendDeprecationHeaders()
     {
         Response.Headers[_deprecationHeaderName] = "true";
-        Response.Headers[_sunsetHeaderName] = _deprecatedVersionSunsetDate.ToString("R", System.Globalization.CultureInfo.InvariantCulture);
         Response.Headers.Link = "</api/v1/application-information>; rel=\"successor-version\"";
+
+        // Sunset is advertised only when the application has configured a real removal date. A template cannot
+        // supply one: a shipped date is arbitrary until it passes, and misleading afterwards.
+        if (_apiVersioningOptions.DeprecatedVersionSunset is DateTimeOffset sunsetDate)
+        {
+            Response.Headers[_sunsetHeaderName] =
+                sunsetDate.ToString("R", System.Globalization.CultureInfo.InvariantCulture);
+        }
     }
 }
 

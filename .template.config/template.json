@@ -181,7 +181,6 @@
         "**/Logs/**",
         "**/*.log",
         "CHANGELOG.md",
-        "CODE_OF_CONDUCT.md",
         "CONTRIBUTING.md",
         "NetCoreApplicationTemplate.Template.csproj",
         "PACKAGE-README.md",
