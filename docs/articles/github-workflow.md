@@ -95,6 +95,16 @@ Feature-branch pushes are not CI triggers by default. Feature branches are valid
 
 Dependency update pull requests should be reviewed with the same CI expectations as manually authored pull requests.
 
+## Software Composition Analysis
+
+OWASP Dependency-Check runs in its own workflow, separately from CI. It scans the restored NuGet dependency graph and uploads SARIF results to GitHub code scanning. It runs weekly on a schedule, on `workflow_dispatch`, and on pushes to `main` that touch project or lock files. It does not run on pull requests.
+
+**It reports; it does not gate.** The scan is not invoked with `--failOnCVSS`, so a finding surfaces as a code-scanning alert rather than failing a build. That is deliberate given the trigger scope: a gate on a workflow that runs after merge would fail `main` rather than the change that introduced the finding, and every cross-ecosystem false positive would hold `main` red until a suppression was added.
+
+Findings are reviewed through code scanning, and the release checklist in `RELEASE.md` asks for explicit confirmation that dependency and audit scanning has no unresolved release-blocking findings before a stable tag. Treat that confirmation as the gate, not the workflow's exit code.
+
+Reviewed false positives are recorded in `dependency-check-suppressions.xml`. Each entry is scoped to an exact package and version so it expires naturally when that version is no longer referenced; prune entries whose versions are no longer in `Directory.Packages.props`.
+
 ## Documentation Publishing
 
 Documentation is built with DocFX and published to GitHub Pages from `main`.

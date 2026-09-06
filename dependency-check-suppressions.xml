@@ -38,15 +38,6 @@
         <vulnerabilityName>CVE-2026-54285</vulnerabilityName>
     </suppress>
     
-    <suppress until="2027-01-31Z">
-        <notes>
-            <![CDATA[
-      Reviewed cross-ecosystem false positives for the .NET OTLP exporter.
-    ]]>
-        </notes>
-        <packageUrl regex="true">^pkg:nuget/OpenTelemetry\.Exporter\.OpenTelemetryProtocol@1\.17\.0$</packageUrl>
-        <vulnerabilityName regex="true">^CVE-2026-(39882|39883|41178|44967)$</vulnerabilityName>
-    </suppress>
 
 
     <suppress until="2027-01-31Z">
@@ -62,35 +53,8 @@
         <vulnerabilityName>CVE-2026-54285</vulnerabilityName>
     </suppress>
 
-    <suppress until="2027-01-31Z">
-        <notes>
-            <![CDATA[
-      Reviewed cross-ecosystem false positives for OpenTelemetry .NET hosting.
-    ]]>
-        </notes>
-        <packageUrl regex="true">^pkg:nuget/OpenTelemetry\.Extensions\.Hosting@1\.17\.0$</packageUrl>
-        <vulnerabilityName regex="true">^CVE-2026-(39882|39883|41178|44967)$</vulnerabilityName>
-    </suppress>
 
-    <suppress until="2027-01-31Z">
-        <notes>
-            <![CDATA[
-      Reviewed cross-ecosystem false positives for ASP.NET Core instrumentation.
-    ]]>
-        </notes>
-        <packageUrl regex="true">^pkg:nuget/OpenTelemetry\.Instrumentation\.AspNetCore@1\.16\.0$</packageUrl>
-        <vulnerabilityName regex="true">^CVE-2026-(39882|39883|41178|44967)$</vulnerabilityName>
-    </suppress>
 
-    <suppress until="2027-01-31Z">
-        <notes>
-            <![CDATA[
-      Reviewed cross-ecosystem false positives for HTTP instrumentation.
-    ]]>
-        </notes>
-        <packageUrl regex="true">^pkg:nuget/OpenTelemetry\.Instrumentation\.Http@1\.16\.0$</packageUrl>
-        <vulnerabilityName regex="true">^CVE-2026-(39882|39883|41178|44967)$</vulnerabilityName>
-    </suppress>
 
     <!--
     CVE-2012-2055 applies to historical GitHub Enterprise behavior,
