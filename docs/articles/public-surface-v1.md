@@ -18,14 +18,14 @@ The following identifiers are part of the stable public surface.
 |:---|:---|
 | Current NuGet package ID | `NetCoreApplicationTemplate` |
 | Previous NuGet package ID | `CDCavell.NetCoreApplicationTemplate` |
-| Template identity | `CDCavell.NetCoreApplicationTemplate.CSharp` |
-| Template group identity | `CDCavell.NetCoreApplicationTemplate` |
+| Template identity | `AsiBackbone.NetCoreApplicationTemplate.CSharp` |
+| Template group identity | `AsiBackbone.NetCoreApplicationTemplate` |
 | Template name | `.NET Core Application Template` |
 | `dotnet new` short name | `netcoreapp-template` |
 | Source replacement name | `ProjectTemplate` |
 | Preferred name directory | `true` |
 
-The `2.0.0` release moved the public NuGet package ID to `NetCoreApplicationTemplate`. The internal template identity and group identity remain unchanged for template metadata continuity.
+The `2.0.0` release moved the public NuGet package ID to `NetCoreApplicationTemplate`. The `2.8.0` release aligned the internal template identity and group identity with the AsiBackbone organization while preserving the package ID and `dotnet new` short name.
 
 Changing, removing, or repurposing these values after a stable release is a breaking change unless the old value remains supported through an intentional compatibility path.
 

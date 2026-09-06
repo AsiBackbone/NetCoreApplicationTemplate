@@ -4,6 +4,62 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
+## 2.8.0 - 2026-09-06
+
+### Added
+
+* Added persistent ASP.NET Core Data Protection key-ring configuration with a stable application discriminator, durable Docker Compose storage, and a shared Kubernetes volume example.
+* Added checked-in NuGet lock files to generated projects and locked-mode restore validation for repository, scaffold, and Docker builds.
+* Added a configurable `DeprecatedVersionSunset` API-versioning option; deprecated endpoints omit the `Sunset` header until a consuming application supplies a meaningful date.
+* Added complete shared-layout rendering for login, access-denied, and browser error views.
+* Added template-content overlay, scaffold-reference, package-lock, and repository-lint validation to prevent generated-output drift and maintainer-only content leakage.
+* Added pinned Trivy scanning for the exported release container image and automated base-image dependency tracking.
+
+### Changed
+
+* Moved the pinned .NET SDK feature band to `10.0.400` across repository, generated-project, container, CI, and documentation surfaces.
+* Aligned the internal template identity and group identity with the `AsiBackbone` organization namespace while preserving the public package ID and template short name.
+* Changed production forwarded-header validation to require explicit trusted proxy or network configuration by default when forwarded client addresses and rate limiting are enabled.
+* Changed generated SQL Server scaffolds to omit SQLite-specific migration source and migration tests.
+* Changed request logging to exclude user names and remote IP addresses by default and changed the built-in external-login audit policy to mask contact fields.
+* Changed repository-only coverage and lint tests so they are not distributed into consumer scaffolds; generated tests now inherit each scaffold's own authentication posture.
+* Added uppercase project-name replacement so environment-variable and Docker Compose identifiers no longer retain `PROJECTTEMPLATE` tokens.
+* Updated GitHub Actions dependencies and pruned stale dependency-scan suppressions and unused package entries.
+* Updated release, package, citation, documentation, Kubernetes, and template-packaging metadata for release `2.8.0`.
+
+### Fixed
+
+* Corrected Data Protection behavior across restarts and replicas by persisting keys outside the application container filesystem.
+* Corrected the default authentication sign-in guidance so the cookie handler is not described as a credential-verification flow.
+* Removed duplicate error-handling middleware registration and made the advertised Problem Details test endpoint routable.
+* Restricted the error route to pipeline-routed requests and prevented callers from choosing arbitrary response status codes through its route value.
+* Realigned template content with repository `appsettings.json` so rate-limit fallback settings reach generated projects.
+* Removed the stale generated SQL migration script from repository, package, and scaffold output.
+* Corrected asset license notices and ensured the consumer-facing license inventory is packaged and scaffolded.
+* Removed the dangling `CITATION.cff` solution item from generated solutions.
+* Removed the unused authenticated GitHub Packages source from repository restore configuration.
+* Corrected CI template cleanup to uninstall by package ID and fail visibly when cleanup fails.
+* Excluded SQLite database files and sidecars from recursive package inputs.
+
+### Security
+
+* Made persistent Data Protection keys an explicit deployment surface so authentication cookies and other protected payloads remain valid across restarts and replicas.
+* Made missing production proxy trust fail fast by default instead of allowing misleading client-IP logging and rate-limit partitioning.
+* Reduced default personal-data retention in audit rows and request logs.
+* Enforced central transitive package pinning so the secured `System.Drawing.Common` version cannot fall back to the vulnerable `4.7.0` dependency selected by the SAML dependency chain.
+* Added release-container vulnerability scanning and prevented local SQLite artifacts from entering template packages.
+
+### Compatibility
+
+* This is a backward-compatible minor release within the stable `2.x` package line.
+* The public NuGet package ID remains `NetCoreApplicationTemplate`.
+* The template short name remains `netcoreapp-template`, and supported template options remain unchanged.
+* The internal template identity changes to `AsiBackbone.NetCoreApplicationTemplate.CSharp`, and the group identity changes to `AsiBackbone.NetCoreApplicationTemplate`.
+* Existing projects generated from earlier releases are not modified automatically.
+* New production deployments that process forwarded client addresses must configure trusted proxies or networks, or deliberately opt out of strict startup validation.
+* Consumers that require user-name or remote-IP request logging must now opt in explicitly and apply appropriate retention controls.
+* Deprecated API versions emit a `Sunset` header only after the consuming application configures a date.
+
 ## 2.7.0 - 2026-08-30
 
 ### Added

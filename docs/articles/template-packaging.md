@@ -13,12 +13,12 @@ Package-based validation is preferred because it verifies the actual distributio
 | Template short name | `netcoreapp-template` |
 | Current NuGet package ID | `NetCoreApplicationTemplate` |
 | Previous NuGet package ID | `CDCavell.NetCoreApplicationTemplate` |
-| Template identity | `CDCavell.NetCoreApplicationTemplate.CSharp` |
-| Template group identity | `CDCavell.NetCoreApplicationTemplate` |
+| Template identity | `AsiBackbone.NetCoreApplicationTemplate.CSharp` |
+| Template group identity | `AsiBackbone.NetCoreApplicationTemplate` |
 | Source replacement token | `ProjectTemplate` |
-| Current package version | `2.7.0` |
+| Current package version | `2.8.0` |
 
-The `2.0.0` release moved the public NuGet package ID to `NetCoreApplicationTemplate`. The internal template identity and group identity remain unchanged for template metadata continuity.
+The `2.0.0` release moved the public NuGet package ID to `NetCoreApplicationTemplate`. Release `2.8.0` aligns the internal template identity and group identity with the `AsiBackbone` organization namespace. The public package ID and template short name remain unchanged.
 
 ## Consumer Scaffold Boundaries
 
@@ -112,13 +112,13 @@ dotnet pack ./NetCoreApplicationTemplate.Template.csproj --configuration Release
 Install the published package from NuGet:
 
 ```powershell
-dotnet new install NetCoreApplicationTemplate::2.7.0
+dotnet new install NetCoreApplicationTemplate::2.8.0
 ```
 
 Install a locally packed package:
 
 ```powershell
-dotnet new install ./artifacts/template-package/NetCoreApplicationTemplate.2.7.0.nupkg
+dotnet new install ./artifacts/template-package/NetCoreApplicationTemplate.2.8.0.nupkg
 ```
 
 ## Create a New Project from the Template
