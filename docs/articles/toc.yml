@@ -83,6 +83,8 @@
       href: build-quality.md
     - name: Container Release Publishing
       href: container-publish.md
+    - name: Repository Security Profile
+      href: repository-security-profile.md
     - name: GitHub Workflow
       href: github-workflow.md
 

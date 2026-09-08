@@ -197,23 +197,19 @@ git branch --merged
 
 Do not commit private operational values or credentials. Use environment variables, user secrets, or approved secret stores for sensitive configuration.
 
-## Solo-Maintainer Hardening Profile
+## v2.x Maintainer Security Profile
 
-This repository operates a solo-maintainer hardening profile through v1.x.
+The current `2.x` line operates under a solo-maintainer security profile with automated NuGet and container publication already treated as normal repository operations. The earlier v1.x publication triggers are no longer the governance boundary.
 
-While the project has a single maintainer and no external contributors, the repository relies on protected branches, pull requests, CI validation, CodeQL, Dependency Review, Dependabot, explicit workflow permissions, and documented release/security procedures.
+The profile requires protected pull-request flow for `main`, required status checks, Code Owner review for owned-path changes where GitHub can enforce it, stale-approval dismissal, secret scanning, secret-scanning push protection, Dependabot security updates, least-privilege workflow permissions, and protected publishing environments.
 
-The following controls should be enabled before merging the first external pull request or before adding any repository collaborator:
+Because there is only one maintainer, the profile deliberately keeps the general required approval count at zero, keeps approval of the most recent reviewable push disabled, and defers required signed commits. Those controls require either an independent reviewer or a repository-wide signing policy and would otherwise force routine bypasses. Administrator bypass remains available only for the documented solo-maintainer merge path and emergencies; it is not permission for routine direct pushes to `main`.
 
-- Signed commit requirement on protected branches.
-- Required pull request reviewer approval.
-- Code Owner review is required for pull requests targeting `main` when owned paths are changed.
-- Stale pull request approvals are dismissed when new reviewable commits are pushed.
-- General required approval counts remain deferred until additional maintainers are added.
-- Review of branch protection settings for `main` and any long-lived development branch.
-- Review of repository secrets, environment secrets, and package publishing permissions.
+Short-lived `release/*` branches are preparation branches rather than a separate trust boundary. Release changes must merge through protected `main`, and release tags that trigger package or container publication must point to the merged `main` commit.
 
-Trigger conditions for moving beyond the solo-maintainer profile include the first external pull request, first repository collaborator, first automated package publishing workflow, first automated container image publishing workflow, a confirmed credential exposure, or repeated high-risk dependency/security findings.
+The complete control matrix, secret-pattern policy, emergency bypass rules, publishing boundaries, and transition criteria are documented in [Repository Security Profile](docs/articles/repository-security-profile.md).
+
+Move beyond the solo-maintainer profile when another maintainer receives write-or-higher repository access, independent review becomes routinely available, publication authority expands, organizational policy requires two-person controls, or a security incident shows that the current bypass model is insufficient.
 
 ## GitHub Actions Supply-Chain Policy
 
@@ -226,6 +222,7 @@ GitHub Actions workflows should use explicit workflow or job-level permissions, 
 - [Maintainers](MAINTAINERS.md)
 - [Security Policy](SECURITY.md)
 - [GitHub Workflow](docs/articles/github-workflow.md)
+- [Repository Security Profile](docs/articles/repository-security-profile.md)
 - [Configuration](docs/articles/configuration.md)
 - [Deployment Notes](docs/articles/deployment.md)
 - [Architecture Decision Records](docs/adr/index.md)

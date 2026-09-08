@@ -58,24 +58,31 @@ The `main` branch is the stable integration branch and should be protected.
 
 Expected `main` branch controls include:
 
-- Changes flow through pull requests instead of direct pushes.
-- Pull requests targeting `main` require Code Owner review when owned paths are changed.
+- Changes flow through pull requests instead of routine direct pushes.
+- Required status checks pass before merge.
+- Pull requests targeting `main` require Code Owner review when owned paths are changed and GitHub can obtain an independent Code Owner approval.
 - Stale pull request approvals are dismissed when new reviewable commits are pushed.
-- Required status checks must pass before merge.
-- Branches should be current enough to merge cleanly.
-- Linear history or squash/rebase merge strategy should be preserved according to repository settings.
-- Administrative bypass should be avoided for normal development.
-- Workflow, release, security, package, and governance changes should receive deliberate maintainer review.
-- General required approvals are intentionally not enabled while the repository operates under a solo-maintainer model.
-- Required pull request approvals may be enabled later when additional maintainers are added.
-- Required approval of the most recent reviewable push is not currently enabled.
+- General required approvals remain at zero while the repository has only one maintainer.
+- Approval of the most recent reviewable push remains disabled while no second authorized reviewer exists.
+- Required signed commits remain deferred until a repository-wide signing policy is practical.
+- Force pushes and branch deletion remain disabled for `main`.
+- Linear history or squash/rebase merge strategy is preserved according to repository settings.
+- Administrator bypass is retained only for the solo-maintainer self-authored PR path and documented emergencies; it is not a routine direct-push path.
+- Workflow, release, security, package, and governance changes receive deliberate maintainer review.
+
+The authoritative rationale and emergency procedure are documented in [Repository Security Profile](docs/articles/repository-security-profile.md).
+
+Short-lived `release/*` branches do not carry independent publishing authority. They are created from `main`, validated, merged back through protected `main`, and only then may the merged `main` commit be tagged for publication. Protect any release branch equivalently to `main` if it becomes long-lived or begins accepting independent changes.
 
 ## Adding Maintainers
 
 Additional maintainers should not be added casually. Before expanding maintainership, review:
 
-- Repository permissions.
-- Branch protection rules.
+- Repository permissions and the documented v2.x security profile.
+- Branch protection rules, including enabling independent approval requirements where appropriate.
+- Whether approval of the most recent reviewable push should now be required.
+- Whether administrator bypass can be removed or narrowed.
+- Whether required signed commits should now be enabled.
 - Environment protection rules.
 - NuGet and GitHub Packages publishing permissions.
 - CODEOWNERS coverage.
