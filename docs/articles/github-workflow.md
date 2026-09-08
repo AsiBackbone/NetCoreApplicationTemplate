@@ -49,24 +49,26 @@ Prefer small, focused pull requests. Documentation-only, dependency-only, and ru
 
 ## Branch Protection
 
-The `main` branch is treated as the stable integration branch. Changes should be made through pull requests rather than direct pushes.
+The `main` branch is the stable integration and publishing source branch. The authoritative v2.x control decisions are documented in [Repository Security Profile](repository-security-profile.md).
 
-Pull requests targeting `main` require Code Owner review when files match `.github/CODEOWNERS`.
-
-GitHub branch protection is configured to dismiss stale pull request approvals when new reviewable commits are pushed. This ensures pull requests are re-evaluated after changes.
-
-General required approval counts are not currently enabled under the solo-maintainer model. This may be enabled later when additional maintainers are added.
+Current solo-maintainer behavior is intentionally asymmetric: external or automation-authored changes to owned paths require maintainer Code Owner review, while maintainer-authored pull requests cannot obtain independent self-approval. General required approvals therefore remain at zero, approval of the most recent reviewable push remains disabled, and required signed commits remain deferred. Administrator bypass is retained only for the documented self-authored PR path and emergencies; routine direct pushes to `main` are not part of the workflow.
 
 Before merging, review that:
 
 - The branch is current enough to merge cleanly.
 - Required validation checks have passed.
-- Required Code Owner review has been approved when owned files are changed.
-- Any stale approvals caused by new commits have been re-approved.
+- Required Code Owner review has been approved when an independent Code Owner approval is available.
+- Any stale approvals caused by new reviewable commits have been re-approved.
 - The pull request scope matches the issue or stated goal.
 - Documentation has been updated when behavior or workflow expectations change.
 
 After changing workflow triggers, review branch protection required checks so old push-scoped duplicate check names are not still required.
+
+### Release Branches and Tags
+
+Short-lived `release/*` branches are preparation branches, not an independent protection or publishing boundary. Create them from the current `main`, validate the release changes, and merge them back through a pull request to protected `main`.
+
+Do not create a production `v*.*.*` tag from an unmerged release branch. Package and container publication tags should resolve to the release commit already merged into `main`. If a release branch becomes long-lived or starts accepting changes that do not immediately flow through `main`, protect it equivalently to `main`.
 
 ## CI Validation
 
@@ -116,6 +118,12 @@ Documentation updates should be validated by checking:
 - Resource files such as images or examples are included as DocFX resources when needed.
 - Links are relative and work in the published site.
 
+## NuGet Package Publishing
+
+The Publish Template Package workflow publishes release tags and can also be run manually for pack-only validation. NuGet.org publication uses NuGet Trusted Publishing through GitHub Actions OIDC rather than a long-lived NuGet API key.
+
+The publish job uses the `template-package-publish` GitHub environment. Keep deliberate maintainer approval on that environment, and keep `id-token: write` scoped only to the job that performs Trusted Publishing login. Changes to package publishing, environment names, OIDC identity, package ownership, or registry targets require security/release review before the next stable tag.
+
 ## Container Publishing
 
 The Publish Container workflow runs on tag pushes matching:
@@ -134,7 +142,7 @@ ghcr.io/asibackbone/netcoreapplicationtemplate
 
 Stable tags publish the full version tag, the major tag, and `latest`. Prerelease tags publish only the full version tag.
 
-The publish job uses the `container-publish` GitHub environment. Configure that environment with required reviewers before the first production publish so the first GHCR publication has a manual approval gate.
+The publish job uses the `container-publish` GitHub environment. Keep deliberate maintainer approval on that environment so every production GHCR publication retains a manual approval gate.
 
 See [Container Release Publishing](container-publish.md) for details.
 

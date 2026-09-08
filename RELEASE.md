@@ -10,7 +10,8 @@ This runbook is intentionally version-neutral. The current stable NuGet package 
 2. Create a release branch from the current `main` head.
 3. Confirm all planned release-readiness issues are merged before opening the release PR.
 4. Avoid feature work on the release branch unless it directly addresses release validation, documentation, packaging, or blocking defects.
-5. Use a release-candidate tag, dry-run workflow, or pre-release GitHub Release before creating a DOI-bearing stable release when release automation, NuGet publication, Zenodo metadata, signing, SBOM generation, container publication, or documentation publication has changed since the previous release.
+5. Treat the release branch as a short-lived preparation branch rather than a publishing boundary. Merge the completed release PR into protected `main` before creating any production `v*.*.*` tag.
+6. Use a release-candidate tag, dry-run workflow, or pre-release GitHub Release before creating a DOI-bearing stable release when release automation, NuGet publication, Zenodo metadata, signing, SBOM generation, container publication, or documentation publication has changed since the previous release.
 
 Example:
 
@@ -24,6 +25,8 @@ git checkout -b release/vMAJOR.MINOR.PATCH
 
 Complete these checks before tagging a stable release:
 
+- Confirm the [Repository Security Profile](docs/articles/repository-security-profile.md) still matches effective GitHub settings, including secret-scanning push protection, `main` branch protection, and required reviewers on `template-package-publish` and `container-publish`.
+- Confirm the production release tag will point to the release commit after it is merged into `main`, not to an unmerged release branch commit.
 - Confirm CI passes on the release branch.
 - Confirm CodeQL/security scanning passes.
 - Confirm dependency/audit scanning has no unresolved release-blocking findings.

@@ -26,13 +26,13 @@ Prerelease tags publish the full version tag only and do not update `latest` or 
 
 ## Release Safety Gate
 
-The publish job targets the `container-publish` GitHub environment. Configure that environment with required reviewers before the first production publish so the initial GHCR publication has a manual approval gate.
+The publish job targets the `container-publish` GitHub environment. The environment is an ongoing publication boundary, not a one-time bootstrap step. Keep deliberate maintainer approval enabled so every production GHCR publication has a manual approval gate.
 
 Recommended environment settings:
 
 - Environment name: `container-publish`
 - Required reviewers: repository owner or maintainer
-- Deployment branches and tags: allow protected release tags as appropriate
+- Deployment branches and tags: allow release tags created from the protected `main` release commit
 
 ## Build and Scan Flow
 
@@ -99,7 +99,8 @@ curl http://localhost:8080/health/ready
 ## Release Checklist
 
 ```text
-[ ] Confirm the release tag follows semantic versioning.
+[ ] Confirm the release tag follows semantic versioning and resolves to the release commit already merged into `main`.
+[ ] Confirm the `container-publish` environment still requires deliberate maintainer approval.
 [ ] Confirm CI and template smoke tests are passing.
 [ ] Confirm Docker build succeeds locally or in CI.
 [ ] Confirm Trivy scan has no unaccepted Critical or High findings.

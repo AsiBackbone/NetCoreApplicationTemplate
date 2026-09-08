@@ -1,12 +1,15 @@
 # Repository ownership
 #
-# This project currently operates under a solo-maintainer ownership model.
+# This project operates the v2.x solo-maintainer security profile.
 # Keep source, tests, documentation, workflows, template configuration, release,
 # and security/governance files owned by the repository maintainer until a
 # broader maintainer group is intentionally documented.
 #
-# Code Owner review is required by branch protection for pull requests targeting main.
-# Approvals are dismissed when new reviewable commits are pushed.
+# Branch protection uses Code Owner review for owned-path changes. External or
+# automation-authored pull requests must receive maintainer review. A sole Code Owner
+# cannot independently approve their own pull request, so any administrative bypass
+# is constrained by docs/articles/repository-security-profile.md and is not a routine
+# direct-push path. Stale approvals are dismissed after reviewable changes.
 
 * @cdcavell
 

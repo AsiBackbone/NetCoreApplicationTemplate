@@ -68,6 +68,16 @@ If a credential, token, key, certificate, connection string, or other secret is 
 
 Secrets scan reports should be stored outside tracked source control, preferably under ignored local paths such as `artifacts/security/`.
 
+## Repository Secret-Scanning Controls
+
+The v2.x repository security profile requires GitHub secret scanning and secret-scanning push protection to remain enabled. Push protection is a preventive control: supported high-confidence secrets should be blocked before they reach repository history rather than relying only on post-commit alerts.
+
+Provider-backed patterns supported by GitHub push protection should remain enabled. Generic, non-provider, and custom patterns are evaluated separately because broad patterns can create false positives. Add a custom pattern only when the repository has a concrete secret format that is not already covered, test the pattern against representative content, and enable push protection for that pattern when GitHub supports it and the false-positive rate is acceptable.
+
+Validity checks should be enabled for supported provider patterns when the repository plan and GitHub feature set make them available. Treat validity as a remediation-priority signal, not permission to keep an exposed credential: a committed credential should still be revoked or rotated even when a validity check reports it inactive or cannot determine its state.
+
+Repository settings are not version-controlled. Verify secret scanning, push protection, Dependabot security updates, branch protection, and publishing-environment reviewers against the [Repository Security Profile](docs/articles/repository-security-profile.md) before each stable release and after material permission or publishing changes.
+
 ## Repository Publish Permissions
 
 Repository and environment permissions must be scoped to the narrowest workflow that requires them.
@@ -87,7 +97,9 @@ NuGet package author signing remains deferred while the repository remains solo-
 
 NuGet.org publication uses NuGet Trusted Publishing through GitHub Actions OIDC for the current `NetCoreApplicationTemplate` package line. Official package artifacts are produced only by the maintainer-controlled release workflow. External contributors do not publish NuGet packages directly and are not expected to sign generated `.nupkg` artifacts. If package signing is introduced later, release artifacts should be signed by a project-controlled certificate through the protected release workflow, not by individual contributors.
 
-External contributor trust is handled separately from package signing. External contributions should enter through pull requests, required CI checks, Code Owner review when owned paths change, branch protection, dependency review, CodeQL/security scanning, and maintainer approval before merge. Signed commits may be required later if the repository moves beyond the solo-maintainer profile.
+External contributor trust is handled separately from package signing. External contributions should enter through pull requests, required CI checks, Code Owner review when owned paths change, branch protection, dependency review, CodeQL/security scanning, and maintainer approval before merge.
+
+Required signed commits are intentionally deferred under the current solo-maintainer profile. GitHub evaluates commits introduced by a pull request against signed-commit protection, so enabling the control without a repository-wide signing policy can block otherwise valid maintainer, automation, or contributor branches. Revisit commit-signature enforcement when an independent maintainer is added, a source-signing policy is established, or consumer/governance requirements justify the additional constraint. This decision does not weaken package or container publication controls: NuGet Trusted Publishing, protected environments, container keyless signing, and provenance remain separate release safeguards.
 
 Revisit the package-signing decision when any of the following conditions occur:
 
