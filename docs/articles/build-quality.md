@@ -114,6 +114,24 @@ The CI workflow additionally:
 - Scaffolds a consumer project.
 - Verifies expected scaffolded files and excluded maintainer files.
 - Builds and tests scaffolded output on Linux, Windows, and macOS.
+- Builds and tests all six supported `authProvider` / `dbProvider` combinations on Linux.
+
+### Template Option Matrix
+
+The template supports two authentication choices (`cookie`, `none`) and three database choices (`sqlite`, `sqlserver`, `none`). CI validates the complete six-combination cross product on Linux in addition to the default cross-platform smoke test.
+
+Every matrix entry:
+
+- Packs and installs the template package.
+- Generates `ContosoSecurityPortal` with the selected authentication and database options.
+- Validates the generated scaffold against `eng/scaffold-manifest.default.json`.
+- Runs `eng/Assert-TemplateOptionScaffold.ps1` to verify authentication, fallback-authorization, data-provider, connection-string, and migration-content expectations.
+- Verifies generated package lock files.
+- Restores with locked mode, builds in Release configuration, and runs the generated tests.
+
+The matrix is intentionally Linux-only because the default `cookie` + `sqlite` scaffold already retains Linux, Windows, and macOS coverage. Runtime-heavy Docker build, Compose, and health-probe validation also remains on that representative default Linux smoke path rather than running for every option combination.
+
+Matrix concurrency is capped at three entries and every matrix job has a 20-minute timeout. This bounds runner pressure and prevents a single stalled combination from extending CI indefinitely while still allowing the six combinations to complete in parallel waves.
 
 ## Scaffolded Output
 
