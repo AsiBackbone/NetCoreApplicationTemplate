@@ -418,6 +418,97 @@ jobs:
         shell: pwsh
         run: dotnet new uninstall NetCoreApplicationTemplate
 
+  template-option-matrix:
+    name: Template options (${{ matrix.authProvider }} + ${{ matrix.dbProvider }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        authProvider:
+          - cookie
+          - none
+        dbProvider:
+          - sqlite
+          - sqlserver
+          - none
+
+    env:
+      AUTH_PROVIDER: ${{ matrix.authProvider }}
+      DB_PROVIDER: ${{ matrix.dbProvider }}
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Pack template package
+        shell: pwsh
+        run: |
+          dotnet pack ./NetCoreApplicationTemplate.Template.csproj `
+            --configuration $env:CONFIGURATION `
+            --output ./artifacts/template-package `
+            /p:ContinuousIntegrationBuild=true
+
+      - name: Install template package
+        shell: pwsh
+        run: |
+          $package = Get-ChildItem -Path ./artifacts/template-package -Filter *.nupkg | Select-Object -First 1
+
+          if (-not $package) {
+              Write-Error "Template package was not created."
+              exit 1
+          }
+
+          dotnet new install $package.FullName
+
+      - name: Scaffold option combination
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path ./artifacts/scaffold -Force | Out-Null
+          dotnet new netcoreapp-template `
+            --name ContosoSecurityPortal `
+            --output ./artifacts/scaffold/ContosoSecurityPortal `
+            --skipRestore=true `
+            --authProvider=$env:AUTH_PROVIDER `
+            --dbProvider=$env:DB_PROVIDER
+
+      - name: Validate option-specific scaffold
+        shell: pwsh
+        run: |
+          ./eng/Validate-ScaffoldManifest.ps1 -ScaffoldRoot ./artifacts/scaffold/ContosoSecurityPortal
+          ./eng/Assert-TemplateOptionScaffold.ps1 `
+            -ScaffoldRoot ./artifacts/scaffold/ContosoSecurityPortal `
+            -AuthProvider $env:AUTH_PROVIDER `
+            -DbProvider $env:DB_PROVIDER
+          ./eng/Test-PackageLockFiles.ps1 -Root ./artifacts/scaffold/ContosoSecurityPortal
+
+      - name: Restore and build option combination
+        shell: pwsh
+        working-directory: ./artifacts/scaffold/ContosoSecurityPortal
+        run: |
+          dotnet restore ./ContosoSecurityPortal.slnx --locked-mode
+          dotnet build ./ContosoSecurityPortal.slnx --configuration $env:CONFIGURATION --no-restore /p:ContinuousIntegrationBuild=true
+
+      - name: Test option combination
+        shell: pwsh
+        working-directory: ./artifacts/scaffold/ContosoSecurityPortal
+        run: dotnet test ./ContosoSecurityPortal.slnx --configuration $env:CONFIGURATION --no-build --verbosity normal /p:ContinuousIntegrationBuild=true
+
+      - name: Uninstall template package
+        if: always()
+        shell: pwsh
+        run: dotnet new uninstall NetCoreApplicationTemplate
+
   codeql-analysis:
     name: CodeQL analysis
     runs-on: ubuntu-latest
