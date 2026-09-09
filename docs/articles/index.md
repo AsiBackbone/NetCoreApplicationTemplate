@@ -48,10 +48,13 @@ This section is the task-oriented implementation reference for the .NET Core App
 
 ## Release & Compatibility
 
-- [v1.0 Migration Guide](v1-migration-guide.md)
 - [Build Quality and Reproducibility](build-quality.md)
 - [Container Release Publishing](container-publish.md)
 - [GitHub Workflow](github-workflow.md)
+
+## Historical Archive
+
+- [v0.5.x to v1.0 Migration Guide](v1-migration-guide.md) — retained at its original URL for preview-release consumers.
 
 Architecture Decision Records and generated API documentation are available as first-class top-level sections of the site.
 

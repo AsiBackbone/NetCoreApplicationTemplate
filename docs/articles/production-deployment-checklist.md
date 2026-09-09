@@ -20,7 +20,6 @@ Related docs:
 - [Build Quality and Reproducibility](build-quality.md)
 - [GitHub Workflow](github-workflow.md)
 - [Template Packaging](template-packaging.md)
-- [v1.0 Migration Guide](v1-migration-guide.md)
 
 ## 2. Hosting and Environment
 
@@ -273,7 +272,6 @@ Before completing deployment, verify:
 Related docs:
 
 - [Release Checklist](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/RELEASE.md)
-- [v1.0 Migration Guide](v1-migration-guide.md)
 
 ## Summary
 
