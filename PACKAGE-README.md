@@ -104,11 +104,12 @@ dotnet new uninstall NetCoreApplicationTemplate
 ## Additional resources
 
 - GitHub repository: https://github.com/AsiBackbone/NetCoreApplicationTemplate
-- Published documentation: https://AsiBackbone.github.io/NetCoreApplicationTemplate/
-- Template packaging documentation: https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/template-packaging.html
+- Published documentation: https://asibackbone.github.io/NetCoreApplicationTemplate/
+- Template packaging documentation: https://asibackbone.github.io/NetCoreApplicationTemplate/articles/template-packaging.html
+- Community questions and feedback: https://github.com/AsiBackbone/NetCoreApplicationTemplate/discussions
 - Changelog: CHANGELOG.md
 - License: LICENSE.txt
 - Releases: https://github.com/AsiBackbone/NetCoreApplicationTemplate/releases
-- Coverage Report: https://AsiBackbone.github.io/NetCoreApplicationTemplate/coverage/index.html
+- Coverage Report: https://asibackbone.github.io/NetCoreApplicationTemplate/coverage/index.html
 
 Generated projects receive their own consumer-oriented README from the scaffold. This package README is intentionally limited to NuGet installation, scaffold options, validation commands, and consumer-facing reference links.

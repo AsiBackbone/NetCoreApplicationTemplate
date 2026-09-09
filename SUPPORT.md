@@ -4,7 +4,13 @@ This project provides a reusable ASP.NET Core application template. Support is f
 
 ## Support Channels
 
-Use GitHub issues for:
+Use [GitHub Discussions](https://github.com/AsiBackbone/NetCoreApplicationTemplate/discussions) for:
+
+- Setup and usage questions.
+- Design, extension, or application-specific guidance that is not a template defect.
+- Community feedback and open-ended ideas that are not yet focused feature requests.
+
+Use [GitHub Issues](https://github.com/AsiBackbone/NetCoreApplicationTemplate/issues) for:
 
 - Reproducible bugs in the template source or generated scaffold output.
 - Documentation gaps or incorrect examples.
