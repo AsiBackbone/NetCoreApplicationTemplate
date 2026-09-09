@@ -23,6 +23,7 @@ GitHub repository, branch-protection, security-analysis, and environment setting
 | Administrator bypass | Retained but constrained | Used only for the documented solo-maintainer self-authored PR path or an emergency; never as a routine direct-push workflow. |
 | Force pushes / branch deletion on `main` | Disabled | Preserve protected history and the stable integration branch. |
 | `release/*` branches | Short-lived preparation branches | They do not carry independent publishing authority; production tags come from the release commit merged into `main`. |
+| Merged head-branch cleanup | Automatic deletion enabled | Keep `main` as the only permanent branch; tags, releases, artifacts, and merged commits preserve release evidence. |
 | `template-package-publish` environment | Deliberate maintainer approval required | Protect NuGet publication and Trusted Publishing OIDC use. |
 | `container-publish` environment | Deliberate maintainer approval required | Protect GHCR publication, signing, provenance, and release-evidence writes. |
 
