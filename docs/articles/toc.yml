@@ -77,8 +77,6 @@
 
 - name: Release & Compatibility
   items:
-    - name: v1.0 Migration Guide
-      href: v1-migration-guide.md
     - name: Build Quality and Reproducibility
       href: build-quality.md
     - name: Container Release Publishing
@@ -87,6 +85,11 @@
       href: repository-security-profile.md
     - name: GitHub Workflow
       href: github-workflow.md
+
+- name: Historical Archive
+  items:
+    - name: v0.5.x to v1.0 Migration Guide
+      href: v1-migration-guide.md
 
 - name: Documentation Scope
   items:
