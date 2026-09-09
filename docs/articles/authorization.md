@@ -1,5 +1,7 @@
 # Authorization
 
+> **Scope:** This article is the NCAT implementation reference for generated behavior. Broader architectural rationale, alternatives, and tradeoffs live in [ASI Backbone Learning](https://asibackbone.github.io/Learning/); Learning is educational guidance, not a dependency of NCAT behavior.
+
 NCAT registers ASP.NET Core authorization with named policies and, by default, an authenticated-user fallback policy. `DefaultPolicy` handles endpoints that explicitly request authorization without a named policy; `FallbackPolicy` protects routed endpoints with no authorization metadata. Explicit anonymous metadata bypasses the fallback policy.
 
 ## Role and Permission Authorization Policies

@@ -66,11 +66,14 @@ Repository-local design decisions remain first-class NCAT documentation because 
 
 Release and readiness evidence remains available after the core usage and implementation reference:
 
-- [v1.0 Migration Guide](articles/v1-migration-guide.md)
 - [Build Quality and Reproducibility](articles/build-quality.md)
 - [Container Release Publishing](articles/container-publish.md)
 - [GitHub Workflow](articles/github-workflow.md)
 - [Test Coverage](coverage/)
+
+## Historical Archive
+
+- [v0.5.x to v1.0 Migration Guide](articles/v1-migration-guide.md) — retained at its original URL for consumers of preview releases; it is not current upgrade guidance.
 
 ## Learn the Architecture
 

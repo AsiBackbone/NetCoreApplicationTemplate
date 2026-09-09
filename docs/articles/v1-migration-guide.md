@@ -1,5 +1,7 @@
 # v1.0 Migration Guide
 
+> **Historical documentation:** This guide is retained at its original URL for applications migrating from the `v0.5.x` preview line to `v1.0.0`. It is not current setup or upgrade guidance for later NCAT releases. For current installation and generation instructions, see [Install, Generate, and Template Options](template-packaging.md).
+
 This guide explains how to move from a `v0.5.x` preview version of the .NET Core Application Template to the first stable `v1.0.0` release.
 
 The `v1.0.0` release establishes the first stable public surface for the template. Earlier `0.x` releases should be treated as preview releases that may include release-readiness, packaging, documentation, workflow, and scaffold-surface changes before the stable contract is finalized.

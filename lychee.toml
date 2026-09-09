@@ -21,5 +21,9 @@ include_mail = false
 exclude = [
   # Private vulnerability reporting may intentionally return 404 to
   # unauthenticated link checkers.
-  '^https://github\\.com/AsiBackbone/NetCoreApplicationTemplate/security/advisories/new$'
+  '^https://github\.com/AsiBackbone/NetCoreApplicationTemplate/security/advisories/new$',
+
+  # The canonical DOI remains the published citation target, but Zenodo's
+  # resolver can repeatedly redirect or time out for automated link checks.
+  '^https://doi\.org/10\.5281/zenodo\.20373042$'
 ]
