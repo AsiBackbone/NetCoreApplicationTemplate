@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and community support
+    url: https://github.com/AsiBackbone/NetCoreApplicationTemplate/discussions
+    about: Ask setup or usage questions and discuss design, extensions, or general feedback.
