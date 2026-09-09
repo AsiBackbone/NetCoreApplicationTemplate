@@ -70,6 +70,8 @@ Short-lived `release/*` branches are preparation branches, not an independent pr
 
 Do not create a production `v*.*.*` tag from an unmerged release branch. Package and container publication tags should resolve to the release commit already merged into `main`. If a release branch becomes long-lived or starts accepting changes that do not immediately flow through `main`, protect it equivalently to `main`.
 
+`main` is the only permanently retained branch. The repository automatically deletes eligible head branches after merge, including `release/*` branches. Tags, GitHub Releases, release artifacts, and the merged `main` commit preserve release evidence. Before manually deleting any legacy release branch, verify that its changes reached `main` and that its immutable version tag and published GitHub Release exist. Retain an active non-`main` branch only while an open pull request or explicitly documented follow-up still needs it.
+
 ## CI Validation
 
 The CI workflow validates pull requests, `main` branch updates, release tags, and manual workflow runs.

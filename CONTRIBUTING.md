@@ -184,7 +184,25 @@ Dependency update pull requests should be reviewed like other pull requests. Con
 
 ## Branch Cleanup
 
-After a pull request is merged, delete the remote branch unless it is intentionally kept for follow-up work.
+`main` is the only permanently retained branch. Topic, documentation, dependency,
+and `release/*` branches are short-lived working branches and are not retained
+after their pull requests merge. Immutable tags, GitHub Releases, release
+artifacts, and the merge commit on `main` preserve release identity and evidence;
+a merged release branch does not.
+
+The repository setting **Automatically delete head branches** is enabled. GitHub
+therefore deletes an unprotected head branch after its pull request merges. If a
+branch is not eligible for automatic deletion, delete it manually after verifying:
+
+- Its pull request is merged and the intended changes are present on `main`.
+- It contains no unique unresolved work that needs a separate pull request.
+- For a legacy merged release branch, the corresponding immutable version tag and
+  published GitHub Release exist before cleanup.
+
+An active branch may remain only while its pull request or explicitly documented
+follow-up work is open. Delete it when that work is complete. Any proposal for a
+permanent non-`main` branch must document its purpose and protection model before
+the branch is retained.
 
 For local cleanup:
 
