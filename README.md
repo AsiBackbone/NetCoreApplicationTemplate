@@ -3,7 +3,7 @@
 # .NET Core Application Template
 
 [![CI](https://github.com/AsiBackbone/NetCoreApplicationTemplate/actions/workflows/ci.yml/badge.svg)](https://github.com/AsiBackbone/NetCoreApplicationTemplate/actions/workflows/ci.yml)
-[![Coverage Report](https://img.shields.io/badge/coverage%20gate-75%25-brightgreen)](https://AsiBackbone.github.io/NetCoreApplicationTemplate/coverage/index.html)
+[![Coverage Report](https://img.shields.io/badge/coverage%20gate-75%25-brightgreen)](https://asibackbone.github.io/NetCoreApplicationTemplate/coverage/index.html)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13645/badge)](https://www.bestpractices.dev/projects/13645)
 [![Documentation](https://github.com/AsiBackbone/NetCoreApplicationTemplate/actions/workflows/publish-docs.yml/badge.svg)](https://github.com/AsiBackbone/NetCoreApplicationTemplate/actions/workflows/publish-docs.yml)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple)](https://dotnet.microsoft.com/)
@@ -118,7 +118,7 @@ Template options:
 | `--dbProvider` | `sqlite` | `sqlite`, `sqlserver`, `none` | Selects the generated EF Core data access mode. |
 | `--skipRestore` | `false` | `true`, `false` | Skips the post-create restore action. |
 
-SQL Server scaffolds omit the SQLite-specific migration history. Generate a fresh SQL Server migration before applying database updates; see [Data Access](https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/data-access.html).
+SQL Server scaffolds omit the SQLite-specific migration history. Generate a fresh SQL Server migration before applying database updates; see [Data Access](https://asibackbone.github.io/NetCoreApplicationTemplate/articles/data-access.html).
 
 Build and test generated output:
 
@@ -161,20 +161,20 @@ Learning does not define NCAT runtime behavior. The current NCAT source, generat
 
 - [ASI Backbone Learning — published site](https://asibackbone.github.io/Learning/)
 - [AsiBackbone/Learning — source repository](https://github.com/AsiBackbone/Learning)
-- [NCAT documentation ownership contract](https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/documentation-ownership.html)
+- [NCAT documentation ownership contract](https://asibackbone.github.io/NetCoreApplicationTemplate/articles/documentation-ownership.html)
 
 ## Documentation
 
-- [Published documentation](https://AsiBackbone.github.io/NetCoreApplicationTemplate/)
-- [Getting Started](https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/getting-started.html)
-- [Authentication](https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/authentication.html)
-- [Production Authentication Hardening](https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/authentication-hardening.html)
-- [Authorization](https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/authorization.html)
-- [Runtime Readiness](https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/runtime-readiness.html)
-- [Production Deployment Checklist](https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/production-deployment-checklist.html)
-- [Health Checks](https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/health-checks.html)
-- [Template Packaging](https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/template-packaging.html)
-- [Data Access](https://AsiBackbone.github.io/NetCoreApplicationTemplate/articles/data-access.html)
+- [Published documentation](https://asibackbone.github.io/NetCoreApplicationTemplate/)
+- [Getting Started](https://asibackbone.github.io/NetCoreApplicationTemplate/articles/getting-started.html)
+- [Authentication](https://asibackbone.github.io/NetCoreApplicationTemplate/articles/authentication.html)
+- [Production Authentication Hardening](https://asibackbone.github.io/NetCoreApplicationTemplate/articles/authentication-hardening.html)
+- [Authorization](https://asibackbone.github.io/NetCoreApplicationTemplate/articles/authorization.html)
+- [Runtime Readiness](https://asibackbone.github.io/NetCoreApplicationTemplate/articles/runtime-readiness.html)
+- [Production Deployment Checklist](https://asibackbone.github.io/NetCoreApplicationTemplate/articles/production-deployment-checklist.html)
+- [Health Checks](https://asibackbone.github.io/NetCoreApplicationTemplate/articles/health-checks.html)
+- [Template Packaging](https://asibackbone.github.io/NetCoreApplicationTemplate/articles/template-packaging.html)
+- [Data Access](https://asibackbone.github.io/NetCoreApplicationTemplate/articles/data-access.html)
 
 Build documentation locally:
 
@@ -182,6 +182,14 @@ Build documentation locally:
 dotnet tool restore
 dotnet tool run docfx -- docs/docfx.json
 ```
+
+## Support and Community
+
+- Use [GitHub Discussions](https://github.com/AsiBackbone/NetCoreApplicationTemplate/discussions) for setup and usage questions, design or extension guidance, and community feedback.
+- Use [GitHub Issues](https://github.com/AsiBackbone/NetCoreApplicationTemplate/issues) for reproducible bugs, documentation gaps, and focused feature requests.
+- Report suspected vulnerabilities through the private process in [SECURITY.md](SECURITY.md).
+
+See [SUPPORT.md](SUPPORT.md) for the complete support policy and version lifecycle.
 
 ## Repository and Generated Content
 
