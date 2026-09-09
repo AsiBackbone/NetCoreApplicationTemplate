@@ -12,6 +12,8 @@ This runbook is intentionally version-neutral. The current stable NuGet package 
 4. Avoid feature work on the release branch unless it directly addresses release validation, documentation, packaging, or blocking defects.
 5. Treat the release branch as a short-lived preparation branch rather than a publishing boundary. Merge the completed release PR into protected `main` before creating any production `v*.*.*` tag.
 6. Use a release-candidate tag, dry-run workflow, or pre-release GitHub Release before creating a DOI-bearing stable release when release automation, NuGet publication, Zenodo metadata, signing, SBOM generation, container publication, or documentation publication has changed since the previous release.
+7. Do not retain the release branch after its pull request merges. The repository automatically deletes eligible merged head branches; if automatic deletion does not apply, delete the branch manually after confirming the merge is present on `main`.
+8. Preserve release identity with the immutable `vMAJOR.MINOR.PATCH` tag, published GitHub Release, artifacts, and merged `main` commit. Never retain a merged release branch as the sole release record.
 
 Example:
 
@@ -105,6 +107,7 @@ After creating the release candidate or stable release:
 8. Confirm installation instructions use the current package identity.
 9. Confirm the production deployment checklist is current.
 10. Confirm release notes link to the production deployment checklist, package page, documentation site, and DOI/archive record when available.
+11. Confirm the merged release branch is absent from the remote branch list. If a legacy release branch remains, verify its immutable tag and published GitHub Release before deleting it.
 
 ## 7. Clean-Environment Post-Release Validation
 
