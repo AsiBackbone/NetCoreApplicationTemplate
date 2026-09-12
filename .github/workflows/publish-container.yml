@@ -352,7 +352,7 @@ jobs:
           IMAGE_DIGEST: ${{ steps.push.outputs.digest }}
           REPOSITORY: ${{ github.repository }}
         run: >
-          ./scripts/New-ReleaseEvidenceManifest.ps1
+          ./scripts/New-ReleaseEvidence.ps1
           -EvidenceDirectory artifacts/container-release
           -TagName $env:RELEASE_TAG
           -SourceCommit $env:SOURCE_COMMIT
