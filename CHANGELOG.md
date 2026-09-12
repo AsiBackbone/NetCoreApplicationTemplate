@@ -16,6 +16,9 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ### Changed
 
+* Enabled `TreatWarningsAsErrors` and `CodeAnalysisTreatWarningsAsErrors` in
+  `Directory.Build.props` for the repository and generated projects, so
+  compiler, analyzer, and code-style warnings now fail the build.
 * Distinguished permanent GitHub Release evidence from temporary Actions
   artifacts and separated NuGet publishing identity from OCI image signing.
 * Backfilled release `2.9.0` from its retained original container evidence and
