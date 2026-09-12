@@ -1,0 +1,56 @@
+name: Task
+description: Track planned repository, documentation, or implementation work.
+title: "[Task]: "
+labels:
+  - task
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for concrete, actionable repository work.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the task and why it is needed.
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: List the work that is in scope.
+      placeholder: |
+        - [ ] First item
+        - [ ] Second item
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance criteria
+      description: List the observable conditions that will make the task complete.
+      placeholder: |
+        - [ ] First criterion
+        - [ ] Second criterion
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Add implementation notes, related Issues, or review context.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: submission-checks
+    attributes:
+      label: Submission checks
+      options:
+        - label: I searched existing Issues to avoid creating a duplicate.
+          required: true

@@ -1,0 +1,51 @@
+name: Documentation
+description: Request a documentation update or clarification.
+title: "[Docs]: "
+labels:
+  - documentation
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for a concrete documentation update, correction, or clarification.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the documentation change or clarification needed.
+    validations:
+      required: true
+
+  - type: input
+    id: location
+    attributes:
+      label: File, page, or section
+      description: Provide the repository path, documentation URL, and section when known.
+      placeholder: docs/example.md — Configuration
+    validations:
+      required: true
+
+  - type: textarea
+    id: recommended-change
+    attributes:
+      label: Recommended change
+      description: Describe the recommended wording, structure, example, or correction.
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add links, screenshots, or related Issues if helpful.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: submission-checks
+    attributes:
+      label: Submission checks
+      options:
+        - label: I searched existing Issues to avoid creating a duplicate.
+          required: true
