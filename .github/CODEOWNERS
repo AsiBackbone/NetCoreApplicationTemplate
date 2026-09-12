@@ -39,8 +39,10 @@ global.json @cdcavell
 nuget.config @cdcavell
 
 # Governance, security, release, citation, and archival metadata
+CODE_OF_CONDUCT.md @cdcavell
 COMMUNITY_STANDARDS.md @cdcavell
 CONTRIBUTING.md @cdcavell
+GOVERNANCE.md @cdcavell
 MAINTAINERS.md @cdcavell
 RELEASE.md @cdcavell
 SECURITY.md @cdcavell
