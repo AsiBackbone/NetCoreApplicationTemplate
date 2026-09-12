@@ -27,6 +27,7 @@ The scaffolded output intentionally includes:
 - Source projects under `src/`.
 - Baseline tests under `tests/`.
 - Checked-in `packages.lock.json` files for every generated project.
+- The shared AsiBackbone `.editorconfig` formatting and analyzer baseline.
 - Docker support files.
 - `LICENSE.txt`.
 - `ASSETS-LICENSES.md`.
@@ -44,6 +45,12 @@ The scaffolded output intentionally excludes repository-maintainer content such 
 - Repository maintainer badges and release instructions.
 
 The scaffold does not ship a pre-generated SQL migration script. SQL is provider-specific and a checked-in generated artifact can become stale as migrations evolve. Consumers should generate and review a script from the migrations in their generated application for the target provider and deployment state.
+
+### Generated Formatting Baseline
+
+The repository-root `.editorconfig` is the shared baseline ratified for `AsiBackbone/AsiBackbone`, `AsiBackbone/Learning`, and `AsiBackbone/NetCoreApplicationTemplate`. It is explicitly included by `.template.config/template.json`, packed into the template NuGet package, and required by the golden scaffold manifest. The scaffold validator verifies that the generated file matches the repository baseline exactly, including for all six supported authentication and database option combinations exercised by CI.
+
+Generated applications receive this file as a consistent starting point and may customize it after generation to suit their own requirements. The baseline currently has no NetCoreApplicationTemplate-specific extensions. Any future repository-only exception must be clearly labeled, scoped to template-authoring paths that cannot match generated application content, and reviewed before the baseline is synchronized to sibling repositories.
 
 ## Template Content Overlay
 
@@ -70,6 +77,7 @@ The manifest check fails when:
 - An expected consumer file is missing.
 - An expected consumer directory is missing.
 - An unexpected root-level file is generated.
+- The generated `.editorconfig` differs from the shared repository baseline.
 - A maintainer-only path such as `.github/`, `.template.config/`, `.template.content/`, `docs/`, `eng/`, `scripts/`, `CHANGELOG.md`, `CITATION.cff`, `CONTRIBUTING.md`, `RELEASE.md`, or `SECURITY.md` appears in the scaffolded output.
 - The generated consumer README contains repository maintainer content such as workflow badges or the current-release block.
 

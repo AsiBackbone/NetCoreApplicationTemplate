@@ -196,6 +196,21 @@ foreach ($path in $forbiddenPaths) {
     }
 }
 
+$baselineEditorConfigPath = Join-Path $repoRoot '.editorconfig'
+$scaffoldEditorConfigPath = Join-Path $resolvedScaffoldRoot '.editorconfig'
+
+if (-not (Test-Path -LiteralPath $baselineEditorConfigPath -PathType Leaf)) {
+    $failures.Add('Shared baseline .editorconfig was not found at the repository root.')
+}
+elseif (Test-Path -LiteralPath $scaffoldEditorConfigPath -PathType Leaf) {
+    $baselineEditorConfigHash = (Get-FileHash -LiteralPath $baselineEditorConfigPath -Algorithm SHA256).Hash
+    $scaffoldEditorConfigHash = (Get-FileHash -LiteralPath $scaffoldEditorConfigPath -Algorithm SHA256).Hash
+
+    if ($baselineEditorConfigHash -ne $scaffoldEditorConfigHash) {
+        $failures.Add('Scaffolded .editorconfig did not match the shared repository baseline.')
+    }
+}
+
 foreach ($solutionPath in Get-ChildItem -LiteralPath $resolvedScaffoldRoot -Filter '*.slnx' -File -Recurse) {
     [xml]$solution = Get-Content -LiteralPath $solutionPath.FullName -Raw
 
