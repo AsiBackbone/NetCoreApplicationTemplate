@@ -82,7 +82,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## [coverlet.collector](https://www.nuget.org/packages/coverlet.collector)
+## [coverlet.MTP](https://www.nuget.org/packages/coverlet.MTP)
 _Coverlet is a cross platform code coverage framework, with support for line, branch and method coverage. It works with [.NET Framework](https://github.com/coverlet-coverage/coverlet/blob/master/Documentation/KnownIssues.md#badimageformatexception-net-framework-47x-48x) on Windows and .NET Core on all supported platforms._
 ## [Microsoft.AspNetCore.Mvc.Testing](https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc.Testing/10.0.11)
 _`Microsoft.AspNetCore.Mvc.Testing` provides support for writing integration tests for ASP.NET Core apps that utilize MVC or Minimal APIs._

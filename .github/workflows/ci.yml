@@ -90,29 +90,13 @@ jobs:
 
       - name: Run tests
         shell: pwsh
-        run: |
-          $testProjects = Get-ChildItem -Path . -Recurse -Filter *.csproj | Where-Object {
-              $content = Get-Content $_.FullName -Raw
-              $_.BaseName -match 'Tests?$' -or $content -match 'Microsoft\.NET\.Test\.Sdk'
-          }
-
-          if (-not $testProjects) {
-              Write-Host "No test projects found. Skipping dotnet test."
-              exit 0
-          }
-
-          foreach ($project in $testProjects) {
-              Write-Host "Running tests for $($project.FullName)"
-              dotnet test $project.FullName `
-                --configuration $env:CONFIGURATION `
-                --no-restore `
-                --no-build `
-                --verbosity normal `
-                --collect:"XPlat Code Coverage" `
-                --logger "trx" `
-                --results-directory "./artifacts/test-results" `
-                /p:ContinuousIntegrationBuild=true
-          }
+        run: >
+          ./scripts/Invoke-MtpCoverage.ps1
+          -SolutionPath "$env:SOLUTION_FILE"
+          -Configuration "$env:CONFIGURATION"
+          -OutputRoot "${{ github.workspace }}/artifacts/test-results"
+          -NoBuild
+          -NoRestore
 
       - name: Restore local tools
         run: dotnet tool restore
@@ -121,7 +105,7 @@ jobs:
         shell: pwsh
         run: |
           dotnet reportgenerator `
-            -reports:"./artifacts/test-results/**/coverage.cobertura.xml" `
+            -reports:"./artifacts/test-results/coverage.cobertura.xml" `
             -targetdir:"./artifacts/coverage-report" `
             -reporttypes:"Html;MarkdownSummaryGithub;Cobertura" `
             -assemblyfilters:"+ProjectTemplate.*;-*.Tests" `

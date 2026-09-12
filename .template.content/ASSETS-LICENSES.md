@@ -84,7 +84,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## [coverlet.collector](https://www.nuget.org/packages/coverlet.collector)
+## [coverlet.MTP](https://www.nuget.org/packages/coverlet.MTP)
 
 _Coverlet provides cross-platform code coverage collection for the generated test project._
 

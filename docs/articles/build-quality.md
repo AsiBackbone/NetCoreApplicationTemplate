@@ -23,7 +23,7 @@ Current policy:
 
 The pinned SDK feature band keeps local and CI builds aligned. `latestPatch` allows patch-level SDK servicing updates within the selected feature band without silently moving to a newer feature band.
 
-The explicit test runner keeps repository tests and generated-project tests on Microsoft.Testing.Platform instead of relying on SDK inference. Test projects reference the standard `xunit.v3` package so its Microsoft.Testing.Platform integration remains active.
+The explicit test runner keeps repository tests and generated-project tests on Microsoft.Testing.Platform instead of relying on SDK inference. Test projects reference the standard `xunit.v3` package so its Microsoft.Testing.Platform integration remains active. Coverage uses `coverlet.MTP` through `scripts/Invoke-MtpCoverage.ps1`, keeping coverage arguments on the MTP extension path across Windows and Unix runners.
 
 CI workflows use `actions/setup-dotnet` with `global-json-file: global.json` so the repository SDK policy remains the single source of truth.
 

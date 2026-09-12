@@ -42,16 +42,13 @@ jobs:
 
       - name: Run tests with coverage
         shell: pwsh
-        run: |
-          dotnet test ${{ env.SOLUTION_FILE }} `
-          --configuration ${{ env.CONFIGURATION }} `
-          --no-restore `
-          --no-build `
-          --verbosity normal `
-          --collect:"XPlat Code Coverage" `
-          --logger "trx" `
-          --results-directory "./artifacts/test-results" `
-          /p:ContinuousIntegrationBuild=true
+        run: >
+          ./scripts/Invoke-MtpCoverage.ps1
+          -SolutionPath "${{ env.SOLUTION_FILE }}"
+          -Configuration "${{ env.CONFIGURATION }}"
+          -OutputRoot "${{ github.workspace }}/artifacts/test-results"
+          -NoBuild
+          -NoRestore
 
       - name: Restore .NET tools
         run: dotnet tool restore
@@ -60,7 +57,7 @@ jobs:
         shell: pwsh
         run: |
           dotnet reportgenerator `
-            -reports:"./artifacts/test-results/**/coverage.cobertura.xml" `
+            -reports:"./artifacts/test-results/coverage.cobertura.xml" `
             -targetdir:"./artifacts/coverage-report" `
             -reporttypes:"Html;MarkdownSummaryGithub;Cobertura" `
             -assemblyfilters:"+ProjectTemplate.*;-*.Tests" `
