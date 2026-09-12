@@ -38,7 +38,6 @@ _Serilog is a diagnostic logging library for .NET applications._
 _xUnit.net is the developer testing framework used by the generated test project._
 
 - [xunit.runner.visualstudio](https://www.nuget.org/packages/xunit.runner.visualstudio)
-- [xunit.v3.mtp-off](https://www.nuget.org/packages/xunit.v3.mtp-off)
 
 ## [OpenTelemetry](https://www.nuget.org/packages/OpenTelemetry)
 
@@ -85,7 +84,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## [coverlet.collector](https://www.nuget.org/packages/coverlet.collector)
+## [coverlet.MTP](https://www.nuget.org/packages/coverlet.MTP)
 
 _Coverlet provides cross-platform code coverage collection for the generated test project._
 

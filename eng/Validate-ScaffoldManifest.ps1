@@ -211,6 +211,38 @@ elseif (Test-Path -LiteralPath $scaffoldEditorConfigPath -PathType Leaf) {
     }
 }
 
+$scaffoldGlobalJsonPath = Join-Path $resolvedScaffoldRoot 'global.json'
+
+if (Test-Path -LiteralPath $scaffoldGlobalJsonPath -PathType Leaf) {
+    $scaffoldGlobalJson = Get-Content -LiteralPath $scaffoldGlobalJsonPath -Raw | ConvertFrom-Json
+    $hasTestPolicy = $scaffoldGlobalJson.PSObject.Properties.Name -contains 'test'
+    $hasRunnerPolicy = $hasTestPolicy -and
+        $scaffoldGlobalJson.test.PSObject.Properties.Name -contains 'runner'
+
+    if (-not $hasRunnerPolicy -or
+        $scaffoldGlobalJson.test.runner -ne 'Microsoft.Testing.Platform') {
+        $failures.Add(
+            'Scaffolded global.json did not explicitly select Microsoft.Testing.Platform.')
+    }
+}
+
+$scaffoldTestRoot = Join-Path $resolvedScaffoldRoot 'tests'
+$scaffoldTestProjects = @(
+    if (Test-Path -LiteralPath $scaffoldTestRoot -PathType Container) {
+        Get-ChildItem -LiteralPath $scaffoldTestRoot -Filter '*.csproj' -File -Recurse
+    }
+)
+
+foreach ($testProjectPath in $scaffoldTestProjects) {
+    [xml]$testProject = Get-Content -LiteralPath $testProjectPath.FullName -Raw
+    if ($null -eq $testProject.SelectSingleNode("//PackageReference[@Include='xunit.v3']")) {
+        $relativeTestProjectPath = Convert-ToManifestPath (
+            [System.IO.Path]::GetRelativePath($resolvedScaffoldRoot, $testProjectPath.FullName))
+        $failures.Add(
+            "Scaffolded test project '$relativeTestProjectPath' did not reference xunit.v3.")
+    }
+}
+
 foreach ($solutionPath in Get-ChildItem -LiteralPath $resolvedScaffoldRoot -Filter '*.slnx' -File -Recurse) {
     [xml]$solution = Get-Content -LiteralPath $solutionPath.FullName -Raw
 

@@ -25,7 +25,7 @@ The generated solution includes a production-oriented baseline for common web ap
 - .NET SDK 10.0 or later.
 - Docker Desktop or a compatible container runtime, only if you plan to use Docker Compose.
 
-The generated project includes `global.json` so SDK selection is consistent across local development and CI validation.
+The generated project includes `global.json` so SDK selection is consistent across local development and CI validation. The same file explicitly selects Microsoft.Testing.Platform for `dotnet test`, and the generated test project uses the standard `xunit.v3` package.
 
 ## Template Options Used
 
