@@ -112,7 +112,7 @@ jobs:
         with:
           input: artifacts/container-image.tar
           format: spdx-json
-          output: artifacts/container-release/netcoreapplicationtemplate-${{ steps.version.outputs.version }}.spdx.json
+          output: artifacts/container-release/netcoreapplicationtemplate-container-${{ steps.version.outputs.version }}.spdx.json
           exit-code: '0'
 
       - name: Upload release evidence artifact
@@ -156,6 +156,11 @@ jobs:
       packages: write
 
     steps:
+      - name: Checkout source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
@@ -238,7 +243,7 @@ jobs:
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
 
-      - name: Publish release evidence
+      - name: Ensure GitHub release and capture exact release notes
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -250,34 +255,133 @@ jobs:
           $tag = $env:RELEASE_TAG
           $digestRef = $env:DIGEST_REF
           $tags = $env:PUBLISHED_TAGS
-          $notesPath = 'artifacts/container-release/release-notes.md'
+          $version = $tag.Substring(1)
+          $notesPath = "artifacts/container-release/netcoreapplicationtemplate-$version-release-notes.md"
 
-          @"
-          Container release evidence for `$tag`.
+          $generatedNotes = @"
+          Container release evidence for $tag.
 
-          Published image: `${digestRef}`
+          Published image: $digestRef
 
-          Published tags: `${tags}`
+          Published tags: $tags
 
           Attached evidence:
 
           - Trivy vulnerability scan SARIF.
-          - SPDX JSON SBOM.
-          - GitHub artifact provenance attestation.
+          - Container and template-package SPDX JSON SBOMs.
+          - Release and component checksum manifests.
+          - GitHub subject-digest provenance attestations.
           - Cosign keyless image signature for the pushed digest.
-          "@ | Set-Content -Path $notesPath -Encoding UTF8
+          "@
 
           gh release view $tag --repo $env:GH_REPO 1>$null 2>$null
 
-          if ($LASTEXITCODE -eq 0) {
-              gh release upload $tag artifacts/container-release/* --clobber --repo $env:GH_REPO
+          if ($LASTEXITCODE -ne 0) {
+              gh release create $tag --title "Release $tag" --notes $generatedNotes --repo $env:GH_REPO
               if ($LASTEXITCODE -ne 0) {
                   exit $LASTEXITCODE
               }
           }
-          else {
-              gh release create $tag artifacts/container-release/* --title "Release $tag" --notes-file $notesPath --repo $env:GH_REPO
+
+          $releaseJson = gh release view $tag --repo $env:GH_REPO --json body
+          if ($LASTEXITCODE -ne 0) {
+              exit $LASTEXITCODE
+          }
+
+          $release = $releaseJson | ConvertFrom-Json
+          if ([string]::IsNullOrWhiteSpace([string]$release.body)) {
+              throw "Release $tag does not contain release notes."
+          }
+
+          Set-Content -LiteralPath $notesPath -Value ([string]$release.body) -Encoding utf8 -NoNewline
+
+      - name: Wait for and download template package evidence
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_VERSION: ${{ needs.build-scan.outputs.version }}
+        run: |
+          $expected = @(
+              "NetCoreApplicationTemplate.$($env:RELEASE_VERSION).spdx.json",
+              'template-package-manifest.json'
+          )
+          $ready = $false
+
+          for ($attempt = 1; $attempt -le 180; $attempt++) {
+              $releaseJson = gh release view $env:RELEASE_TAG --repo $env:GH_REPO --json assets
+
+              if ($LASTEXITCODE -eq 0) {
+                  $release = $releaseJson | ConvertFrom-Json
+                  $assetNames = @($release.assets | ForEach-Object { [string]$_.name })
+                  $missing = @($expected | Where-Object { $_ -notin $assetNames })
+
+                  if ($missing.Count -eq 0) {
+                      $ready = $true
+                      break
+                  }
+              }
+
+              Write-Host "Waiting for template-package release evidence ($attempt/180)."
+              Start-Sleep -Seconds 10
+          }
+
+          if (-not $ready) {
+              throw 'Template-package release evidence was not published within 30 minutes. Approve both protected publishing jobs for a release tag.'
+          }
+
+          foreach ($assetName in $expected) {
+              gh release download $env:RELEASE_TAG `
+                --repo $env:GH_REPO `
+                --pattern $assetName `
+                --dir artifacts/container-release `
+                --clobber
+
               if ($LASTEXITCODE -ne 0) {
                   exit $LASTEXITCODE
               }
           }
+
+      - name: Generate unified release evidence manifest
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          SOURCE_COMMIT: ${{ github.sha }}
+          IMAGE_REFERENCE: ${{ env.IMAGE_NAME }}
+          IMAGE_DIGEST: ${{ steps.push.outputs.digest }}
+          REPOSITORY: ${{ github.repository }}
+        run: >
+          ./scripts/New-ReleaseEvidenceManifest.ps1
+          -EvidenceDirectory artifacts/container-release
+          -TagName $env:RELEASE_TAG
+          -SourceCommit $env:SOURCE_COMMIT
+          -ImageReference $env:IMAGE_REFERENCE
+          -ImageDigest $env:IMAGE_DIGEST
+          -Repository $env:REPOSITORY
+
+      - name: Publish complete release evidence
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          $assetPaths = @(Get-ChildItem -LiteralPath artifacts/container-release -File | Sort-Object Name | Select-Object -ExpandProperty FullName)
+          gh release upload $env:RELEASE_TAG @assetPaths --clobber --repo $env:GH_REPO
+
+          if ($LASTEXITCODE -ne 0) {
+              exit $LASTEXITCODE
+          }
+
+      - name: Verify complete GitHub release evidence
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: >
+          ./scripts/Assert-GitHubReleaseAssets.ps1
+          -TagName $env:RELEASE_TAG
+          -EvidenceDirectory artifacts/container-release
+          -Repository $env:GH_REPO
