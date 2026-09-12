@@ -4,6 +4,73 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
+## 2.9.0 - 2026-09-11
+
+### Added
+
+* Added a complete CI matrix for all six supported `authProvider` and
+  `dbProvider` combinations, including option-specific scaffold assertions,
+  locked restore, Release build, and generated test execution.
+* Added a repository security profile documenting the effective v2.x
+  solo-maintainer controls, protected publishing boundaries, emergency bypass
+  procedure, secret-pattern policy, and transition criteria for additional
+  maintainers.
+* Added `CODE_OF_CONDUCT.md` and `GOVERNANCE.md`, with community standards,
+  project roles, decision authority, release responsibility, and succession
+  expectations linked from the repository's contribution surfaces.
+* Added repository-level assertions that authentication, fallback authorization,
+  database-provider configuration, connection-string selection, and migration
+  content match each generated template option combination.
+
+### Changed
+
+* Updated `Microsoft.SourceLink.GitHub` from `10.0.301` to `10.0.303` and
+  refreshed affected lock files.
+* Updated the pinned .NET SDK container image to `10.0.401` and refreshed the
+  pinned ASP.NET Core runtime image digest.
+* Aligned OWASP Dependency-Check with the repository's `global.json` SDK policy.
+* Reconciled `main` protection, secret scanning, push protection, publishing
+  environment, CODEOWNERS, and short-lived branch-retention guidance with the
+  repository's current v2.x operating model.
+* Made the published documentation site the canonical package project URL and
+  aligned repository, package, support, and contribution links with the
+  AsiBackbone organization namespace.
+* Reorganized documentation ownership and navigation so current implementation,
+  operations, maintainer evidence, and historical material are clearly
+  separated while existing URLs remain available.
+* Updated pinned GitHub Pages deployment dependencies and scanner annotations.
+* Updated release, package, citation, documentation, Kubernetes, and
+  template-packaging metadata for release `2.9.0`.
+
+### Fixed
+
+* Corrected the Source Link dependency affected by CVE-2026-62900.
+* Corrected generated-template exclusion rules so repository-only code of
+  conduct and governance files cannot leak into consumer scaffolds.
+* Corrected documentation and workflow paths reported by code scanning so
+  findings resolve to repository-relative files.
+
+### Security
+
+* Updated Source Link to the patched release for CVE-2026-62900.
+* Documented the fail-closed repository-host security profile and the limits of
+  controls that repository-local CI cannot enforce by itself.
+* Preserved protected NuGet Trusted Publishing, container publication,
+  provenance, dependency review, CodeQL, and secret-scanning boundaries.
+
+### Compatibility
+
+* This is a backward-compatible minor release within the stable `2.x` package
+  line.
+* The public NuGet package ID remains `NetCoreApplicationTemplate`.
+* The template identity remains `AsiBackbone.NetCoreApplicationTemplate.CSharp`,
+  the group identity remains `AsiBackbone.NetCoreApplicationTemplate`, and the
+  short name remains `netcoreapp-template`.
+* Supported template options and generated runtime behavior remain unchanged.
+* Existing projects generated from earlier releases are not modified
+  automatically.
+* The target framework remains `net10.0`.
+
 ## 2.8.0 - 2026-09-06
 
 ### Added

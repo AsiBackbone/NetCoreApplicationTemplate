@@ -13,8 +13,8 @@
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageReadmeFile>PACKAGE-README.md</PackageReadmeFile>
     <PackageIcon>PACKAGE-ICON.png</PackageIcon>
-    <PackageReleaseNotes>Minor 2.8.0 release of the NetCoreApplicationTemplate dotnet new template. This backward-compatible release adds persistent Data Protection keys, explicit production proxy-trust validation, privacy-first audit and request-logging defaults, provider-correct migration output, locked scaffold restores, configurable API sunset metadata, complete MVC view layout, and stronger template packaging, validation, and container security. The package ID, template short name, supported options, and net10.0 target remain unchanged; internal template identities now use the AsiBackbone namespace.</PackageReleaseNotes>
-    <VersionPrefix>2.8.0</VersionPrefix>
+    <PackageReleaseNotes>Minor 2.9.0 release of the NetCoreApplicationTemplate dotnet new template. This backward-compatible release validates every authentication and database option combination, documents and aligns repository security and branch-retention controls, adds public governance and conduct policies, updates Microsoft.SourceLink.GitHub to address CVE-2026-62900, refreshes pinned container dependencies, and strengthens documentation and support routing. The package ID, template identities, short name, supported options, generated runtime behavior, and net10.0 target remain unchanged.</PackageReleaseNotes>
+    <VersionPrefix>2.9.0</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Version>$(VersionPrefix)</Version>
     <PackageType>Template</PackageType>
