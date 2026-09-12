@@ -44,7 +44,7 @@ try {
     Set-Content -LiteralPath (Join-Path $releaseEvidence 'trivy-results.sarif') -Value '{"version":"2.1.0","runs":[]}' -Encoding utf8 -NoNewline
     Set-Content -LiteralPath (Join-Path $releaseEvidence 'netcoreapplicationtemplate-9.8.7-release-notes.md') -Value '# Test release' -Encoding utf8 -NoNewline
 
-    & (Join-Path $PSScriptRoot 'New-ReleaseEvidenceManifest.ps1') `
+    & (Join-Path $PSScriptRoot 'New-ReleaseEvidence.ps1') `
         -EvidenceDirectory $releaseEvidence `
         -TagName 'v9.8.7' `
         -SourceCommit $sourceCommit `
@@ -70,7 +70,7 @@ try {
     $tamperRejected = $false
 
     try {
-        & (Join-Path $PSScriptRoot 'New-ReleaseEvidenceManifest.ps1') `
+        & (Join-Path $PSScriptRoot 'New-ReleaseEvidence.ps1') `
             -EvidenceDirectory $releaseEvidence `
             -TagName 'v9.8.7' `
             -SourceCommit $sourceCommit `
