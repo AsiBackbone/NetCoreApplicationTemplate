@@ -2,9 +2,9 @@
 
 This repository uses a shared build policy so local development, CI validation, container builds, template packaging, and scaffolded consumer output follow the same baseline expectations.
 
-## SDK Policy
+## SDK and Test Runner Policy
 
-The repository pins the .NET SDK through `global.json`.
+The repository pins the .NET SDK and explicitly selects Microsoft.Testing.Platform through `global.json`.
 
 Current policy:
 
@@ -14,11 +14,16 @@ Current policy:
     "version": "10.0.400",
     "rollForward": "latestPatch",
     "allowPrerelease": false
+  },
+  "test": {
+    "runner": "Microsoft.Testing.Platform"
   }
 }
 ```
 
 The pinned SDK feature band keeps local and CI builds aligned. `latestPatch` allows patch-level SDK servicing updates within the selected feature band without silently moving to a newer feature band.
+
+The explicit test runner keeps repository tests and generated-project tests on Microsoft.Testing.Platform instead of relying on SDK inference. Test projects reference the standard `xunit.v3` package so its Microsoft.Testing.Platform integration remains active.
 
 CI workflows use `actions/setup-dotnet` with `global-json-file: global.json` so the repository SDK policy remains the single source of truth.
 
@@ -143,6 +148,8 @@ The generated template intentionally includes:
 - `Directory.Packages.props`
 
 These files are part of the consumer build contract because package versions and build quality settings are centralized at the repository root.
+
+The scaffolded `global.json` retains the repository's explicit Microsoft.Testing.Platform selection, and the generated test project uses `xunit.v3` under that runner.
 
 ## Coverage Policy
 

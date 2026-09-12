@@ -193,6 +193,8 @@ dotnet build --configuration Release
 dotnet test --configuration Release
 ```
 
+The generated `global.json` explicitly selects Microsoft.Testing.Platform, and the generated test project references `xunit.v3`. This keeps the test runner posture deterministic across local development and CI rather than relying on SDK inference.
+
 Every generated project includes a checked-in `packages.lock.json`. Use `--locked-mode` in CI and other repeatable builds so restore fails when declared dependencies and the recorded graph differ. After an intentional dependency change, run `dotnet restore --force-evaluate`, review the resulting lock-file changes, and commit them with the package update.
 
 ## Update the Installed Template
