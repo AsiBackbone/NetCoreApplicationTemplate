@@ -41,7 +41,6 @@ _Serilog is a diagnostic logging library for .NET applications. It provides a si
 ## [xunit.v3](https://www.nuget.org/packages/xunit.v3)
 _xUnit.net is a developer testing framework, built to support Test Driven Development, with a design goal of extreme simplicity and alignment with framework features. Supports .NET Framework 4.7.2 or later and .NET 8 or later._
 - [xunit.runner.visualstudio](https://www.nuget.org/packages/xunit.runner.visualstudio)
-- [xunit.v3.mtp-off](https://www.nuget.org/packages/xunit.v3.mtp-off)
 
 ## [OpenTelemetry](https://www.nuget.org/packages/OpenTelemetry)
 _OpenTelemetry is a collection of tools, APIs, and SDKs that can be used to instrument, generate, collect, and export telemetry data (such as traces, metrics, and logs) to help you analyze your software's performance and behavior. The OpenTelemetry .NET SDK provides the necessary components to enable telemetry in your .NET applications._
@@ -83,7 +82,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## [coverlet.collector](https://www.nuget.org/packages/coverlet.collector)
+## [coverlet.MTP](https://www.nuget.org/packages/coverlet.MTP)
 _Coverlet is a cross platform code coverage framework, with support for line, branch and method coverage. It works with [.NET Framework](https://github.com/coverlet-coverage/coverlet/blob/master/Documentation/KnownIssues.md#badimageformatexception-net-framework-47x-48x) on Windows and .NET Core on all supported platforms._
 ## [Microsoft.AspNetCore.Mvc.Testing](https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc.Testing/10.0.11)
 _`Microsoft.AspNetCore.Mvc.Testing` provides support for writing integration tests for ASP.NET Core apps that utilize MVC or Minimal APIs._
