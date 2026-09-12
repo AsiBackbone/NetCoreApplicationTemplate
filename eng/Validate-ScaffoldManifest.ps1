@@ -107,6 +107,7 @@ if ($Generate) {
             'CITATION.cff',
             'CODE_OF_CONDUCT.md',
             'CONTRIBUTING.md',
+            'GOVERNANCE.md',
             'NetCoreApplicationTemplate.Template.csproj',
             'PACKAGE-README.md',
             'RELEASE.md',

@@ -139,6 +139,7 @@ Verify this non-versioned repository state before each stable release and after 
 
 ## Related Documentation
 
+- [Governance](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/GOVERNANCE.md)
 - [Contributing](../../CONTRIBUTING.md)
 - [Security Policy](../../SECURITY.md)
 - [Maintainers](../../MAINTAINERS.md)

@@ -1,6 +1,6 @@
 # Maintainers
 
-NetCoreApplicationTemplate currently operates under a solo-maintainer model.
+NetCoreApplicationTemplate currently operates under the bootstrap solo-maintainer model defined in [GOVERNANCE.md](GOVERNANCE.md). This file records operational ownership; `GOVERNANCE.md` remains authoritative for project roles and decision-making.
 
 ## Current Maintainer
 
@@ -76,7 +76,7 @@ Short-lived `release/*` branches do not carry independent publishing authority. 
 
 ## Adding Maintainers
 
-Additional maintainers should not be added casually. Before expanding maintainership, review:
+Maintainer appointments follow [GOVERNANCE.md](GOVERNANCE.md). Before expanding maintainership, review:
 
 - Repository permissions and the documented v2.x security profile.
 - Branch protection rules, including enabling independent approval requirements where appropriate.

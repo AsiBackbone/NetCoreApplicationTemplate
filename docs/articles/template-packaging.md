@@ -39,7 +39,7 @@ The scaffolded output intentionally excludes repository-maintainer content such 
 - `.github/` workflow and issue-template files.
 - `.template.config/` and `.template.content/` authoring files.
 - DocFX documentation source and ADRs.
-- Changelog, citation, contribution, security, and release-management files.
+- Changelog, citation, community, governance, contribution, security, and release-management files.
 - Repository maintenance scripts and pre-generated SQL migration scripts.
 - Repository maintainer badges and release instructions.
 

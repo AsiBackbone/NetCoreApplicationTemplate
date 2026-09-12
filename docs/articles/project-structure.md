@@ -62,6 +62,7 @@ The .NET Core Application Template is organized as a compact, production-oriente
 ├── ASSETS-LICENSES.md
 ├── CHANGELOG.md
 ├── CITATION.cff
+├── CODE_OF_CONDUCT.md
 ├── COMMUNITY_STANDARDS.md
 ├── CONTRIBUTING.md
 ├── Directory.Build.props
@@ -69,13 +70,16 @@ The .NET Core Application Template is organized as a compact, production-oriente
 ├── Dockerfile
 ├── docker-compose.yml
 ├── global.json
+├── GOVERNANCE.md
 ├── LICENSE.txt
+├── MAINTAINERS.md
 ├── NetCoreApplicationTemplate.slnx
 ├── NetCoreApplicationTemplate.Template.csproj
 ├── PACKAGE-README.md
 ├── README.md
 ├── RELEASE.md
-└── SECURITY.md
+├── SECURITY.md
+└── SUPPORT.md
 ```
 
 

@@ -188,6 +188,8 @@ dotnet tool run docfx -- docs/docfx.json
 - Use [GitHub Discussions](https://github.com/AsiBackbone/NetCoreApplicationTemplate/discussions) for setup and usage questions, design or extension guidance, and community feedback.
 - Use [GitHub Issues](https://github.com/AsiBackbone/NetCoreApplicationTemplate/issues) for reproducible bugs, documentation gaps, and focused feature requests.
 - Report suspected vulnerabilities through the private process in [SECURITY.md](SECURITY.md).
+- Participate under the repository [Code of Conduct](CODE_OF_CONDUCT.md) and [Community Standards](COMMUNITY_STANDARDS.md).
+- See [Governance](GOVERNANCE.md) and [Maintainers](MAINTAINERS.md) for decision authority and operational ownership.
 
 See [SUPPORT.md](SUPPORT.md) for the complete support policy and version lifecycle.
 
@@ -195,7 +197,7 @@ See [SUPPORT.md](SUPPORT.md) for the complete support policy and version lifecyc
 
 The repository contains source projects, tests, Docker support, DocFX documentation, CI workflows, release and governance files, template configuration, and package metadata.
 
-Generated projects include application source, tests, Docker support, configuration examples, license and asset notices, and a consumer-oriented README. Repository-maintainer workflows, ADRs, contribution policy, security policy, and release-management files are excluded from generated output.
+Generated projects include application source, tests, Docker support, configuration examples, license and asset notices, and a consumer-oriented README. Repository-maintainer workflows, ADRs, community and governance policies, contribution policy, security policy, and release-management files are excluded from generated output.
 
 ## Versioning and Citation
 
