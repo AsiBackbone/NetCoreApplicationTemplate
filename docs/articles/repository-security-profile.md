@@ -27,6 +27,33 @@ GitHub repository, branch-protection, security-analysis, and environment setting
 | `template-package-publish` environment | Deliberate maintainer approval required | Protect NuGet publication and Trusted Publishing OIDC use. |
 | `container-publish` environment | Deliberate maintainer approval required | Protect GHCR publication, signing, provenance, and release-evidence writes. |
 
+## Required Status Check Baseline
+
+The `main` branch requires the following 17 check contexts. The first eight are repository-wide build, security, version, and documentation controls:
+
+- `CodeQL analysis`
+- `Build validation`
+- `Dependency review`
+- `Validate workflows with actionlint`
+- `Analyze workflows with zizmor`
+- `Analyze dependencies with OWASP Dependency-Check`
+- `Validate version consistency`
+- `Validate documentation links`
+
+The remaining nine checks validate the template's cross-platform and generated-option surface and must not be removed when the shared controls change:
+
+- `Template smoke test (ubuntu-latest)`
+- `Template smoke test (windows-latest)`
+- `Template smoke test (macos-latest)`
+- `Template options (cookie + none)`
+- `Template options (cookie + sqlite)`
+- `Template options (cookie + sqlserver)`
+- `Template options (none + none)`
+- `Template options (none + sqlite)`
+- `Template options (none + sqlserver)`
+
+These names are GitHub check contexts and must match their workflow job names exactly. Adding, removing, or renaming a required workflow job requires a coordinated branch-protection update so pull requests remain correctly gated.
+
 ## Solo-Maintainer Review and Bypass Model
 
 CODEOWNERS remains useful even with one maintainer because external or automation-authored pull requests that change owned paths must be reviewed by the maintainer before merge.
@@ -125,7 +152,7 @@ Verify this non-versioned repository state before each stable release and after 
 [ ] Secret scanning is enabled.
 [ ] Secret-scanning push protection is enabled.
 [ ] Dependabot security updates are enabled.
-[ ] main requires pull-request flow and the intended required status checks.
+[ ] main requires pull-request flow and all 17 status checks listed in the required-check baseline.
 [ ] Code Owner review and stale-approval behavior match the solo-maintainer model.
 [ ] General approval count remains 0 until an independent reviewer exists.
 [ ] Most-recent-push approval remains disabled until an independent reviewer exists.
