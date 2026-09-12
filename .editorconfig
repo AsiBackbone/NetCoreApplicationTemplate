@@ -1,4 +1,11 @@
-# Top-most EditorConfig file
+# AsiBackbone shared .NET formatting and analyzer baseline.
+# Keep shared rules synchronized across AsiBackbone/AsiBackbone,
+# AsiBackbone/Learning, and AsiBackbone/NetCoreApplicationTemplate.
+#
+# This file is also the starting baseline emitted into generated applications.
+# Repository-specific extensions must be clearly labeled and reviewed before
+# they are synchronized to sibling repositories or generated consumers.
+# Top-most EditorConfig file.
 root = true
 
 ########################################
@@ -254,3 +261,10 @@ generated_code = true
 
 [*.g.cs]
 generated_code = true
+
+########################################
+# NetCoreApplicationTemplate-specific extensions
+########################################
+# None. A future repository-only exception must target paths that cannot match
+# generated application content and must not be added to sibling baselines
+# without review.
