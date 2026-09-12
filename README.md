@@ -20,9 +20,9 @@ Tagged releases publish a durable, hashed evidence bundle for the exact NuGet pa
 ## Current Release
 
 <!-- BEGIN LATEST_RELEASE -->
-Current release: __[Release 2.8.0](https://github.com/AsiBackbone/NetCoreApplicationTemplate/releases/tag/v2.8.0)__
+Current release: __[Release 2.9.0](https://github.com/AsiBackbone/NetCoreApplicationTemplate/releases/tag/v2.9.0)__
 
-Tag: `v2.8.0`
+Tag: `v2.9.0`
 <!-- END LATEST_RELEASE -->
 
 ## Default Security Posture
