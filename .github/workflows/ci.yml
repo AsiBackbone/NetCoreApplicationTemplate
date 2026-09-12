@@ -84,6 +84,10 @@ jobs:
         shell: pwsh
         run: ./eng/Validate-TemplateContentOverlay.ps1
 
+      - name: Test durable release evidence generation
+        shell: pwsh
+        run: ./scripts/Test-ReleaseEvidence.ps1
+
       - name: Run tests
         shell: pwsh
         run: |

@@ -93,15 +93,17 @@ Plaintext credentials are not allowed in workflow files, repository files, examp
 
 ## Package Signing and External Contributor Controls
 
-NuGet package author signing remains deferred while the repository remains solo-maintained and official package artifacts are produced only through the maintainer-controlled release workflow.
+NuGet package author signing remains deferred under [ADR-0005](docs/adr/0005-defer-nuget-package-signing.md). The decision is owned by the repository and package publishing owner and must be reviewed no later than 2027-03-31 or before the first 3.0.0 release candidate, whichever occurs first.
 
-NuGet.org publication uses NuGet Trusted Publishing through GitHub Actions OIDC for the current `NetCoreApplicationTemplate` package line. Official package artifacts are produced only by the maintainer-controlled release workflow. External contributors do not publish NuGet packages directly and are not expected to sign generated `.nupkg` artifacts. If package signing is introduced later, release artifacts should be signed by a project-controlled certificate through the protected release workflow, not by individual contributors.
+NuGet.org publication uses NuGet Trusted Publishing through GitHub Actions OIDC for the current `NetCoreApplicationTemplate` package line. Trusted Publishing authenticates the publishing workflow; it does not sign the `.nupkg`. Official package artifacts are produced only by the maintainer-controlled release workflow. External contributors do not publish NuGet packages directly and are not expected to sign generated `.nupkg` artifacts. If package signing is introduced later, release artifacts should be signed by a project-controlled certificate through the protected release workflow, not by individual contributors.
+
+Cosign keyless signing covers only the published OCI image digest. Package provenance attestations, SPDX SBOMs, Source Link metadata, release tags, and SHA-256 hashes are independently useful evidence, but none is a NuGet author signature. Tagged releases durably attach that evidence and enumerate it in `release-evidence-manifest.json`; GitHub Actions artifacts are temporary staging and diagnostic copies only.
 
 External contributor trust is handled separately from package signing. External contributions should enter through pull requests, required CI checks, Code Owner review when owned paths change, branch protection, dependency review, CodeQL/security scanning, and maintainer approval before merge.
 
 Required signed commits are intentionally deferred under the current solo-maintainer profile. GitHub evaluates commits introduced by a pull request against signed-commit protection, so enabling the control without a repository-wide signing policy can block otherwise valid maintainer, automation, or contributor branches. Revisit commit-signature enforcement when an independent maintainer is added, a source-signing policy is established, or consumer/governance requirements justify the additional constraint. This decision does not weaken package or container publication controls: NuGet Trusted Publishing, protected environments, container keyless signing, and provenance remain separate release safeguards.
 
-Revisit the package-signing decision when any of the following conditions occur:
+Revisit ADR-0005 by its mandatory deadline and sooner when any of the following conditions occur:
 
 - Before each stable NuGet package publication.
 - Before enabling fully automated package publication.

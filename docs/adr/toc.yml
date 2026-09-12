@@ -15,3 +15,6 @@
 
 - name: Keep Composite SaveChanges Interceptor
   href: 0004-keep-composite-savechanges-interceptor.md
+
+- name: Defer NuGet Package Signing with a Mandatory Review Date
+  href: 0005-defer-nuget-package-signing.md

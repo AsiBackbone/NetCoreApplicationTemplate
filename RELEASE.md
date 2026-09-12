@@ -48,16 +48,18 @@ Before approving publication, review generated artifacts from the release workfl
 - `.nupkg`
 - `.snupkg`, if produced
 - Container image digest, if containers are published
-- SBOM, if produced
-- Provenance or attestation file, if produced
-- Checksum files, if produced
+- Package and container SPDX SBOMs
+- Package and container provenance attestations
+- Package and component SHA-256 hashes
 - Package metadata
 - Generated release notes
-- GitHub Actions artifacts
+- Unified `release-evidence-manifest.json`
 - Generated documentation artifacts
 - DOI / Zenodo archive record, when available
 
 Confirm artifact names, versions, repository URLs, license metadata, authorship metadata, package descriptions, package IDs, and release notes are accurate before publication.
+
+For a tagged release, confirm the GitHub Release contains all seven durable evidence assets documented in [Container Release Publishing](docs/articles/container-publish.md#durable-release-assets). GitHub Actions artifacts are temporary workflow hand-offs and do not satisfy this requirement.
 
 ## 4. NuGet Publication Policy
 
@@ -88,17 +90,19 @@ Recommended order:
 
 Before publication, confirm one of the following is true:
 
-- Package author signing remains intentionally deferred for this release.
+- Package author signing remains deferred under [ADR-0005](docs/adr/0005-defer-nuget-package-signing.md), its mandatory review date has not passed, and no early review trigger applies.
 - A project-controlled signing certificate, timestamping approach, and signing policy are configured and documented.
 
 External contributors are not expected to sign release packages. Official packages should be produced only by the maintainer-controlled release workflow.
+
+Do not conflate controls: NuGet Trusted Publishing authenticates publication, Cosign signs only the OCI image digest, and SBOMs, hashes, Source Link, tags, and GitHub provenance attestations provide separate evidence. None is a NuGet author signature.
 
 ## 6. GitHub Release, Zenodo, and Documentation Validation
 
 After creating the release candidate or stable release:
 
 1. Confirm the GitHub Release points to the expected tag.
-2. Confirm attached artifacts are present and versioned correctly.
+2. Confirm all seven durable evidence assets are present and versioned correctly, and verify the hashes recorded in `release-evidence-manifest.json`.
 3. Confirm Zenodo receives the intended release only after integration is enabled.
 4. Confirm Zenodo metadata matches `CITATION.cff` and `.zenodo.json`.
 5. Confirm the DocFX documentation workflow completes.
@@ -108,6 +112,8 @@ After creating the release candidate or stable release:
 9. Confirm the production deployment checklist is current.
 10. Confirm release notes link to the production deployment checklist, package page, documentation site, and DOI/archive record when available.
 11. Confirm the merged release branch is absent from the remote branch list. If a legacy release branch remains, verify its immutable tag and published GitHub Release before deleting it.
+12. Confirm the exact NuGet package satisfies the package-manifest hash and its GitHub attestation verifies for releases produced by the current workflow.
+13. Confirm the OCI digest satisfies both the Cosign signature and GitHub provenance verification commands recorded in `container-image-manifest.json`.
 
 ## 7. Clean-Environment Post-Release Validation
 
@@ -241,7 +247,7 @@ Review before container publication:
 
 - Image tags are correct.
 - Image digest is captured.
-- SBOM and provenance/attestation evidence are attached when produced.
+- The complete durable SBOM, provenance, digest, checksum, scan, notes, and manifest set is attached and anonymously retrievable.
 - Vulnerability scan results are reviewed.
 - Runtime smoke test passes.
 - Logs do not expose secrets or release-only sensitive values.

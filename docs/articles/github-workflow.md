@@ -122,7 +122,7 @@ Documentation updates should be validated by checking:
 
 ## NuGet Package Publishing
 
-The Publish Template Package workflow publishes release tags and can also be run manually for pack-only validation. NuGet.org publication uses NuGet Trusted Publishing through GitHub Actions OIDC rather than a long-lived NuGet API key.
+The Publish Template Package workflow publishes release tags and can also be run manually for pack-only validation. NuGet.org publication uses NuGet Trusted Publishing through GitHub Actions OIDC rather than a long-lived NuGet API key. For tags, the workflow also generates and attests evidence for the exact `.nupkg`, then attaches its SPDX SBOM and SHA-256 package manifest to the GitHub Release.
 
 The publish job uses the `template-package-publish` GitHub environment. Keep deliberate maintainer approval on that environment, and keep `id-token: write` scoped only to the job that performs Trusted Publishing login. Changes to package publishing, environment names, OIDC identity, package ownership, or registry targets require security/release review before the next stable tag.
 
@@ -134,7 +134,7 @@ The Publish Container workflow runs on tag pushes matching:
 v*.*.*
 ```
 
-The workflow builds the Docker image, scans it with Trivy, uploads SARIF results, generates an SPDX SBOM, publishes the image to GitHub Container Registry, signs the pushed digest with cosign keyless signing, and generates build provenance attestation metadata.
+The workflow builds the Docker image, scans it with Trivy, uploads SARIF results, generates a container SPDX SBOM, publishes the image to GitHub Container Registry, signs the pushed digest with Cosign keyless signing, and generates build provenance attestation metadata. It then waits for the package workflow's evidence, creates the unified release evidence manifest, uploads the complete durable asset set, and verifies that the public release contains every required asset.
 
 The published image is:
 
@@ -144,7 +144,7 @@ ghcr.io/asibackbone/netcoreapplicationtemplate
 
 Stable tags publish the full version tag, the major tag, and `latest`. Prerelease tags publish only the full version tag.
 
-The publish job uses the `container-publish` GitHub environment. Keep deliberate maintainer approval on that environment so every production GHCR publication retains a manual approval gate.
+The publish job uses the `container-publish` GitHub environment. Keep deliberate maintainer approval on that environment so every production GHCR publication retains a manual approval gate. Approve both protected publish jobs within their documented coordination window so the evidence set can be completed.
 
 See [Container Release Publishing](container-publish.md) for details.
 

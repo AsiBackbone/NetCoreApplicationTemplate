@@ -72,6 +72,7 @@ Earlier planning dispositions such as **REFACTOR**, **MOVE/COPY-THEN-REDIRECT**,
 | `docs/adr/0002-use-centralized-application-middleware-pipeline.md` | Decision record for centralized pipeline | **KEEP** | NCAT | No redirect | Local rationale remains authoritative even if Learning teaches middleware generally. |
 | `docs/adr/0003-record-release-surface-and-distribution-strategy.md` | Decision record for package/release/distribution surface | **KEEP** | NCAT | No redirect | Release/distribution decision history. |
 | `docs/adr/0004-keep-composite-savechanges-interceptor.md` | Decision record for SaveChanges interceptor architecture | **KEEP** | NCAT | No redirect | Persistence implementation rationale. |
+| `docs/adr/0005-defer-nuget-package-signing.md` | Time-bounded decision record for NuGet author signing | **KEEP** | NCAT | No redirect | Repository-specific package trust decision, compensating controls, owner, and review triggers. |
 
 ## Published Generated Surfaces
 

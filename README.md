@@ -15,6 +15,8 @@
 
 A reusable, production-oriented ASP.NET Core application template with structured logging, security headers, forwarded headers, rate limiting, centralized error handling, cookie authentication, authenticated-by-default routed endpoints, policy-based authorization, EF Core data access patterns, health checks, telemetry, and CI validation.
 
+Tagged releases publish a durable, hashed evidence bundle for the exact NuGet package and OCI image, including separate SPDX SBOMs, provenance, the signed image digest, and tested verification commands. See [Container Release Publishing](docs/articles/container-publish.md#durable-release-assets). NuGet author signing is separately tracked by [ADR-0005](docs/adr/0005-defer-nuget-package-signing.md).
+
 ## Current Release
 
 <!-- BEGIN LATEST_RELEASE -->
