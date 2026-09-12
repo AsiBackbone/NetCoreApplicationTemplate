@@ -12,21 +12,51 @@ Security fixes are applied to the current stable line unless otherwise noted in 
 | Older releases | Best effort | Support depends on severity, reproducibility, release impact, and maintainer availability. |
 | `main` | Development | The development branch is not a supported release line. |
 
-## Reporting a Vulnerability
+## Reporting a Vulnerability or Sensitive Concern
 
-Please report suspected security issues privately instead of opening a public GitHub issue.
+Please do **not** place exploit details, secrets, proof-of-concept payloads, private keys, tokens, personal data, or sensitive operational information in a public Issue, pull request, Discussion, commit message, screenshot, or comment.
 
-Use [GitHub private vulnerability reporting](https://github.com/AsiBackbone/NetCoreApplicationTemplate/security/advisories/new) to submit a confidential report directly to the repository maintainer. If that form is unavailable, use the repository owner's GitHub profile contact options and do not include sensitive details in a public issue or discussion.
+Preferred reporting path:
 
-When reporting a vulnerability, include:
+1. Open this repository's **Security** tab and select **Report a vulnerability** to use GitHub private vulnerability reporting when it is available.
+2. Include a concise title and identify the affected repository area, version, branch, or commit when known.
+3. Provide reproduction steps, expected behavior, actual behavior, and the practical security impact.
+4. Use synthetic data and redact secrets or identifying information.
+5. Allow reasonable time for review before public disclosure.
 
-- A clear description of the issue.
-- Steps to reproduce the behavior.
-- The affected version, branch, or commit if known.
-- Any relevant logs, screenshots, configuration details, or proof-of-concept notes.
-- Whether the issue affects default application behavior or only a specific consuming application configuration.
+If private vulnerability reporting is unavailable, open a minimal public Issue stating only that you have a sensitive security report to share. Do not include technical details or sensitive material in that Issue.
 
-## Disclosure Expectations
+For non-sensitive hardening suggestions, documentation corrections, or defense-in-depth improvements, a normal GitHub Issue or pull request is appropriate.
+
+## Expected Response Posture
+
+This is a community-maintained open-source project and does not promise a formal security-response SLA or fixed acknowledgment or remediation timelines.
+
+The expected best-effort process is:
+
+1. A maintainer reviews the report and determines whether it is a vulnerability, documentation issue, sample or template issue, workflow or dependency concern, hardening opportunity, duplicate, or out-of-scope report.
+2. The maintainer may request clarification, affected-version or commit information, sanitized logs, or a reduced reproduction.
+3. Confirmed concerns are addressed through code, documentation, dependency, workflow, repository-configuration, release, or advisory changes appropriate to the risk.
+4. Public communication distinguishes confirmed behavior from suspected risk and avoids overstating security, compliance, legal, or operational guarantees.
+
+Please avoid repeated public disclosure while a sensitive report is being reviewed.
+
+## Sensitive Data Guidance for Reports
+
+When reporting a concern:
+
+- redact passwords, secrets, tokens, private keys, certificates, connection strings, user identifiers, personal information, customer data, and regulated data;
+- use synthetic examples whenever possible;
+- share only the minimum information required to reproduce or understand the concern;
+- clearly identify any material that remains sensitive.
+
+## Safe Public Language Expectations
+
+Public communication should distinguish implemented controls from intended architecture, repository behavior from downstream or consuming-system behavior, and verified evidence from assumptions.
+
+Do not describe a repository, package, template, sample, workflow, or generated application as vulnerability-free, automatically compliant, legally sufficient, tamper-proof, or production-ready solely because a documented control exists or automated checks pass.
+
+## Template Disclosure Context
 
 Please allow reasonable time for review and remediation before publicly discussing a suspected vulnerability.
 
@@ -49,8 +79,6 @@ Areas especially relevant to this application include:
 - Secret handling and configuration examples.
 - GitHub Actions workflow behavior.
 - Template packaging and release workflow behavior.
-
-Do not include production secrets, private keys, tokens, passwords, or sensitive personal data in a report.
 
 ## Secrets Incident Response Playbook
 
