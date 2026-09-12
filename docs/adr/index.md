@@ -74,3 +74,4 @@ When an ADR is superseded, keep the original file and add a link to the replacin
 | [0002](0002-use-centralized-application-middleware-pipeline.md) | Use centralized application middleware pipeline | Accepted |
 | [0003](0003-record-release-surface-and-distribution-strategy.md) | Record Release Surface and Distribution Strategy | Accepted |
 | [0004](0004-keep-composite-savechanges-interceptor.md) | Keep the Composite EF Core SaveChanges Interceptor | Accepted |
+| [0005](0005-defer-nuget-package-signing.md) | Defer NuGet package signing with a mandatory review date | Accepted |

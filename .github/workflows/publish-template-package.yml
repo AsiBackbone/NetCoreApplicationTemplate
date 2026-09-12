@@ -24,6 +24,7 @@ env:
   CONFIGURATION: Release
   PACKAGE_PROJECT: './NetCoreApplicationTemplate.Template.csproj'
   PACKAGE_OUTPUT: './artifacts/template-package'
+  PACKAGE_EVIDENCE_OUTPUT: './artifacts/template-package-evidence'
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
@@ -92,11 +93,37 @@ jobs:
 
           ./scripts/Validate-VersionConsistency.ps1 @arguments
 
+      - name: Generate template package SBOM
+        shell: pwsh
+        env:
+          GITHUB_REF_TYPE_VALUE: ${{ github.ref_type }}
+          GITHUB_REF_NAME_VALUE: ${{ github.ref_name }}
+          SOURCE_COMMIT: ${{ github.sha }}
+        run: |
+          $arguments = @{
+              PackageDirectory = $env:PACKAGE_OUTPUT
+              OutputDirectory = $env:PACKAGE_EVIDENCE_OUTPUT
+              SourceCommit = $env:SOURCE_COMMIT
+          }
+
+          if ($env:GITHUB_REF_TYPE_VALUE -eq 'tag') {
+              $arguments['TagName'] = $env:GITHUB_REF_NAME_VALUE
+          }
+
+          ./scripts/New-TemplatePackageSbom.ps1 @arguments
+
       - name: Upload template package artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: template-package
           path: ${{ env.PACKAGE_OUTPUT }}/*.nupkg
+          if-no-files-found: error
+
+      - name: Upload template package release evidence artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: template-package-release-evidence
+          path: ${{ env.PACKAGE_EVIDENCE_OUTPUT }}/*.json
           if-no-files-found: error
 
   publish-template:
@@ -105,7 +132,8 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read
+      attestations: write
+      contents: write
       packages: write
       id-token: write
 
@@ -115,11 +143,55 @@ jobs:
     if: github.event_name == 'push' || inputs.skip_publish == false
 
     steps:
+      - name: Checkout source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
       - name: Download template package artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: template-package
           path: ./artifacts/template-package
+
+      - name: Download template package release evidence artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: template-package-release-evidence
+          path: ${{ env.PACKAGE_EVIDENCE_OUTPUT }}
+
+      - name: Attest template package provenance
+        if: github.event_name == 'push' && github.ref_type == 'tag'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: ${{ env.PACKAGE_OUTPUT }}/*.nupkg
+
+      - name: Attest template package evidence provenance
+        if: github.event_name == 'push' && github.ref_type == 'tag'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: ${{ env.PACKAGE_EVIDENCE_OUTPUT }}/*.json
+
+      - name: Wait for GitHub release evidence boundary
+        if: github.event_name == 'push' && github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          for ($attempt = 1; $attempt -le 180; $attempt++) {
+              gh release view $env:RELEASE_TAG --repo $env:REPOSITORY 1>$null 2>$null
+
+              if ($LASTEXITCODE -eq 0) {
+                  exit 0
+              }
+
+              Write-Host "Waiting for the container workflow to create release $($env:RELEASE_TAG) ($attempt/180)."
+              Start-Sleep -Seconds 10
+          }
+
+          throw "Release $($env:RELEASE_TAG) was not created within 30 minutes. Approve both protected publishing jobs for a release tag."
 
       - name: Resolve package source
         id: source
@@ -184,3 +256,23 @@ jobs:
             --api-key "$api_key" \
             --source "$PACKAGE_SOURCE" \
             --skip-duplicate
+
+      - name: Attach template package evidence to release
+        if: github.event_name == 'push' && github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          $assetPaths = @(Get-ChildItem -LiteralPath $env:PACKAGE_EVIDENCE_OUTPUT -File | Sort-Object Name | Select-Object -ExpandProperty FullName)
+          gh release upload $env:RELEASE_TAG @assetPaths --clobber --repo $env:REPOSITORY
+
+          if ($LASTEXITCODE -ne 0) {
+              exit $LASTEXITCODE
+          }
+
+          ./scripts/Assert-GitHubReleaseAssets.ps1 `
+            -TagName $env:RELEASE_TAG `
+            -EvidenceDirectory $env:PACKAGE_EVIDENCE_OUTPUT `
+            -Repository $env:REPOSITORY

@@ -4,6 +4,23 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
+## Unreleased
+
+### Added
+
+* Added durable, release-attached SBOM, provenance, digest, checksum, and
+  verification evidence for the exact NuGet package and OCI image.
+* Added a fail-closed release evidence manifest and automated asset validation.
+* Added a dated decision record for deferred NuGet package signing with an
+  assigned owner, mandatory review date, and re-evaluation criteria.
+
+### Changed
+
+* Distinguished permanent GitHub Release evidence from temporary Actions
+  artifacts and separated NuGet publishing identity from OCI image signing.
+* Backfilled release `2.9.0` from its retained original container evidence and
+  exact public NuGet package, with regenerated evidence explicitly labeled.
+
 ## 2.9.0 - 2026-09-11
 
 ### Added

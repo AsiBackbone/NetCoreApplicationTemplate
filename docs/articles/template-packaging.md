@@ -107,6 +107,10 @@ From the repository root:
 dotnet pack ./NetCoreApplicationTemplate.Template.csproj --configuration Release --output ./artifacts/template-package
 ```
 
+Tagged releases generate an SPDX SBOM and a SHA-256 manifest from this exact `.nupkg`, publish GitHub build-provenance attestations, and attach the durable evidence to the corresponding GitHub Release. NuGet Trusted Publishing authenticates the protected workflow to NuGet.org but does not sign the package. NuGet author signing remains deferred under [ADR-0005](../adr/0005-defer-nuget-package-signing.md); the OCI image's Cosign signature is a separate control and does not cover the `.nupkg`.
+
+See [Container Release Publishing](container-publish.md#durable-release-assets) for the release asset contract and tested consumer verification commands.
+
 ## Install the Template Package
 
 Install the published package from NuGet:
