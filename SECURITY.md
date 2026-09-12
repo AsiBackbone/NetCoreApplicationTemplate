@@ -116,6 +116,8 @@ If package signing is enabled, document the signing certificate owner, certifica
 
 ## Related Documents
 
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- [GOVERNANCE.md](GOVERNANCE.md)
 - [SUPPORT.md](SUPPORT.md)
 - [MAINTAINERS.md](MAINTAINERS.md)
 - [CONTRIBUTING.md](CONTRIBUTING.md)

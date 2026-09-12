@@ -6,7 +6,7 @@ This project is intended to remain a clean, reusable, production-oriented ASP.NE
 
 ## Community Standards
 
-Participation in this repository is governed by [COMMUNITY_STANDARDS.md](COMMUNITY_STANDARDS.md).
+Participation in this repository is governed by the [Code of Conduct](CODE_OF_CONDUCT.md), with project-specific expectations summarized in [Community Standards](COMMUNITY_STANDARDS.md). Decision authority and maintainer roles are defined in [Governance](GOVERNANCE.md).
 
 Contributors should keep discussions respectful, focused on the project scope, and safe for public review.
 
@@ -235,7 +235,9 @@ GitHub Actions workflows should use explicit workflow or job-level permissions, 
 
 ## Related Documentation
 
+- [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Community Standards](COMMUNITY_STANDARDS.md)
+- [Governance](GOVERNANCE.md)
 - [Support Policy](SUPPORT.md)
 - [Maintainers](MAINTAINERS.md)
 - [Security Policy](SECURITY.md)

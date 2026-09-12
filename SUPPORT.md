@@ -60,7 +60,7 @@ Issues are generally reviewed for:
 4. Whether the report includes enough detail to act on.
 5. Whether the fix can be safely validated by CI, tests, or documentation review.
 
-Maintainers may close issues that are stale, unreproducible, out of scope, duplicated, or specific to a downstream application customization.
+Maintainers may close issues that are stale, unreproducible, out of scope, duplicated, or specific to a downstream application customization. Decision authority and contribution ownership are defined in [GOVERNANCE.md](GOVERNANCE.md).
 
 ## Pull Request Support
 
