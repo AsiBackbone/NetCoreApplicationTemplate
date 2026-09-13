@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TemplateRepositoryRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..'))</TemplateRepositoryRoot>
+    <TargetFramework>net10.0</TargetFramework>
+    <PackageId>NetCoreApplicationTemplate</PackageId>
+    <Title>.NET Core Application Template</Title>
+    <Authors>Christopher D. Cavell</Authors>
+    <Description>Production-oriented ASP.NET Core application template with structured logging, security headers, forwarded headers, rate limiting, centralized error handling, cookie authentication, authenticated-by-default routed endpoints, policy-based authorization, and EF Core-ready structure.</Description>
+    <PackageTags>dotnet-new;templates;aspnetcore;mvc;web;enterprise;security</PackageTags>
+    <PackageProjectUrl>https://asibackbone.github.io/NetCoreApplicationTemplate/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/AsiBackbone/NetCoreApplicationTemplate</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageReadmeFile>PACKAGE-README.md</PackageReadmeFile>
+    <PackageIcon>PACKAGE-ICON.png</PackageIcon>
+    <PackageReleaseNotes>Minor 2.9.0 release of the NetCoreApplicationTemplate dotnet new template. This backward-compatible release validates every authentication and database option combination, documents and aligns repository security and branch-retention controls, adds public governance and conduct policies, updates Microsoft.SourceLink.GitHub to address CVE-2026-62900, refreshes pinned container dependencies, and strengthens documentation and support routing. The package ID, template identities, short name, supported options, generated runtime behavior, and net10.0 target remain unchanged.</PackageReleaseNotes>
+    <VersionPrefix>2.9.0</VersionPrefix>
+    <VersionSuffix></VersionSuffix>
+    <Version>$(VersionPrefix)</Version>
+    <PackageType>Template</PackageType>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="$(TemplateRepositoryRoot)/.dockerignore" Pack="true" PackagePath="content/" />
+    <Content Include="$(TemplateRepositoryRoot)/.editorconfig" Pack="true" PackagePath="content/" />
+    <Content Include="$(TemplateRepositoryRoot)/.env.example" Pack="true" PackagePath="content/" />
+    <Content Include="$(TemplateRepositoryRoot)/.gitattributes" Pack="true" PackagePath="content/" />
+    <Content Include="$(TemplateRepositoryRoot)/.gitignore" Pack="true" PackagePath="content/" />
+    <Content Include="$(TemplateRepositoryRoot)/.template.config/**/*" Pack="true" PackagePath="content/.template.config/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="$(TemplateRepositoryRoot)/.template.content/**/*" Pack="true" PackagePath="content/.template.content/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="$(TemplateRepositoryRoot)/ASSETS-LICENSES.md" Pack="true" PackagePath="" />
+    <Content Include="$(TemplateRepositoryRoot)/Directory.Build.props" Pack="true" PackagePath="content/" />
+    <Content Include="$(TemplateRepositoryRoot)/Directory.Packages.props" Pack="true" PackagePath="content/" />
+    <Content Include="$(TemplateRepositoryRoot)/Dockerfile" Pack="true" PackagePath="content/" />
+    <Content Include="$(TemplateRepositoryRoot)/docker-compose.yml" Pack="true" PackagePath="content/" />
+    <Content Include="$(TemplateRepositoryRoot)/global.json" Pack="true" PackagePath="content/" />
+    <Content Include="$(TemplateRepositoryRoot)/LICENSE.txt" Pack="true" PackagePath="content/" />
+    <Content Include="$(TemplateRepositoryRoot)/LICENSE.txt" Pack="true" PackagePath="" />
+    <Content Include="$(TemplateRepositoryRoot)/NetCoreApplicationTemplate.slnx" Pack="true" PackagePath="content/" />
+    <Content Include="$(TemplateRepositoryRoot)/PACKAGE-README.md" Pack="true" PackagePath="" />
+    <Content Include="$(TemplateRepositoryRoot)/src/**/*" Pack="true" PackagePath="content/src/%(RecursiveDir)%(Filename)%(Extension)" Exclude="$(TemplateRepositoryRoot)/src/**/bin/**;$(TemplateRepositoryRoot)/src/**/obj/**;$(TemplateRepositoryRoot)/src/**/Logs/**;$(TemplateRepositoryRoot)/src/**/*.db;$(TemplateRepositoryRoot)/src/**/*.db-shm;$(TemplateRepositoryRoot)/src/**/*.db-wal" />
+    <Content Include="$(TemplateRepositoryRoot)/tests/**/*" Pack="true" PackagePath="content/tests/%(RecursiveDir)%(Filename)%(Extension)" Exclude="$(TemplateRepositoryRoot)/tests/**/bin/**;$(TemplateRepositoryRoot)/tests/**/obj/**;$(TemplateRepositoryRoot)/tests/**/Logs/**;$(TemplateRepositoryRoot)/tests/**/*.db;$(TemplateRepositoryRoot)/tests/**/*.db-shm;$(TemplateRepositoryRoot)/tests/**/*.db-wal" />
+    <Content Include="$(TemplateRepositoryRoot)/PACKAGE-ICON.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+</Project>

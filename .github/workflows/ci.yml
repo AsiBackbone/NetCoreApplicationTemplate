@@ -72,10 +72,10 @@ jobs:
         shell: pwsh
         run: |
           ./eng/Test-PackageLockFiles.ps1
-          dotnet restore ${{ env.SOLUTION_FILE }} --locked-mode
+          dotnet restore --locked-mode
 
       - name: Build solution
-        run: dotnet build ${{ env.SOLUTION_FILE }} --configuration ${{ env.CONFIGURATION }} --no-restore /p:ContinuousIntegrationBuild=true
+        run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore /p:ContinuousIntegrationBuild=true
 
       - name: Verify formatting
         run: dotnet format ${{ env.SOLUTION_FILE }} --verify-no-changes --verbosity minimal
@@ -179,7 +179,7 @@ jobs:
       - name: Pack template package
         shell: pwsh
         run: |
-          dotnet pack ./NetCoreApplicationTemplate.Template.csproj `
+          dotnet pack ./eng/NetCoreApplicationTemplate.Template.csproj `
             --configuration $env:CONFIGURATION `
             --output ./artifacts/template-package `
             /p:ContinuousIntegrationBuild=true
@@ -442,7 +442,7 @@ jobs:
       - name: Pack template package
         shell: pwsh
         run: |
-          dotnet pack ./NetCoreApplicationTemplate.Template.csproj `
+          dotnet pack ./eng/NetCoreApplicationTemplate.Template.csproj `
             --configuration $env:CONFIGURATION `
             --output ./artifacts/template-package `
             /p:ContinuousIntegrationBuild=true

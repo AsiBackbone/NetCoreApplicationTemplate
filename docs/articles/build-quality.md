@@ -103,10 +103,10 @@ Analyzer settings are intentionally production-oriented but not configured as gl
 Before a release, the expected validation path is:
 
 ```powershell
-dotnet build ./NetCoreApplicationTemplate.slnx --configuration Release --no-restore /p:ContinuousIntegrationBuild=true
+dotnet build --configuration Release --no-restore /p:ContinuousIntegrationBuild=true
 dotnet format ./NetCoreApplicationTemplate.slnx --verify-no-changes --verbosity minimal
-dotnet test ./NetCoreApplicationTemplate.slnx --configuration Release --no-build --verbosity normal /p:ContinuousIntegrationBuild=true
-dotnet pack ./NetCoreApplicationTemplate.Template.csproj --configuration Release --output ./artifacts/template-package /p:ContinuousIntegrationBuild=true
+dotnet test --configuration Release --no-build --verbosity normal /p:ContinuousIntegrationBuild=true
+dotnet pack ./eng/NetCoreApplicationTemplate.Template.csproj --configuration Release --output ./artifacts/template-package /p:ContinuousIntegrationBuild=true
 ```
 
 The CI workflow additionally:

@@ -22,7 +22,7 @@ permissions:
 
 env:
   CONFIGURATION: Release
-  PACKAGE_PROJECT: './NetCoreApplicationTemplate.Template.csproj'
+  PACKAGE_PROJECT: './eng/NetCoreApplicationTemplate.Template.csproj'
   PACKAGE_OUTPUT: './artifacts/template-package'
   PACKAGE_EVIDENCE_OUTPUT: './artifacts/template-package-evidence'
   DOTNET_NOLOGO: true
@@ -64,10 +64,10 @@ jobs:
           ./scripts/Validate-VersionConsistency.ps1 @arguments
 
       - name: Restore dependencies
-        run: dotnet restore ./NetCoreApplicationTemplate.slnx --locked-mode
+        run: dotnet restore --locked-mode
 
       - name: Build solution
-        run: dotnet build ./NetCoreApplicationTemplate.slnx --configuration ${{ env.CONFIGURATION }} --no-restore /p:ContinuousIntegrationBuild=true
+        run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore /p:ContinuousIntegrationBuild=true
 
       - name: Pack template package
         run: |

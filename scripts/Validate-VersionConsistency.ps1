@@ -139,26 +139,27 @@ Assert-Equal $resolvedDirectoryVersion $ExpectedVersion 'Directory.Build.props r
 Assert-Equal (Get-ProjectProperty 'Directory.Build.props' 'AssemblyVersion') "$directoryVersionPrefix.0" 'Directory.Build.props AssemblyVersion'
 Assert-Equal (Get-ProjectProperty 'Directory.Build.props' 'FileVersion') "$directoryVersionPrefix.0" 'Directory.Build.props FileVersion'
 
-$templateVersionPrefix = Get-ProjectProperty 'NetCoreApplicationTemplate.Template.csproj' 'VersionPrefix'
-$templateVersionSuffix = Get-ProjectProperty 'NetCoreApplicationTemplate.Template.csproj' 'VersionSuffix' $false
+$templateProjectPath = 'eng/NetCoreApplicationTemplate.Template.csproj'
+$templateVersionPrefix = Get-ProjectProperty $templateProjectPath 'VersionPrefix'
+$templateVersionSuffix = Get-ProjectProperty $templateProjectPath 'VersionSuffix' $false
 $templateVersionSuffix = if ($null -eq $templateVersionSuffix) { '' } else { $templateVersionSuffix }
 $templateResolvedVersion = Resolve-Version $templateVersionPrefix $templateVersionSuffix
 
-Assert-Equal $templateResolvedVersion $ExpectedVersion 'NetCoreApplicationTemplate.Template.csproj resolved package version'
+Assert-Equal $templateResolvedVersion $ExpectedVersion "$templateProjectPath resolved package version"
 
-$templateVersion = Get-ProjectProperty 'NetCoreApplicationTemplate.Template.csproj' 'Version' $false
+$templateVersion = Get-ProjectProperty $templateProjectPath 'Version' $false
 if (-not [string]::IsNullOrWhiteSpace($templateVersion)) {
     $allowedVersionValues = @($ExpectedVersion, '$(VersionPrefix)', '$(Version)')
     if ($allowedVersionValues -notcontains $templateVersion) {
-        Add-Failure "NetCoreApplicationTemplate.Template.csproj Version should be '$ExpectedVersion' or derive from VersionPrefix, but found '$templateVersion'."
+        Add-Failure "$templateProjectPath Version should be '$ExpectedVersion' or derive from VersionPrefix, but found '$templateVersion'."
     }
 }
 
-$templatePackageVersion = Get-ProjectProperty 'NetCoreApplicationTemplate.Template.csproj' 'PackageVersion' $false
+$templatePackageVersion = Get-ProjectProperty $templateProjectPath 'PackageVersion' $false
 if (-not [string]::IsNullOrWhiteSpace($templatePackageVersion)) {
     $allowedPackageVersionValues = @($ExpectedVersion, '$(VersionPrefix)', '$(Version)')
     if ($allowedPackageVersionValues -notcontains $templatePackageVersion) {
-        Add-Failure "NetCoreApplicationTemplate.Template.csproj PackageVersion should be '$ExpectedVersion' or derive from VersionPrefix, but found '$templatePackageVersion'."
+        Add-Failure "$templateProjectPath PackageVersion should be '$ExpectedVersion' or derive from VersionPrefix, but found '$templatePackageVersion'."
     }
 }
 

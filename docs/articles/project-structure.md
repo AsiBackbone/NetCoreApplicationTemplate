@@ -30,6 +30,7 @@ The .NET Core Application Template is organized as a compact, production-oriente
 │
 ├── eng/
 │   ├── Assert-SecurityCriticalCoverage.ps1
+│   ├── NetCoreApplicationTemplate.Template.csproj
 │   ├── security-critical-coverage.json
 │   ├── scaffold-manifest.default.json
 │   ├── scaffold-manifest.schema.json
@@ -74,7 +75,6 @@ The .NET Core Application Template is organized as a compact, production-oriente
 ├── LICENSE.txt
 ├── MAINTAINERS.md
 ├── NetCoreApplicationTemplate.slnx
-├── NetCoreApplicationTemplate.Template.csproj
 ├── PACKAGE-README.md
 ├── README.md
 ├── RELEASE.md

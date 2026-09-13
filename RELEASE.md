@@ -33,7 +33,7 @@ Complete these checks before tagging a stable release:
 - Confirm CodeQL/security scanning passes.
 - Confirm dependency/audit scanning has no unresolved release-blocking findings.
 - Run `./scripts/Validate-VersionConsistency.ps1`.
-- Confirm the version in `Directory.Build.props`, `NetCoreApplicationTemplate.Template.csproj`, `CITATION.cff`, README examples, package documentation, and the latest `CHANGELOG.md` heading is aligned.
+- Confirm the version in `Directory.Build.props`, `eng/NetCoreApplicationTemplate.Template.csproj`, `CITATION.cff`, README examples, package documentation, and the latest `CHANGELOG.md` heading is aligned.
 - Confirm tag/version agreement checks are part of the release gate.
 - Run the release build quality commands documented in `docs/articles/build-quality.md`.
 - Run the template smoke-test workflow against the release branch or release-candidate tag.
@@ -211,7 +211,7 @@ Before publishing a stable release, confirm every public version marker agrees w
 | Surface | Source / location | Expected behavior |
 |---|---|---|
 | Assembly/package version | `Directory.Build.props` | `VersionPrefix`, `AssemblyVersion`, and `FileVersion` match the release version. |
-| Template package metadata | `NetCoreApplicationTemplate.Template.csproj` | Package metadata resolves to the same version as the release tag. |
+| Template package metadata | `eng/NetCoreApplicationTemplate.Template.csproj` | Package metadata resolves to the same version as the release tag. |
 | Git tag | GitHub release tag | Stable releases use `vMAJOR.MINOR.PATCH`. |
 | NuGet package | Published `.nupkg` metadata | Package version matches the Git tag without the leading `v`. |
 | Container image | Published image tags | Version tag matches the Git tag without the leading `v`; digest is recorded. |
