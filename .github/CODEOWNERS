@@ -32,7 +32,7 @@ CHANGELOG.md @cdcavell
 # Template packaging and scaffold configuration
 /.template.config/ @cdcavell
 /.template.content/ @cdcavell
-NetCoreApplicationTemplate.Template.csproj @cdcavell
+/eng/NetCoreApplicationTemplate.Template.csproj @cdcavell
 Directory.Build.props @cdcavell
 Directory.Packages.props @cdcavell
 global.json @cdcavell

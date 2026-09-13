@@ -130,6 +130,18 @@ public sealed class RepositoryLintTests
     }
 
     /// <summary>
+    /// Verifies that argument-free dotnet commands resolve the repository solution.
+    /// </summary>
+    [Fact]
+    public void RepositoryRoot_HasSingleBuildEntryPoint()
+    {
+        string solutionRoot = GetSolutionRoot();
+
+        Assert.Single(Directory.EnumerateFiles(solutionRoot, "*.slnx", SearchOption.TopDirectoryOnly));
+        Assert.Empty(Directory.EnumerateFiles(solutionRoot, "*.*proj", SearchOption.TopDirectoryOnly));
+    }
+
+    /// <summary>
     /// Verifies that recursive template package inputs exclude local SQLite database artifacts.
     /// </summary>
     /// <param name="contentRoot">The recursive content root declared by the template package project.</param>
@@ -139,22 +151,22 @@ public sealed class RepositoryLintTests
     public void TemplatePackageContent_ExcludesSqliteDatabaseArtifacts(string contentRoot)
     {
         string solutionRoot = GetSolutionRoot();
-        string projectPath = Path.Combine(solutionRoot, "NetCoreApplicationTemplate.Template.csproj");
+        string projectPath = Path.Combine(solutionRoot, "eng", "NetCoreApplicationTemplate.Template.csproj");
         var project = System.Xml.Linq.XDocument.Load(projectPath);
 
         System.Xml.Linq.XElement content = Assert.Single(
             project.Descendants("Content"),
             item => string.Equals(
                 item.Attribute("Include")?.Value,
-                $"{contentRoot}/**/*",
+                $"$(TemplateRepositoryRoot)/{contentRoot}/**/*",
                 StringComparison.Ordinal));
 
         string[] excludedPaths = (content.Attribute("Exclude")?.Value ?? string.Empty)
             .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        Assert.Contains($"{contentRoot}/**/*.db", excludedPaths);
-        Assert.Contains($"{contentRoot}/**/*.db-shm", excludedPaths);
-        Assert.Contains($"{contentRoot}/**/*.db-wal", excludedPaths);
+        Assert.Contains($"$(TemplateRepositoryRoot)/{contentRoot}/**/*.db", excludedPaths);
+        Assert.Contains($"$(TemplateRepositoryRoot)/{contentRoot}/**/*.db-shm", excludedPaths);
+        Assert.Contains($"$(TemplateRepositoryRoot)/{contentRoot}/**/*.db-wal", excludedPaths);
     }
 
     private static string GetSolutionRoot()

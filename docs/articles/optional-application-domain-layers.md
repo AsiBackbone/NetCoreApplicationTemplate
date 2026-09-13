@@ -161,7 +161,7 @@ When the change is intentional, regenerate the manifest with `-Generate`, then r
 
 ### Package project
 
-Review `NetCoreApplicationTemplate.Template.csproj`.
+Review `eng/NetCoreApplicationTemplate.Template.csproj`.
 
 The package project currently packs `src/**/*` and `tests/**/*`, which normally captures additional projects placed beneath those roots. A new layer therefore may not require a new explicit `Content` entry, but package contents still need validation.
 

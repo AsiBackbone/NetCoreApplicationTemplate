@@ -52,9 +52,9 @@ The repository root contains both a solution file and a project file, so validat
 Preferred validation:
 
 ```bash
-dotnet restore ./NetCoreApplicationTemplate.slnx
-dotnet build ./NetCoreApplicationTemplate.slnx --configuration Release
-dotnet test ./NetCoreApplicationTemplate.slnx --configuration Release
+dotnet restore
+dotnet build --configuration Release
+dotnet test --configuration Release
 ```
 
 For coverage-related work, preserve or improve the configured coverage gate.

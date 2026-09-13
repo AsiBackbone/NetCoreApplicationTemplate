@@ -193,7 +193,6 @@
         "CODE_OF_CONDUCT.md",
         "CONTRIBUTING.md",
         "GOVERNANCE.md",
-        "NetCoreApplicationTemplate.Template.csproj",
         "PACKAGE-README.md",
         "SECURITY.md",
         "tests/ProjectTemplate.Web.Tests/RepositoryLintTests.cs",
