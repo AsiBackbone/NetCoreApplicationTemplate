@@ -263,6 +263,60 @@ public sealed class AuthenticationTests
     }
 
     /// <summary>
+    /// Verifies that the default cookie authentication pipeline establishes a principal that can reach a protected endpoint.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous test operation.</returns>
+    [Fact]
+    public async Task ProtectedApiEndpoint_ReturnsAuthenticatedIdentity_AfterCookieSignIn()
+    {
+        const string expectedUserName = "cookie-positive-path-user";
+
+        using ApplicationWebApplicationFactory factory = CreateFactory(new Dictionary<string, string?>
+        {
+            ["ProjectTemplate:Authentication:Enabled"] = "true",
+            ["ProjectTemplate:Authentication:DefaultScheme"] = "Cookies",
+            ["ProjectTemplate:Authentication:DefaultChallengeScheme"] = "Cookies",
+            ["ProjectTemplate:Authentication:DefaultSignInScheme"] = "Cookies",
+            ["ProjectTemplate:Authentication:Cookie:Enabled"] = "true",
+            ["ProjectTemplate:Authentication:Cookie:Scheme"] = "Cookies",
+            ["ProjectTemplate:Authentication:Cookie:LoginPath"] = "/Account/Login"
+        });
+
+        using HttpClient client = factory.CreateHttpsClient();
+
+        using HttpResponseMessage unauthenticatedResponse = await client.GetAsync(
+            "/test/authentication/protected",
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, unauthenticatedResponse.StatusCode);
+
+        using HttpResponseMessage signInResponse = await client.PostAsync(
+            $"/test/authentication/cookie-sign-in?userName={Uri.EscapeDataString(expectedUserName)}",
+            content: null,
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, signInResponse.StatusCode);
+
+        using HttpResponseMessage authenticatedResponse = await client.GetAsync(
+            "/test/authentication/protected",
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, authenticatedResponse.StatusCode);
+
+        string responseBody = await authenticatedResponse.Content.ReadAsStringAsync(
+            TestContext.Current.CancellationToken);
+
+        Assert.Contains(
+            $"\"userName\":\"{expectedUserName}\"",
+            responseBody,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            $"\"subject\":\"{expectedUserName}\"",
+            responseBody,
+            StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// Verifies that startup validation fails when authentication is enabled and the cookie scheme is empty.
     /// </summary>
     [Fact]
