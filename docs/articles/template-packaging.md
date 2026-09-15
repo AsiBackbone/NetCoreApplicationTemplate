@@ -176,6 +176,8 @@ The application still includes the authentication and authorization infrastructu
 
 The `--dbProvider sqlserver` option excludes the SQLite-specific `Data/Migrations` history and migration tests from generated output. Consumers must create provider-compatible SQL Server migrations before running `dotnet ef database update`.
 
+To keep this omission operationally visible, a generated SQL Server scaffold emits a startup warning when no EF Core migrations are present. The warning explains that the SQLite history was intentionally omitted and provides the exact `dotnet ef migrations add InitialSqlServer ...` command. In the NCAT 2.x line this is advisory: startup continues, and migrations are never generated or applied automatically.
+
 ### Data-access-disabled variant
 
 The `--dbProvider none` option generates the application with `ProjectTemplate:DataAccess:Provider` set to `None`.
