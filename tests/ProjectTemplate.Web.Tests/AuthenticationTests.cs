@@ -290,9 +290,26 @@ public sealed class AuthenticationTests
 
         Assert.Equal(HttpStatusCode.Unauthorized, unauthenticatedResponse.StatusCode);
 
+        using HttpResponseMessage antiforgeryResponse = await client.GetAsync(
+            "/test/authentication/antiforgery-token",
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, antiforgeryResponse.StatusCode);
+
+        string antiforgeryToken = await antiforgeryResponse.Content.ReadAsStringAsync(
+            TestContext.Current.CancellationToken);
+
+        Assert.False(string.IsNullOrWhiteSpace(antiforgeryToken));
+
+        using FormUrlEncodedContent signInContent = new(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = antiforgeryToken,
+            ["userName"] = expectedUserName
+        });
+
         using HttpResponseMessage signInResponse = await client.PostAsync(
-            $"/test/authentication/cookie-sign-in?userName={Uri.EscapeDataString(expectedUserName)}",
-            content: null,
+            "/test/authentication/cookie-sign-in",
+            signInContent,
             TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, signInResponse.StatusCode);

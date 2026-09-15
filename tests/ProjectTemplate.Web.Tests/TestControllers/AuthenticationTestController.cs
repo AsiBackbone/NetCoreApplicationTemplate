@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,13 +26,28 @@ public sealed class AuthenticationTestController : ControllerBase
     }
 
     /// <summary>
+    /// Issues a test-only antiforgery request token and stores the paired antiforgery cookie.
+    /// </summary>
+    /// <param name="antiforgery">The ASP.NET Core antiforgery service.</param>
+    /// <returns>The request token required by the cookie sign-in POST.</returns>
+    [HttpGet("antiforgery-token")]
+    [AllowAnonymous]
+    public IActionResult AntiforgeryToken([FromServices] IAntiforgery antiforgery)
+    {
+        AntiforgeryTokenSet tokens = antiforgery.GetAndStoreTokens(HttpContext);
+
+        return Content(tokens.RequestToken ?? string.Empty);
+    }
+
+    /// <summary>
     /// Establishes a test-only cookie-authenticated principal through the application's configured cookie scheme.
     /// </summary>
     /// <param name="userName">The test user name to persist in the authentication cookie.</param>
     /// <returns>A task that represents the asynchronous sign-in operation.</returns>
     [HttpPost("cookie-sign-in")]
     [AllowAnonymous]
-    public async Task<IActionResult> CookieSignIn(string userName = "cookie-test-user")
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CookieSignIn([FromForm] string userName = "cookie-test-user")
     {
         Claim[] claims =
         [
