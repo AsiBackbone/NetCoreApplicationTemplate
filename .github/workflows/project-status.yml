@@ -7,10 +7,7 @@ on:
       - reopened
       - ready_for_review
 
-permissions:
-  contents: read
-  pull-requests: read
-  issues: read
+permissions: {}
 
 env:
   PROJECT_OWNER: ${{ vars.PROJECT_OWNER }}
@@ -25,9 +22,21 @@ jobs:
     if: github.event.pull_request.draft == false
 
     steps:
+      - name: Create least-privilege project automation token
+        id: project-app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.PROJECT_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PROJECT_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-organization-projects: write
+          permission-issues: read
+          permission-pull-requests: read
+
       - name: Move linked issue to review status
         env:
-          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+          GH_TOKEN: ${{ steps.project-app-token.outputs.token }}
           PR_NODE_ID: ${{ github.event.pull_request.node_id }}
         shell: bash
         run: |

@@ -209,18 +209,88 @@ For exploratory or partial work, use a non-closing reference instead:
 Related to #42
 ```
 
-## Required Secret
+## Project Automation Credential
 
-Some workflow automation may require a classic GitHub personal access token stored as:
+The project-status workflows use a dedicated GitHub App installation token rather
+than a classic personal access token. The installation token is created at run
+time and expires after one hour; `actions/create-github-app-token` also revokes
+the token when the job completes.
 
-```text
-PROJECT_TOKEN
-```
+The built-in `GITHUB_TOKEN` is intentionally not used for these mutations.
+`GITHUB_TOKEN` is repository-scoped and does not provide the organization-level
+Projects v2 permission required by `updateProjectV2ItemFieldValue` and
+`addProjectV2ItemById`.
 
-Required classic PAT scopes:
+The workflow-level `permissions:` block controls only the built-in
+`GITHUB_TOKEN`. It does not constrain a GitHub App installation token or any
+other external credential. The two project automation workflows therefore set
+`permissions: {}` and explicitly request the GitHub App token permissions they
+need.
 
-- `project`
-- `repo` if the repository is private
-- `public_repo` may be sufficient if the repository is public
+### GitHub App configuration
 
-A fine-grained PAT may not work for user-owned GitHub Projects.
+Create a dedicated GitHub App for NCAT project automation and install it only on
+the `AsiBackbone` organization with repository access limited to
+`NetCoreApplicationTemplate`.
+
+Grant the App only these permissions:
+
+- Organization permissions:
+  - **Projects: Read and write**
+- Repository permissions:
+  - **Issues: Read-only**
+  - **Pull requests: Read-only**
+  - **Metadata: Read-only** (GitHub grants this baseline permission)
+
+The pull-request status workflow requests Projects write, Issues read, and Pull
+requests read. The branch-status workflow requests only Projects write and
+Issues read.
+
+Configure these repository values:
+
+| Type | Name | Purpose |
+| --- | --- | --- |
+| Repository variable | `PROJECT_APP_CLIENT_ID` | GitHub App client ID; this value is not secret. |
+| Repository secret | `PROJECT_APP_PRIVATE_KEY` | PEM private key used only to mint short-lived installation tokens. |
+
+Keep the existing project configuration variables:
+
+- `PROJECT_OWNER`
+- `PROJECT_NUMBER`
+- `PROJECT_REVIEW_STATUS`
+- `PROJECT_IN_PROGRESS_STATUS`
+
+Do not store an installation access token as a repository secret. The workflows
+mint a fresh token for each job and pass it directly to `gh` through `GH_TOKEN`;
+the token value is never printed by repository scripts.
+
+### Migration from `PROJECT_TOKEN`
+
+After the GitHub App is installed and both project-status workflows have
+completed successfully:
+
+1. Delete the legacy `PROJECT_TOKEN` repository secret.
+2. Revoke the classic personal access token in the account that issued it.
+3. Confirm no organization or repository automation still depends on that PAT
+   before removing any associated authorization.
+
+There is no classic-PAT fallback in these workflows. If a GitHub App becomes
+impractical, any future fallback must use a separately reviewed fine-grained PAT
+limited to the required project and repository rather than restoring a broadly
+scoped classic PAT.
+
+### Rotation and revocation
+
+Rotate the App private key by generating a new key in the GitHub App settings,
+updating `PROJECT_APP_PRIVATE_KEY`, validating both automation workflows, and
+then deleting the previous key from the App.
+
+For emergency revocation, delete the active App private key or suspend/uninstall
+the App installation. Existing installation tokens are short-lived and the token
+created by `actions/create-github-app-token` is revoked automatically at job
+completion by default.
+
+Review the App installation and permissions whenever the project owner,
+repository scope, or project automation mutations change. Expanding the App to
+additional repositories or permissions requires the same security review as a
+workflow permission expansion.
