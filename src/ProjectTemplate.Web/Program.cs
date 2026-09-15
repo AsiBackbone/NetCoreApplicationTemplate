@@ -45,6 +45,7 @@ try
     Log.Information("Configuring pipeline for ProjectTemplate.Web application");
     app.UseApplicationPipeline();
     app.MapApplicationHealthChecks();
+    app.LogApplicationSecurityPosture();
 
     Log.Information("Running ProjectTemplate.Web application");
     app.Run();

@@ -28,6 +28,10 @@ To enable an external provider, keep application authentication enabled and set 
 
 For an intentionally public local scaffold that does not yet need identity, generate with `--authProvider none`. This explicitly disables authentication and the authenticated fallback policy; it is not a production identity configuration.
 
+When authentication is disabled, the generated application emits a structured warning once during startup identifying the `ProjectTemplate:Authentication:Enabled` configuration key. The warning describes this as an intentional supported posture rather than an authentication framework failure and asks the operator to review deployment exposure and authorization expectations. It does not log provider secrets, tokens, connection strings, or other credential material.
+
+No corresponding warning is emitted when application authentication is enabled.
+
 Before enabling any real provider in production, review the [Production Authentication Hardening Checklist](authentication-hardening.md). Generated provider settings are starter configuration and must be bound to the consuming application's production URLs, provider registrations, claims contract, token policy, secret-management approach, session behavior, and MFA expectations.
 
 ### OpenID Connect

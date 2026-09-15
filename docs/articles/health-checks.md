@@ -49,6 +49,10 @@ Anonymous application access does not imply unrestricted Internet exposure. Prod
 
 Avoid returning secrets, configuration values, dependency connection details, exception messages, or other sensitive diagnostics from health responses. Applications that require authenticated health diagnostics should add a separate protected diagnostics endpoint rather than changing the lightweight liveness contract accidentally.
 
+When the application starts in the `Production` environment, it emits one structured warning identifying `/health`, `/health/ready`, and `/health/live` as anonymously mapped routes. The warning does not mean anonymous health probes are inherently unsafe; it is an operational signal reminding the deployment operator to confirm that reverse-proxy, ingress, firewall, or service-mesh routing exposes those endpoints only as intended.
+
+Development does not emit this health-route warning. The diagnostic is startup-only and does not add request-path log noise.
+
 ## Liveness Semantics
 
 `/health/live` should stay lightweight. It is intended to answer one question:
