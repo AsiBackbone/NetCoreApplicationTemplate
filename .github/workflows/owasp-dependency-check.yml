@@ -3,9 +3,10 @@
 # OWASP Dependency-Check scans the restored NuGet dependency graph and uploads
 # SARIF results to GitHub code scanning.
 #
-# This workflow reports; it does not gate. It is deliberately not invoked with
-# --failOnCVSS. It runs weekly, on demand, and on pushes to main that touch
-# project or lock files, so it never runs before a merge; a hard failure here
+# Dependency-Check findings are report-only; the scan is deliberately not invoked
+# with --failOnCVSS. Suppression lifecycle validation is a separate policy gate.
+# The workflow runs weekly, on demand, and on pushes to main that touch project
+# or lock files, so it never runs before a merge; a hard failure here
 # would block main rather than the change that introduced the finding. Findings
 # are triaged through code scanning, and RELEASE.md requires explicit
 # confirmation that none are release-blocking before a stable tag.
@@ -29,6 +30,7 @@ on:
       - '**/Directory.Packages.props'
       - '**/Directory.Build.props'
       - 'dependency-check-suppressions.xml'
+      - 'eng/Validate-DependencyCheckSuppressions.ps1'
       - '.github/workflows/owasp-dependency-check.yml'
 
   pull_request:
@@ -42,11 +44,27 @@ on:
       - '**/Directory.Packages.props'
       - '**/Directory.Build.props'
       - 'dependency-check-suppressions.xml'
+      - 'eng/Validate-DependencyCheckSuppressions.ps1'
       - '.github/workflows/owasp-dependency-check.yml'
 
 permissions: {}
 
 jobs:
+  validate-suppressions:
+    name: Validate dependency-check suppressions
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Validate suppression expiry and rationale
+        shell: pwsh
+        run: ./eng/Validate-DependencyCheckSuppressions.ps1 -ReviewWindowDays 30 -FailOnReviewWindow
+
   dependency-check:
     name: Analyze dependencies with OWASP Dependency-Check
     runs-on: ubuntu-latest
