@@ -532,13 +532,13 @@ jobs:
 
       # GitHub Actions is interpreted by CodeQL directly and does not use a repository build.
       - name: Initialize CodeQL for GitHub Actions
-        uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+        uses: github/codeql-action/init@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
         with:
           languages: actions
           build-mode: none
 
       - name: Perform CodeQL Actions analysis
-        uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+        uses: github/codeql-action/analyze@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
 
   codeql-analysis:
     name: CodeQL analysis
@@ -569,7 +569,7 @@ jobs:
       # C# uses manual extraction so the controlled locked restore and solution build below
       # are the build CodeQL observes rather than redundant work after buildless extraction.
       - name: Initialize CodeQL for C#
-        uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+        uses: github/codeql-action/init@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
         with:
           languages: csharp
           build-mode: manual
@@ -581,7 +581,7 @@ jobs:
         run: dotnet build ${{ env.SOLUTION_FILE }} --configuration ${{ env.CONFIGURATION }} --no-restore /p:ContinuousIntegrationBuild=true
 
       - name: Perform CodeQL C# analysis
-        uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+        uses: github/codeql-action/analyze@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
 
       - name: Report CodeQL C# runtime
         if: always()
