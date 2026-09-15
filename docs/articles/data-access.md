@@ -386,7 +386,7 @@ Consuming applications remain responsible for domain-appropriate precision, scal
 
 ## Raw SQL and Parameterization Safety
 
-The generated baseline does not require raw SQL command construction. The NCAT contract is that dynamic database values are parameterized rather than concatenated into SQL text; `RawSqlSafetyTests` guards that boundary.
+The generated baseline does not require raw SQL command construction. The NCAT contract is that dynamic database values are parameterized rather than concatenated into SQL text.
 
 If a consuming application adds raw SQL, use EF Core interpolated/parameter APIs or explicit provider parameters. Persisted-string canonicalization is not a substitute for SQL parameterization.
 
@@ -506,7 +506,7 @@ Provider tokens are not stored by default. Applications that need token persiste
 
 ## Contract References
 
-Representative contracts are covered by [`DataAccessServiceExtensionsTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/DataAccessServiceExtensionsTests.cs), [`InfrastructureDataAccessServiceExtensionsTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/InfrastructureDataAccessServiceExtensionsTests.cs), concurrency/timestamp/decimal tests, [`RawSqlSafetyTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/RawSqlSafetyTests.cs), and [ADR-0004](../adr/0004-keep-composite-savechanges-interceptor.md).
+Representative contracts are covered by [`DataAccessServiceExtensionsTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/DataAccessServiceExtensionsTests.cs), [`InfrastructureDataAccessServiceExtensionsTests.cs`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/tests/ProjectTemplate.Web.Tests/InfrastructureDataAccessServiceExtensionsTests.cs), concurrency/timestamp/decimal tests, and [ADR-0004](../adr/0004-keep-composite-savechanges-interceptor.md).
 
 For deeper NCAT implementation detail, see [EF Core Save Pipeline](ef-core-save-pipeline.md) and [DbContext Audit State Isolation](dbcontext-audit-state-isolation.md).
 

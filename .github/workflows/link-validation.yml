@@ -36,6 +36,7 @@ jobs:
   validate-links:
     name: Validate documentation links
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     permissions:
       contents: read
@@ -47,6 +48,7 @@ jobs:
           persist-credentials: false
 
       - name: Checkout Learning reference
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: AsiBackbone/Learning
@@ -107,7 +109,25 @@ jobs:
           New-Item -ItemType Directory -Path "./docs/_site/coverage" -Force | Out-Null
           Set-Content -LiteralPath "./docs/_site/coverage/index.html" -Value "<!doctype html><title>Coverage publication placeholder</title>"
 
-      - name: Validate NCAT publication and Learning links
+      - name: Validate complete NCAT publication locally
+        if: github.event_name != 'schedule' && github.event_name != 'workflow_dispatch'
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          args: >-
+            --offline
+            --root-dir "${{ github.workspace }}"
+            --exclude "^https://github[.]com/AsiBackbone/NetCoreApplicationTemplate/blob/[0-9]+/merge/"
+            --remap "^https://github\.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/(.*)/#L[0-9]+$ file://${{ github.workspace }}/\$1"
+            --remap "^https://github\.com/AsiBackbone/NetCoreApplicationTemplate/blob/main file://${{ github.workspace }}"
+            './README.md'
+            './CONTRIBUTING.md'
+            './docs/_site/**/*.html'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fail: true
+          jobSummary: true
+
+      - name: Validate complete NCAT publication and external links
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
         with:
           args: >-
@@ -117,19 +137,13 @@ jobs:
             --remap "^https://github\.com/AsiBackbone/NetCoreApplicationTemplate/blob/main file://${{ github.workspace }}"
             './README.md'
             './CONTRIBUTING.md'
-            './docs/_site/index.html'
-            './docs/_site/articles/index.html'
-            './docs/_site/articles/documentation-ownership.html'
-            './docs/_site/articles/optional-application-domain-layers.html'
-            './docs/_site/articles/middleware.html'
-            './docs/_site/adr/index.html'
-            './docs/_site/articles/v1-migration-guide.html'
-            './docs/_site/api/index.html'
+            './docs/_site/**/*.html'
           token: ${{ secrets.GITHUB_TOKEN }}
           fail: true
           jobSummary: true
 
       - name: Validate Learning backlinks to NCAT
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
         with:
           args: >-
