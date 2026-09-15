@@ -497,6 +497,32 @@ jobs:
         shell: pwsh
         run: dotnet new uninstall NetCoreApplicationTemplate
 
+  codeql-actions-analysis:
+    name: CodeQL Actions analysis
+    runs-on: ubuntu-latest
+
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # GitHub Actions is interpreted by CodeQL directly and does not use a repository build.
+      - name: Initialize CodeQL for GitHub Actions
+        uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+        with:
+          languages: actions
+          build-mode: none
+
+      - name: Perform CodeQL Actions analysis
+        uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+
   codeql-analysis:
     name: CodeQL analysis
     runs-on: ubuntu-latest
@@ -518,17 +544,40 @@ jobs:
         with:
           global-json-file: global.json
 
-      - name: Initialize CodeQL
+      - name: Record CodeQL C# start time
+        id: codeql-csharp-start
+        shell: bash
+        run: printf 'epoch=%s\n' "$(date +%s)" >> "$GITHUB_OUTPUT"
+
+      # C# uses manual extraction so the controlled locked restore and solution build below
+      # are the build CodeQL observes rather than redundant work after buildless extraction.
+      - name: Initialize CodeQL for C#
         uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
         with:
-          languages: 'actions,csharp'
-          build-mode: none
+          languages: csharp
+          build-mode: manual
 
-      - name: Restore dependencies
+      - name: Restore dependencies for CodeQL
         run: dotnet restore ${{ env.SOLUTION_FILE }} --locked-mode
 
       - name: Build solution for CodeQL
         run: dotnet build ${{ env.SOLUTION_FILE }} --configuration ${{ env.CONFIGURATION }} --no-restore /p:ContinuousIntegrationBuild=true
 
-      - name: Perform CodeQL analysis
+      - name: Perform CodeQL C# analysis
         uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+
+      - name: Report CodeQL C# runtime
+        if: always()
+        shell: bash
+        env:
+          START_EPOCH: ${{ steps.codeql-csharp-start.outputs.epoch }}
+        run: |
+          end_epoch="$(date +%s)"
+          elapsed_seconds=$((end_epoch - START_EPOCH))
+          {
+            echo '### CodeQL C# runtime'
+            echo
+            echo "- Build mode: \`manual\`"
+            echo "- Elapsed seconds: $elapsed_seconds"
+            echo '- Compare this value with the most recent buildless CodeQL run when reviewing the CI cost impact of #526.'
+          } >> "$GITHUB_STEP_SUMMARY"
