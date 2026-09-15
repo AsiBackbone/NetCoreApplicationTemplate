@@ -1,9 +1,18 @@
 name: Publish Template Package
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'
+  workflow_call:
+    inputs:
+      publish_source:
+        description: 'Package source URL used by dotnet nuget push.'
+        required: false
+        type: string
+        default: 'https://api.nuget.org/v3/index.json'
+      skip_publish:
+        description: 'Pack only and skip dotnet nuget push.'
+        required: false
+        type: boolean
+        default: false
 
   workflow_dispatch:
     inputs:
@@ -140,7 +149,7 @@ jobs:
     environment:
       name: template-package-publish
 
-    if: github.event_name == 'push' || inputs.skip_publish == false
+    if: inputs.skip_publish == false
 
     steps:
       - name: Checkout source
@@ -161,37 +170,57 @@ jobs:
           path: ${{ env.PACKAGE_EVIDENCE_OUTPUT }}
 
       - name: Attest template package provenance
-        if: github.event_name == 'push' && github.ref_type == 'tag'
+        if: github.ref_type == 'tag'
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: ${{ env.PACKAGE_OUTPUT }}/*.nupkg
 
       - name: Attest template package evidence provenance
-        if: github.event_name == 'push' && github.ref_type == 'tag'
+        if: github.ref_type == 'tag'
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: ${{ env.PACKAGE_EVIDENCE_OUTPUT }}/*.json
 
-      - name: Wait for GitHub release evidence boundary
-        if: github.event_name == 'push' && github.ref_type == 'tag'
+      - name: Ensure GitHub release evidence boundary
+        if: github.ref_type == 'tag'
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ github.ref_name }}
           REPOSITORY: ${{ github.repository }}
         run: |
-          for ($attempt = 1; $attempt -le 180; $attempt++) {
-              gh release view $env:RELEASE_TAG --repo $env:REPOSITORY 1>$null 2>$null
+          gh release view $env:RELEASE_TAG --repo $env:REPOSITORY 1>$null 2>$null
 
-              if ($LASTEXITCODE -eq 0) {
-                  exit 0
+          if ($LASTEXITCODE -ne 0) {
+              gh release create $env:RELEASE_TAG `
+                --title "Release $($env:RELEASE_TAG)" `
+                --generate-notes `
+                --repo $env:REPOSITORY
+
+              if ($LASTEXITCODE -ne 0) {
+                  exit $LASTEXITCODE
               }
-
-              Write-Host "Waiting for the container workflow to create release $($env:RELEASE_TAG) ($attempt/180)."
-              Start-Sleep -Seconds 10
           }
 
-          throw "Release $($env:RELEASE_TAG) was not created within 30 minutes. Approve both protected publishing jobs for a release tag."
+      - name: Attach and verify template package release evidence
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          $assetPaths = @(Get-ChildItem -LiteralPath $env:PACKAGE_EVIDENCE_OUTPUT -File | Sort-Object Name | Select-Object -ExpandProperty FullName)
+          gh release upload $env:RELEASE_TAG @assetPaths --clobber --repo $env:REPOSITORY
+
+          if ($LASTEXITCODE -ne 0) {
+              exit $LASTEXITCODE
+          }
+
+          ./scripts/Assert-GitHubReleaseAssets.ps1 `
+            -TagName $env:RELEASE_TAG `
+            -EvidenceDirectory $env:PACKAGE_EVIDENCE_OUTPUT `
+            -Repository $env:REPOSITORY
 
       - name: Resolve package source
         id: source
@@ -256,23 +285,3 @@ jobs:
             --api-key "$api_key" \
             --source "$PACKAGE_SOURCE" \
             --skip-duplicate
-
-      - name: Attach template package evidence to release
-        if: github.event_name == 'push' && github.ref_type == 'tag'
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_TAG: ${{ github.ref_name }}
-          REPOSITORY: ${{ github.repository }}
-        run: |
-          $assetPaths = @(Get-ChildItem -LiteralPath $env:PACKAGE_EVIDENCE_OUTPUT -File | Sort-Object Name | Select-Object -ExpandProperty FullName)
-          gh release upload $env:RELEASE_TAG @assetPaths --clobber --repo $env:REPOSITORY
-
-          if ($LASTEXITCODE -ne 0) {
-              exit $LASTEXITCODE
-          }
-
-          ./scripts/Assert-GitHubReleaseAssets.ps1 `
-            -TagName $env:RELEASE_TAG `
-            -EvidenceDirectory $env:PACKAGE_EVIDENCE_OUTPUT `
-            -Repository $env:REPOSITORY
