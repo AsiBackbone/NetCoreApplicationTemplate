@@ -7,19 +7,35 @@ on:
 # Deny all token permissions unless granted by a job.
 permissions: {}
 
+# Release events share one README update branch. Serialize them so a newer
+# release safely updates the existing automation PR instead of racing it.
+concurrency:
+  group: publish-release-readme-${{ github.repository }}
+  cancel-in-progress: false
+
 jobs:
   update-readme:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
+
+      - name: Create least-privilege release PR token
+        id: release-pr-app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.RELEASE_PR_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_PR_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+          permission-pull-requests: write
 
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -73,6 +89,7 @@ jobs:
       - name: Create pull request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
         with:
+          token: ${{ steps.release-pr-app-token.outputs.token }}
           commit-message: "Update README latest release section"
           title: "Update README latest release section"
           body: |

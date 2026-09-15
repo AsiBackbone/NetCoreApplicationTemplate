@@ -294,3 +294,59 @@ Review the App installation and permissions whenever the project owner,
 repository scope, or project automation mutations change. Expanding the App to
 additional repositories or permissions requires the same security review as a
 workflow permission expansion.
+
+## Automated Release README Pull Requests
+
+The `publish-release.yml` workflow updates the README latest-release markers after
+a GitHub Release is published and opens or updates the
+`docs/update-latest-release` pull request. The pull request is intentionally
+created with a dedicated GitHub App installation token instead of the built-in
+`GITHUB_TOKEN`. Pull requests created by the default workflow token do not
+normally start subsequent workflow runs, while the App-authored pull request
+emits the normal `pull_request` event used by CI, version consistency, link
+validation, and other pull-request checks.
+
+### Release PR GitHub App configuration
+
+Create a dedicated GitHub App for NCAT release-PR automation and install it only
+on `AsiBackbone/NetCoreApplicationTemplate`. Do not reuse the project-automation
+App because its organization Projects permission is unrelated to this workflow.
+
+Grant the release-PR App only these repository permissions:
+
+- **Contents: Read and write**
+- **Pull requests: Read and write**
+- **Metadata: Read-only** (GitHub grants this baseline permission)
+
+Configure these repository values:
+
+| Type | Name | Purpose |
+| --- | --- | --- |
+| Repository variable | `RELEASE_PR_APP_CLIENT_ID` | GitHub App client ID; this value is not secret. |
+| Repository secret | `RELEASE_PR_APP_PRIVATE_KEY` | PEM private key used only to mint short-lived installation tokens. |
+
+`actions/create-github-app-token` mints a short-lived installation token for the
+job and revokes it automatically when the job completes. The workflow requests
+only Contents write and Pull requests write from that App token. Its built-in
+`GITHUB_TOKEN` is reduced to Contents read for checkout.
+
+The workflow uses one fixed automation branch and an explicit repository-wide
+concurrency group with `cancel-in-progress: false`. Release events therefore run
+serially. If another release is published before the existing README pull
+request is merged, the later run updates that same branch and pull request to
+the newest deterministic README state instead of racing a concurrent writer or
+creating independently mergeable release-update PRs that could regress the
+README when merged out of order.
+
+The README replacement remains idempotent: it replaces only the content between
+`BEGIN LATEST_RELEASE` and `END LATEST_RELEASE`, and `create-pull-request` does
+not create a new commit when the resulting file is unchanged.
+
+No recursive release loop is introduced. `publish-release.yml` listens only for
+`release: published`; the App-authored pull request starts the repository's
+normal pull-request validation workflows but does not retrigger the release
+workflow.
+
+Rotate or revoke `RELEASE_PR_APP_PRIVATE_KEY` using the same short-lived token
+practice documented for the project-automation App. Any expansion of the App's
+repository scope or permissions requires security/release review.
