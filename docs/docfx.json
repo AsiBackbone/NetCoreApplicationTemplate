@@ -24,9 +24,15 @@
           "**/toc.yml",
           "articles/**/*.md",
           "adr/**/*.md",
-          "api/**/*.md",
           "api/**/*.yml"
         ]
+      },
+      {
+        "src": "api-pages",
+        "files": [
+          "**/*.md"
+        ],
+        "dest": "api"
       }
     ],
     "resource": [
