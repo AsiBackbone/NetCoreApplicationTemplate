@@ -1,3 +1,6 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjectTemplate.Web.Authentication.Extensions;
@@ -23,6 +26,46 @@ public sealed class AuthenticationTestController : ControllerBase
     }
 
     /// <summary>
+    /// Issues a test-only antiforgery request token and stores the paired antiforgery cookie.
+    /// </summary>
+    /// <param name="antiforgery">The ASP.NET Core antiforgery service.</param>
+    /// <returns>The request token required by the cookie sign-in POST.</returns>
+    [HttpGet("antiforgery-token")]
+    [AllowAnonymous]
+    public IActionResult AntiforgeryToken([FromServices] IAntiforgery antiforgery)
+    {
+        AntiforgeryTokenSet tokens = antiforgery.GetAndStoreTokens(HttpContext);
+
+        return Content(tokens.RequestToken ?? string.Empty);
+    }
+
+    /// <summary>
+    /// Establishes a test-only cookie-authenticated principal through the application's configured cookie scheme.
+    /// </summary>
+    /// <param name="userName">The test user name to persist in the authentication cookie.</param>
+    /// <returns>A task that represents the asynchronous sign-in operation.</returns>
+    [HttpPost("cookie-sign-in")]
+    [AllowAnonymous]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CookieSignIn([FromForm] string userName = "cookie-test-user")
+    {
+        Claim[] claims =
+        [
+            new Claim(ClaimTypes.NameIdentifier, userName),
+            new Claim(ClaimTypes.Name, userName)
+        ];
+
+        ClaimsIdentity identity = new(claims, "Cookies");
+        ClaimsPrincipal principal = new(identity);
+
+        await HttpContext.SignInAsync(
+            "Cookies",
+            principal);
+
+        return Ok(new { result = "signed-in" });
+    }
+
+    /// <summary>
     /// Returns an unannotated response governed by the fallback authorization policy.
     /// </summary>
     /// <returns>An <see cref="IActionResult"/> containing a fallback-policy result.</returns>
@@ -35,12 +78,17 @@ public sealed class AuthenticationTestController : ControllerBase
     /// <summary>
     /// Returns a protected response that requires an authenticated user.
     /// </summary>
-    /// <returns>An <see cref="IActionResult"/> containing a protected result.</returns>
+    /// <returns>An <see cref="IActionResult"/> containing the protected result and observed identity.</returns>
     [HttpGet("protected")]
     [Authorize(Policy = ApplicationAuthorizationPolicyNames.AuthenticatedUser)]
     public IActionResult Protected()
     {
-        return Ok(new { result = "protected" });
+        return Ok(new
+        {
+            result = "protected",
+            userName = User.Identity?.Name,
+            subject = User.FindFirstValue(ClaimTypes.NameIdentifier)
+        });
     }
 
     /// <summary>
