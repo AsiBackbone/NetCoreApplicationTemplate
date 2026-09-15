@@ -20,6 +20,7 @@ jobs:
   build-scan:
     name: Build, scan, and package image
     runs-on: ubuntu-latest
+    timeout-minutes: 35
 
     permissions:
       contents: read
@@ -142,6 +143,7 @@ jobs:
     name: Publish signed container image
     runs-on: ubuntu-latest
     needs: build-scan
+    timeout-minutes: 30
 
     permissions:
       actions: read

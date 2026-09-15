@@ -52,8 +52,14 @@ jobs:
   build-validation:
     name: Build validation
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
+      - name: Harden the runner (Audit outbound calls)
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
       - name: Checkout source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -155,6 +161,7 @@ jobs:
   template-smoke-test:
     name: Template smoke test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
 
     strategy:
       fail-fast: false
@@ -165,6 +172,11 @@ jobs:
           - macos-latest
 
     steps:
+      - name: Harden the runner (Audit outbound calls)
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
       - name: Checkout source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -428,6 +440,11 @@ jobs:
       DB_PROVIDER: ${{ matrix.dbProvider }}
 
     steps:
+      - name: Harden the runner (Audit outbound calls)
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
       - name: Checkout source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
