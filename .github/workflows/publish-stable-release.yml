@@ -26,7 +26,6 @@ jobs:
     with:
       publish_source: 'https://api.nuget.org/v3/index.json'
       skip_publish: false
-    secrets: inherit
 
   publish-container:
     name: Publish signed container and complete release evidence
@@ -39,7 +38,6 @@ jobs:
       packages: write
       security-events: write
     uses: ./.github/workflows/publish-container.yml
-    secrets: inherit
 
   release-complete:
     name: Stable release publication complete
