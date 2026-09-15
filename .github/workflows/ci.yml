@@ -577,7 +577,7 @@ jobs:
           {
             echo '### CodeQL C# runtime'
             echo
-            echo '- Build mode: `manual`'
+            echo "- Build mode: \`manual\`"
             echo "- Elapsed seconds: $elapsed_seconds"
             echo '- Compare this value with the most recent buildless CodeQL run when reviewing the CI cost impact of #526.'
           } >> "$GITHUB_STEP_SUMMARY"
