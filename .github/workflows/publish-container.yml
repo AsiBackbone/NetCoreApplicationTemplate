@@ -82,22 +82,37 @@ jobs:
       - name: Prepare release evidence directory
         run: mkdir -p artifacts/container-release
 
-      # The image is exported before scanning so every Trivy step reads the same tar archive.
+      # The image is exported before scanning so every derived Trivy result comes from the same tar archive.
       # Scanning the archive is what removes the need to mount /var/run/docker.sock into the scanner.
       - name: Save built image for scanning
         env:
           LOCAL_IMAGE: ${{ steps.version.outputs.local_image }}
         run: docker save "$LOCAL_IMAGE" --output artifacts/container-image.tar
 
-      - name: Generate vulnerability scan SARIF
+      # Scan the saved release image exactly once. Trivy's action cache persists the
+      # vulnerability DB and scan cache across runs, while the absence of
+      # TRIVY_SKIP_DB_UPDATE keeps Trivy's normal database freshness check enabled.
+      # The JSON report includes the package inventory needed to derive SPDX evidence.
+      - name: Scan container image once with reusable Trivy state
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           input: artifacts/container-image.tar
-          format: sarif
-          output: artifacts/container-release/trivy-results.sarif
-          severity: HIGH,CRITICAL
+          format: json
+          output: artifacts/trivy-results.json
+          list-all-pkgs: true
           ignore-unfixed: false
           exit-code: '0'
+          cache: 'true'
+          cache-dir: ${{ github.workspace }}/.cache/trivy
+
+      # trivy-action installs Trivy on PATH. Convert the one immutable JSON scan
+      # instead of rescanning the image archive for each release evidence format.
+      - name: Generate vulnerability scan SARIF from reusable result
+        run: >
+          trivy convert
+          --format sarif
+          --output artifacts/container-release/trivy-results.sarif
+          artifacts/trivy-results.json
 
       - name: Upload vulnerability SARIF
         if: always()
@@ -106,13 +121,14 @@ jobs:
           sarif_file: artifacts/container-release/trivy-results.sarif
           category: container-image
 
-      - name: Generate SPDX SBOM
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
-        with:
-          input: artifacts/container-image.tar
-          format: spdx-json
-          output: artifacts/container-release/netcoreapplicationtemplate-container-${{ steps.version.outputs.version }}.spdx.json
-          exit-code: '0'
+      - name: Generate SPDX SBOM from reusable result
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+        run: >
+          trivy convert
+          --format spdx-json
+          --output "artifacts/container-release/netcoreapplicationtemplate-container-${RELEASE_VERSION}.spdx.json"
+          artifacts/trivy-results.json
 
       - name: Upload release evidence artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -122,14 +138,15 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Enforce container vulnerability threshold
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
-        with:
-          input: artifacts/container-image.tar
-          format: table
-          severity: HIGH,CRITICAL
-          ignore-unfixed: false
-          exit-code: '1'
+      # Keep the release gate fail-closed. This evaluates HIGH/CRITICAL findings
+      # from the exact JSON result produced from artifacts/container-image.tar.
+      - name: Enforce container vulnerability threshold from reusable result
+        run: >
+          trivy convert
+          --format table
+          --severity HIGH,CRITICAL
+          --exit-code 1
+          artifacts/trivy-results.json
 
       - name: Upload scanned image artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
