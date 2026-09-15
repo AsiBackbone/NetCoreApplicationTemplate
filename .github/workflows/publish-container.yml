@@ -122,10 +122,12 @@ jobs:
           category: container-image
 
       - name: Generate SPDX SBOM from reusable result
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
         run: >
           trivy convert
           --format spdx-json
-          --output artifacts/container-release/netcoreapplicationtemplate-container-${{ steps.version.outputs.version }}.spdx.json
+          --output "artifacts/container-release/netcoreapplicationtemplate-container-${RELEASE_VERSION}.spdx.json"
           artifacts/trivy-results.json
 
       - name: Upload release evidence artifact
