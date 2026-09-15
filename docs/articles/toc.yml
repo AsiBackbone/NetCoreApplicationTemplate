@@ -83,6 +83,8 @@
       href: container-publish.md
     - name: Repository Security Profile
       href: repository-security-profile.md
+    - name: Workflow Hardening and Execution Budgets
+      href: workflow-hardening.md
     - name: GitHub Workflow
       href: github-workflow.md
 
