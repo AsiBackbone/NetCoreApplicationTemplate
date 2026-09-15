@@ -1,0 +1,48 @@
+name: Publish Stable Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+# Keep the tag as the single release trigger. The reusable workflows below
+# retain job-scoped permissions and the template-package environment remains
+# the sole human approval boundary for stable publication.
+permissions: {}
+
+concurrency:
+  group: publish-stable-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish-template-package:
+    name: Publish template package evidence and package
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write
+      packages: write
+    uses: ./.github/workflows/publish-template-package.yml
+    with:
+      publish_source: 'https://api.nuget.org/v3/index.json'
+      skip_publish: false
+
+  publish-container:
+    name: Publish signed container and complete release evidence
+    needs: publish-template-package
+    permissions:
+      actions: read
+      attestations: write
+      contents: write
+      id-token: write
+      packages: write
+      security-events: write
+    uses: ./.github/workflows/publish-container.yml
+
+  release-complete:
+    name: Stable release publication complete
+    needs: publish-container
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - run: echo "Stable release publication and evidence verification completed successfully."
