@@ -7,6 +7,8 @@ updates:
       day: "friday"
       time: "15:00"
       timezone: "America/Chicago"
+    # Cooldown applies to routine version updates only. Dependabot security
+    # updates are not delayed by this setting.
     cooldown:
       default-days: 7
     open-pull-requests-limit: 5
@@ -46,6 +48,8 @@ updates:
       day: "friday"
       time: "15:15"
       timezone: "America/Chicago"
+    # Cooldown applies to routine version updates only. Dependabot security
+    # updates are not delayed by this setting.
     cooldown:
       default-days: 7
     open-pull-requests-limit: 5
@@ -64,8 +68,12 @@ updates:
       day: "friday"
       time: "15:30"
       timezone: "America/Chicago"
+    # Actions are pinned by commit SHA. GitHub can version-update SHA pins, but
+    # Dependabot alerts are not generated for SHA-pinned Actions. Excluding all
+    # Actions from cooldown avoids adding an extra delay to the weekly check.
     cooldown:
-      default-days: 7
+      exclude:
+        - "*"
     open-pull-requests-limit: 5
     commit-message:
       prefix: "chore(deps)"
