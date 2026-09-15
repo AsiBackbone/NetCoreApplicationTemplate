@@ -271,6 +271,20 @@ When the application starts, the data access startup log records the configured 
 
 When auditing is enabled with `StorageMode` set to `Local`, audit records are written to the application database through the local EF Core audit record table. The template does not include automatic pruning, retention, archival, legal hold, masking, export, or purge behavior for audit records.
 
+For a generated `--dbProvider sqlserver` scaffold, NCAT intentionally omits the checked-in SQLite migration history. At startup, the data-access diagnostic inspects the compiled infrastructure assembly for EF Core migrations. If SQL Server is configured and no migration history is present, NCAT emits a prominent structured warning and continues startup.
+
+The warning includes the explicit command to create an initial provider-compatible migration:
+
+```powershell
+dotnet ef migrations add InitialSqlServer `
+  --project src/ProjectTemplate.Infrastructure `
+  --startup-project src/ProjectTemplate.Web `
+  --context ApplicationDbContext `
+  --output-dir Data/Migrations
+```
+
+Review the generated migration before applying it. NCAT does not create migrations or run `dotnet ef database update` automatically. SQLite scaffolds retain their checked-in migration history and do not produce this warning; `None`/`Disabled` data-access scaffolds remain unaffected.
+
 Consuming applications are responsible for deciding how audit records are retained, archived, masked, purged, or moved to long-term storage. Before enabling auditing in production, review whether audited values may contain sensitive or regulated data.
 
 ### Audit Storage Extension Path

@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Options;
 using ProjectTemplate.Infrastructure.Data.Options;
 
@@ -25,12 +26,43 @@ internal sealed partial class DataAccessStartupLogger(
             options.Value.Auditing.Enabled ? "enabled" : "disabled",
             options.Value.Auditing.StorageMode);
 
+        bool hasMigrationHistory = typeof(ApplicationDbContext).Assembly
+            .GetTypes()
+            .Any(static type =>
+                !type.IsAbstract
+                && typeof(Migration).IsAssignableFrom(type));
+
+        LogSqlServerMigrationPosture(
+            logger,
+            options.Value.Provider,
+            hasMigrationHistory);
+
         return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
+    }
+
+    internal static bool LogSqlServerMigrationPosture(
+        ILogger logger,
+        string provider,
+        bool hasMigrationHistory)
+    {
+        ArgumentNullException.ThrowIfNull(logger);
+
+        if (!provider.Trim().Equals(
+                DataAccessOptions.SqlServerProvider,
+                StringComparison.OrdinalIgnoreCase)
+            || hasMigrationHistory)
+        {
+            return false;
+        }
+
+        LogSqlServerMigrationHistoryMissing(logger);
+
+        return true;
     }
 
     [LoggerMessage(
@@ -51,4 +83,11 @@ internal sealed partial class DataAccessStartupLogger(
     private static partial void LogDataAccessDisabled(
         ILogger logger,
         string provider);
+
+    [LoggerMessage(
+        EventId = 19102,
+        Level = LogLevel.Warning,
+        Message = "SQL Server is configured, but no EF Core migration history was discovered in the application assembly. The template intentionally omits the SQLite migration history from --dbProvider sqlserver scaffolds. Generate and review an initial SQL Server migration before using database-dependent application features. From the repository root run: dotnet ef migrations add InitialSqlServer --project src/ProjectTemplate.Infrastructure --startup-project src/ProjectTemplate.Web --context ApplicationDbContext --output-dir Data/Migrations. Startup will continue; NCAT does not auto-create or auto-apply migrations.")]
+    private static partial void LogSqlServerMigrationHistoryMissing(
+        ILogger logger);
 }
