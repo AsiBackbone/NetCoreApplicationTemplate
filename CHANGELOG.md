@@ -57,6 +57,8 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * The audit-completion outbox and audit reconciliation workers now back off after consecutive failures. The delay doubles for each additional consecutive failure, capped by the new `MaximumCycleRetryDelay` option (five minutes for the outbox, thirty minutes for reconciliation), and returns to the normal interval after a success. Failure log entries (`19100`, `19110`) now report `ConsecutiveFailureCount` and `RetryDelaySeconds`. Per-entry delivery retries are unchanged and still governed by `BaseRetryDelay`, `MaxRetryDelay`, and `MaxRetryAttempts`.
 * Startup validation rejects a `MaximumCycleRetryDelay` shorter than the worker's interval.
 * CI Harden-Runner steps now read their policy from the `EGRESS_POLICY` workflow variable, which still defaults to `audit`, and carry the allow-lists each job is expected to need. A `workflow_dispatch` input runs the workflow in `block` mode so the lists can be trialed before the default changes.
+* Documented `Strict-Transport-Security` as an intentional middleware omission, named the layer that owns HSTS, and added `max-age`, `includeSubDomains`, `preload`, and rollback decisions to the production deployment checklist.
+* Relocated community, governance, maintainer, support, release, and asset-notice documents to `.github/` and consolidated overlapping community and maintainer files. Content is unchanged; GitHub resolves community health files from `.github/` identically to the repository root.
 
 ### Fixed
 
