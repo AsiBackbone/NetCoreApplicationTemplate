@@ -151,8 +151,48 @@ For containers and orchestrated deployments:
 
 - Mount the key-ring path on durable storage that survives container and pod replacement.
 - Share the same key ring across all replicas. The Kubernetes example uses a `ReadWriteMany` persistent volume claim; select a storage class that supports multi-writer access, or replace filesystem persistence with an approved shared Data Protection provider.
-- Restrict read and write access to the application identity. Key-ring files are security-sensitive and should be encrypted at rest with an organization-approved certificate, key management system, or storage control.
+- Restrict read and write access to the application identity. Key-ring files are security-sensitive and should be encrypted at rest with a key-encryption certificate, an organization-approved key management system, or a storage control.
 - Back up and retain active keys for at least as long as protected payloads may remain valid. Deleting the key ring or changing `ApplicationName` invalidates existing authentication cookies and antiforgery tokens.
+
+### Key-Ring Encryption at Rest
+
+Without application-level encryption, key-ring files are written in plain text on Linux and macOS. On Windows the framework protects them with DPAPI for the current user, which prevents sharing the key ring across machines.
+
+To encrypt key-ring files with a certificate, supply a PKCS#12 (`.pfx`) certificate that includes its private key:
+
+```json
+"ProjectTemplate": {
+  "DataProtection": {
+    "ApplicationName": "ProjectTemplate.Web",
+    "KeyRingPath": "/app/data-protection-keys",
+    "KeyEncryptionCertificatePath": "/run/secrets/data-protection.pfx"
+  }
+}
+```
+
+Supply `KeyEncryptionCertificatePassword` from a secret store, environment variable, or mounted secret rather than `appsettings.json`:
+
+```bash
+ProjectTemplate__DataProtection__KeyEncryptionCertificatePassword=<from secret store>
+```
+
+Behavior and constraints:
+
+- New keys are encrypted with the certificate, and the same certificate is used to decrypt them, so decryption works on Linux and macOS without a certificate store.
+- Startup fails when the certificate file is missing, has no private key, or when a password is configured without a certificate path.
+- Every replica must load the same certificate. Keys already written in plain text remain readable and are replaced as the key ring rotates.
+- Retain an expiring certificate until every key it encrypted has aged out of the key ring. Rotating to a new certificate while old keys are still active requires also making the previous certificate available for decryption, which this template does not configure; plan certificate rotation alongside key lifetime.
+
+### Startup Posture Warnings
+
+Outside Development, the application writes startup warnings for Data Protection postures that commonly fail in deployment:
+
+| Event ID | Condition |
+|:---|:---|
+| `1003` | `KeyRingPath` is relative, so the key ring is stored under the content root and is usually replaced with the application in containers. |
+| `1004` | `KeyEncryptionCertificatePath` is not set, so key-ring files are not encrypted by the application. |
+
+These warnings are informational. Suppress them only after confirming durable shared storage and storage-level encryption are in place.
 
 The Docker Compose example mounts `/app/data-protection-keys` from a named volume. This provides restart persistence for local Compose deployments; production replicas require genuinely shared durable storage rather than one volume per host.
 
@@ -241,6 +281,7 @@ Use this checklist before production release:
 [ ] Confirm production connection strings come from environment or secret storage.
 [ ] Confirm HTTPS redirects and callback URLs work externally.
 [ ] Confirm the Data Protection key ring is durable, access-restricted, and shared by all replicas using the same application name.
+[ ] Confirm Data Protection key-ring files are encrypted at rest by a key-encryption certificate or storage-level control, and that startup warnings 1003 and 1004 are resolved or accepted.
 [ ] Confirm Content Security Policy works with deployed assets and auth flows.
 [ ] Confirm rate limits match expected traffic and monitoring behavior.
 [ ] Confirm health checks are reachable by infrastructure but do not leak sensitive details.

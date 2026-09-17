@@ -1,4 +1,5 @@
 using ProjectTemplate.Web.Authentication.Options;
+using ProjectTemplate.Web.Options;
 
 namespace ProjectTemplate.Web.Extensions;
 
@@ -12,6 +13,30 @@ public static class StartupSecurityPostureExtensions
 
     private const string _anonymousHealthEndpoints =
         "/health, /health/ready, /health/live";
+
+    private const string _dataProtectionKeyRingPathConfigurationKey =
+        ApplicationDataProtectionOptions.SectionName + ":" + nameof(ApplicationDataProtectionOptions.KeyRingPath);
+
+    private const string _dataProtectionKeyEncryptionCertificatePathConfigurationKey =
+        ApplicationDataProtectionOptions.SectionName + ":" + nameof(ApplicationDataProtectionOptions.KeyEncryptionCertificatePath);
+
+    private static readonly Action<ILogger, string, string, Exception?> _logDataProtectionKeyRingUnderContentRoot =
+        LoggerMessage.Define<string, string>(
+            LogLevel.Warning,
+            new EventId(1003, "DataProtectionKeyRingRelativePath"),
+            "Security posture: {ConfigurationKey} is the relative path '{KeyRingPath}', so the Data Protection key ring " +
+            "is stored under the application content root. In containers and orchestrated deployments that location is " +
+            "usually replaced with the application, which invalidates authentication cookies and antiforgery tokens. " +
+            "Configure an absolute path on durable, access-restricted storage shared by every replica.");
+
+    private static readonly Action<ILogger, string, Exception?> _logDataProtectionKeysNotEncrypted =
+        LoggerMessage.Define<string>(
+            LogLevel.Warning,
+            new EventId(1004, "DataProtectionKeysNotEncryptedAtRest"),
+            "Security posture: {ConfigurationKey} is not set, so Data Protection key-ring files are not encrypted by the " +
+            "application. On Linux and macOS they are written in plain text; on Windows they are protected with DPAPI for " +
+            "the current user and cannot be shared across machines. Configure a key-encryption certificate or confirm " +
+            "that storage-level encryption and access controls protect the key ring.");
 
     private static readonly Action<ILogger, string, Exception?> _logAuthenticationDisabled =
         LoggerMessage.Define<string>(
@@ -76,6 +101,35 @@ public static class StartupSecurityPostureExtensions
             _logAnonymousProductionHealthEndpoints(
                 logger,
                 _anonymousHealthEndpoints,
+                null);
+        }
+
+        if (!environment.IsDevelopment())
+        {
+            LogDataProtectionPosture(logger, configuration);
+        }
+    }
+
+    private static void LogDataProtectionPosture(ILogger logger, IConfiguration configuration)
+    {
+        string keyRingPath = configuration[_dataProtectionKeyRingPathConfigurationKey]?.Trim() is { Length: > 0 } configuredPath
+            ? configuredPath
+            : new ApplicationDataProtectionOptions().KeyRingPath;
+
+        if (!Path.IsPathFullyQualified(keyRingPath))
+        {
+            _logDataProtectionKeyRingUnderContentRoot(
+                logger,
+                _dataProtectionKeyRingPathConfigurationKey,
+                keyRingPath,
+                null);
+        }
+
+        if (string.IsNullOrWhiteSpace(configuration[_dataProtectionKeyEncryptionCertificatePathConfigurationKey]))
+        {
+            _logDataProtectionKeysNotEncrypted(
+                logger,
+                _dataProtectionKeyEncryptionCertificatePathConfigurationKey,
                 null);
         }
     }
