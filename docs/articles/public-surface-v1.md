@@ -2,7 +2,7 @@
 
 This article defines the public compatibility surface for the current stable .NET Core Application Template release line.
 
-After `v1.0.0`, this document should be used with [ADR-0003](../adr/0003-record-release-surface-and-distribution-strategy.md), [Release Checklist](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/RELEASE.md), and the [v1.0 Migration Guide](v1-migration-guide.md) to decide whether a future change is SemVer-major, SemVer-minor, SemVer-patch, or internal-only.
+After `v1.0.0`, this document should be used with [ADR-0003](../adr/0003-record-release-surface-and-distribution-strategy.md), [Release Checklist](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/.github/RELEASE.md), and the [v1.0 Migration Guide](v1-migration-guide.md) to decide whether a future change is SemVer-major, SemVer-minor, SemVer-patch, or internal-only.
 
 ## Purpose
 

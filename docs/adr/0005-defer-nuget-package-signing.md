@@ -50,5 +50,5 @@ The release workflows become coupled at the evidence-publication boundary: both 
 
 - [Issue #506](https://github.com/AsiBackbone/NetCoreApplicationTemplate/issues/506)
 - [Security Policy](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/SECURITY.md)
-- [Release Checklist and Runbook](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/RELEASE.md)
+- [Release Checklist and Runbook](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/.github/RELEASE.md)
 - [Container Release Publishing](../articles/container-publish.md)

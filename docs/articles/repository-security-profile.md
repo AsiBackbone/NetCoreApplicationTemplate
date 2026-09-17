@@ -166,10 +166,10 @@ Verify this non-versioned repository state before each stable release and after 
 
 ## Related Documentation
 
-- [Governance](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/GOVERNANCE.md)
+- [Governance](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/.github/GOVERNANCE.md)
 - [Contributing](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/CONTRIBUTING.md)
 - [Security Policy](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/SECURITY.md)
-- [Maintainers](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/MAINTAINERS.md)
-- [Release Checklist and Runbook](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/RELEASE.md)
+- [Maintainers](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/.github/MAINTAINERS.md)
+- [Release Checklist and Runbook](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/.github/RELEASE.md)
 - [GitHub Workflow](github-workflow.md)
 - [Container Release Publishing](container-publish.md)
