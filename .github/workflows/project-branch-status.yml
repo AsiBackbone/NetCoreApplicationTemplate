@@ -40,10 +40,10 @@ jobs:
 
           echo "Branch created: $BRANCH_NAME"
 
-          ISSUE_NUMBER=$(echo "$BRANCH_NAME" | sed -nE 's#(^|.*/)?issue-([0-9]+)([-_/].*)?$#\2#p')
+          ISSUE_NUMBER=$(echo "$BRANCH_NAME" | sed -nE 's#^(.*/)?issue[-_]([0-9]+)([-_/].*)?$#\2#p')
 
           if [ -z "$ISSUE_NUMBER" ]; then
-            echo "Branch name does not match issue pattern. Expected examples: issue-4, feature/issue-4, work/issue-4."
+            echo "Branch name does not match issue pattern. Expected examples: issue-4, feature/issue-4, work/issue-4, issue_4_work."
             exit 0
           fi
 

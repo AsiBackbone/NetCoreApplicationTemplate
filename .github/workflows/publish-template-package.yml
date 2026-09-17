@@ -3,11 +3,6 @@ name: Publish Template Package
 on:
   workflow_call:
     inputs:
-      publish_source:
-        description: 'Package source URL used by dotnet nuget push.'
-        required: false
-        type: string
-        default: 'https://api.nuget.org/v3/index.json'
       skip_publish:
         description: 'Pack only and skip dotnet nuget push.'
         required: false
@@ -42,6 +37,40 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  verify-ci:
+    name: Verify CI passed for tagged commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.ref_type == 'tag'
+    permissions:
+      checks: read
+    steps:
+      - name: Require successful CI check runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=(
+            "Build validation"
+            "Template smoke test (ubuntu-latest)"
+            "Template smoke test (windows-latest)"
+            "Template smoke test (macos-latest)"
+            "Template options (cookie + sqlite)"
+            "Template options (cookie + sqlserver)"
+            "Template options (cookie + none)"
+            "Template options (none + sqlite)"
+            "Template options (none + sqlserver)"
+            "Template options (none + none)"
+          )
+          runs=$(gh api "repos/$REPO/commits/$SHA/check-runs?per_page=100" --paginate \
+            --jq '.check_runs[] | select(.conclusion=="success") | .name')
+          for name in "${required[@]}"; do
+            grep -Fxq "$name" <<<"$runs" || { echo "Missing successful check: $name"; exit 1; }
+          done
+
   pack-template:
     name: Pack template package
     runs-on: ubuntu-latest
@@ -143,7 +172,9 @@ jobs:
 
   publish-template:
     name: Publish template package
-    needs: pack-template
+    needs:
+      - verify-ci
+      - pack-template
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -156,7 +187,11 @@ jobs:
     environment:
       name: template-package-publish
 
-    if: inputs.skip_publish == false
+    if: >-
+      ${{ !cancelled() && inputs.skip_publish == false &&
+          needs.pack-template.result == 'success' &&
+          (needs.verify-ci.result == 'success' ||
+           (needs.verify-ci.result == 'skipped' && github.ref_type != 'tag')) }}
 
     steps:
       - name: Harden the runner (Audit outbound calls)
@@ -204,10 +239,18 @@ jobs:
           gh release view $env:RELEASE_TAG --repo $env:REPOSITORY 1>$null 2>$null
 
           if ($LASTEXITCODE -ne 0) {
-              gh release create $env:RELEASE_TAG `
-                --title "Release $($env:RELEASE_TAG)" `
-                --generate-notes `
-                --repo $env:REPOSITORY
+              $releaseArgs = @(
+                  'release', 'create', $env:RELEASE_TAG,
+                  '--title', "Release $($env:RELEASE_TAG)",
+                  '--generate-notes',
+                  '--repo', $env:REPOSITORY
+              )
+
+              if ($env:RELEASE_TAG.Contains('-')) {
+                  $releaseArgs += '--prerelease'
+              }
+
+              gh @releaseArgs
 
               if ($LASTEXITCODE -ne 0) {
                   exit $LASTEXITCODE
@@ -239,7 +282,7 @@ jobs:
         shell: bash
         env:
           EVENT_NAME: ${{ github.event_name }}
-          REQUESTED_PACKAGE_SOURCE: ${{ inputs.publish_source }}
+          REQUESTED_PACKAGE_SOURCE: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_source || '' }}
         run: |
           set -euo pipefail
 
