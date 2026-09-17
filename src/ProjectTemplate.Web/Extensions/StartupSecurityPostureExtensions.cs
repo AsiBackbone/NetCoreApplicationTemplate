@@ -20,6 +20,15 @@ public static class StartupSecurityPostureExtensions
     private const string _dataProtectionKeyEncryptionCertificatePathConfigurationKey =
         ApplicationDataProtectionOptions.SectionName + ":" + nameof(ApplicationDataProtectionOptions.KeyEncryptionCertificatePath);
 
+    private const string _allowedHostsConfigurationKey = "AllowedHosts";
+
+    private static readonly Action<ILogger, string, Exception?> _logPermissiveAllowedHosts =
+        LoggerMessage.Define<string>(
+            LogLevel.Warning,
+            new EventId(1005, "PermissiveAllowedHosts"),
+            "Security posture: {ConfigurationKey} allows every host, so ASP.NET Core host filtering accepts any Host " +
+            "header. Set it to the public host names this deployment serves, such as \"app.example.com;www.example.com\".");
+
     private static readonly Action<ILogger, string, string, Exception?> _logDataProtectionKeyRingUnderContentRoot =
         LoggerMessage.Define<string, string>(
             LogLevel.Warning,
@@ -106,7 +115,23 @@ public static class StartupSecurityPostureExtensions
 
         if (!environment.IsDevelopment())
         {
+            LogHostFilteringPosture(logger, configuration);
             LogDataProtectionPosture(logger, configuration);
+        }
+    }
+
+    private static void LogHostFilteringPosture(ILogger logger, IConfiguration configuration)
+    {
+        string? allowedHosts = configuration[_allowedHostsConfigurationKey]?.Trim();
+
+        // An absent value and "*" both allow every Host header, because host filtering defaults to allowing all hosts.
+        bool allowsEveryHost = string.IsNullOrEmpty(allowedHosts) ||
+            allowedHosts.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Any(host => string.Equals(host, "*", StringComparison.Ordinal));
+
+        if (allowsEveryHost)
+        {
+            _logPermissiveAllowedHosts(logger, _allowedHostsConfigurationKey, null);
         }
     }
 

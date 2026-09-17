@@ -53,6 +53,10 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * Security-critical coverage floors are now stricter than the repository gate. `defaultMinimumLineCoverage` is raised from 60% to 75% and `defaultMinimumBranchCoverage` from 40% to 60%. Explicit per-file floors below those values were raised to match: `PersistenceTimestamp.cs` line 60% to 75%, and branch floors of 50% to 60% for `ProblemDetailsRequestClassifier.cs`, `PersistenceStringCanonicalizer.cs`, `PersistenceStringComparisonNormalizer.cs`, and `PersistenceTimestamp.cs`.
 * `Assert-SecurityCriticalCoverage.ps1` accepts `-RepositoryLineCoverageThreshold`. CI passes `COVERAGE_THRESHOLD`, and the script fails when any effective line floor is below the repository gate or any per-file branch floor is below the default.
 * Added `ExternalAuthenticationProviderSchemes.cs` and `DataProtectionServiceExtensions.cs` to the security-critical coverage list.
+* **Behavior change for adopters enabling OIDC:** applications that call downstream APIs with provider tokens must set `SaveTokens` to `true` explicitly. The provider is disabled in the default scaffold, so no generated application changes behavior without that step.
+* The audit-completion outbox and audit reconciliation workers now back off after consecutive failures. The delay doubles for each additional consecutive failure, capped by the new `MaximumCycleRetryDelay` option (five minutes for the outbox, thirty minutes for reconciliation), and returns to the normal interval after a success. Failure log entries (`19100`, `19110`) now report `ConsecutiveFailureCount` and `RetryDelaySeconds`. Per-entry delivery retries are unchanged and still governed by `BaseRetryDelay`, `MaxRetryDelay`, and `MaxRetryAttempts`.
+* Startup validation rejects a `MaximumCycleRetryDelay` shorter than the worker's interval.
+* CI Harden-Runner steps now read their policy from the `EGRESS_POLICY` workflow variable, which still defaults to `audit`, and carry the allow-lists each job is expected to need. A `workflow_dispatch` input runs the workflow in `block` mode so the lists can be trialed before the default changes.
 
 ### Fixed
 
@@ -81,6 +85,9 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * Data Protection key-ring files can now be encrypted at rest with a certificate. Set `ProjectTemplate:DataProtection:KeyEncryptionCertificatePath` to a PKCS#12 certificate that includes its private key, and supply `KeyEncryptionCertificatePassword` from a secret store. The same certificate is registered for decryption so encrypted key rings work on Linux and macOS without a certificate store.
 * Startup fails when the key-encryption certificate is missing, has no private key, or when a certificate password is configured without a certificate path.
 * Outside Development, startup now warns when the Data Protection key-ring path is relative to the content root (event `1003`) and when no key-encryption certificate is configured (event `1004`).
+* The base `appsettings.json` no longer ships permissive development values. `AllowedHosts: "*"` moved to `appsettings.Development.json`, and the LocalDB `ApplicationSqlServer` connection string with `TrustServerCertificate=True` moved there as well. The base file keeps an encrypted placeholder (`Encrypt=True;TrustServerCertificate=False`) so the SQL Server scaffold still starts.
+* Outside Development, startup now warns (event `1005`) when `AllowedHosts` is absent or set to `*`, because ASP.NET Core host filtering then accepts any `Host` header.
+* `ProjectTemplate:Authentication:Providers:OpenIdConnect:SaveTokens` now defaults to `false`. Saved tokens travel with the authentication cookie on every request, grow the cookie, and keep access, identity, and refresh tokens on the client.
 
 ### Documentation
 
@@ -91,6 +98,10 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * Updated `docs/articles/logging.md` to state that `IncludeRemoteIpAddress` also governs rate-limit and error-page log entries, and removed a duplicated `IncludeRemoteIpAddress` key from the configuration example.
 * Added key-ring encryption, certificate constraints, and startup posture warnings to `docs/articles/deployment.md`, with a production checklist item.
 * Documented the security-critical floor rules and the repository-gate check in `docs/articles/build-quality.md`.
+* Documented the moved development values and the `1005` warning in `docs/articles/configuration.md`.
+* Documented the `SaveTokens` trade-off in `docs/articles/authentication-hardening.md` and updated the example in `docs/articles/authentication.md`.
+* Documented worker backoff in `docs/articles/audit-reconciliation.md`.
+* Added a Runner Egress Policy section to `docs/articles/build-quality.md` describing the trial procedure for block mode.
 
 ### Tests
 
@@ -105,6 +116,8 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * Added external challenge tests for schemes without a display name, a displayed default sign-in scheme, and case-mismatched provider names, plus a login page test confirming non-challengeable schemes are not rendered.
 * Added Data Protection tests for certificate-encrypted key rings with cross-instance round trip, a missing certificate file, and a password without a certificate path.
 * Added startup posture tests for Data Protection warnings in Production, Staging, and Development. Existing posture tests supply a compliant Data Protection configuration so each observes only its own warning.
+* Added startup posture tests for wildcard, absent, and Development `AllowedHosts`.
+* Added `BackgroundServiceRetryDelayTests` covering the normal interval, doubling, the cap, a maximum below the interval, and invalid arguments.
 
 ## 2.9.0 - 2026-09-11
 

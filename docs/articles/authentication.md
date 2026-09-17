@@ -56,7 +56,7 @@ External OIDC provider integration is disabled by default. To enable it, configu
         "ClientSecret": "",
         "CallbackPath": "/signin-oidc",
         "ResponseType": "code",
-        "SaveTokens": true,
+        "SaveTokens": false,
         "Scopes": [
           "openid",
           "profile",

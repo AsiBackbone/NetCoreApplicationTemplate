@@ -147,8 +147,62 @@ public sealed class StartupSecurityPostureExtensionsTests
         Assert.Empty(logger.Entries);
     }
 
+    [Fact]
+    public void LogApplicationSecurityPosture_ProductionWithWildcardAllowedHosts_EmitsHostFilteringWarning()
+    {
+        TestLogger logger = new();
+        IConfiguration configuration = CreateConfiguration(
+            authenticationEnabled: true,
+            allowedHosts: "*");
+        TestHostEnvironment environment = new(Environments.Staging);
+
+        StartupSecurityPostureExtensions.LogApplicationSecurityPosture(
+            logger,
+            configuration,
+            environment);
+
+        LogEntry entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Warning, entry.Level);
+        Assert.Contains("AllowedHosts allows every host", entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void LogApplicationSecurityPosture_ProductionWithoutAllowedHosts_EmitsHostFilteringWarning()
+    {
+        TestLogger logger = new();
+        IConfiguration configuration = CreateConfiguration(
+            authenticationEnabled: true,
+            allowedHosts: string.Empty);
+        TestHostEnvironment environment = new(Environments.Staging);
+
+        StartupSecurityPostureExtensions.LogApplicationSecurityPosture(
+            logger,
+            configuration,
+            environment);
+
+        _ = Assert.Single(logger.Entries);
+    }
+
+    [Fact]
+    public void LogApplicationSecurityPosture_DevelopmentWithWildcardAllowedHosts_DoesNotEmitHostFilteringWarning()
+    {
+        TestLogger logger = new();
+        IConfiguration configuration = CreateConfiguration(
+            authenticationEnabled: true,
+            allowedHosts: "*");
+        TestHostEnvironment environment = new(Environments.Development);
+
+        StartupSecurityPostureExtensions.LogApplicationSecurityPosture(
+            logger,
+            configuration,
+            environment);
+
+        Assert.Empty(logger.Entries);
+    }
+
     private static IConfiguration CreateConfiguration(
         bool authenticationEnabled,
+        string? allowedHosts = null,
         string? keyRingPath = null,
         string? keyEncryptionCertificatePath = null,
         bool useDataProtectionDefaults = false)
@@ -158,6 +212,8 @@ public sealed class StartupSecurityPostureExtensionsTests
             [$"{ApplicationAuthenticationOptions.SectionName}:Enabled"] =
                 authenticationEnabled.ToString()
         };
+
+        values["AllowedHosts"] = allowedHosts ?? "app.example.com";
 
         // Unless a test is exercising Data Protection posture, supply a compliant configuration so each test observes
         // only the warning it is written for.

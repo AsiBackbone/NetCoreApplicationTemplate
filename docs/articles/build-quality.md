@@ -185,6 +185,28 @@ CI passes `COVERAGE_THRESHOLD` to the script as `-RepositoryLineCoverageThreshol
 Protected files should be added when they control security, trust boundaries, request identity, safe failure, audit attribution, or persistence safety. Raising a file above the defaults is encouraged where tests support it. Lowering a protected threshold, including the defaults, is a quality-gate change and should include a reason in the pull request.
 
 
+## Runner Egress Policy
+
+CI hardens each Linux job with [Harden-Runner](https://github.com/step-security/harden-runner). The policy is driven by the `EGRESS_POLICY` workflow environment variable, which defaults to `audit`: outbound calls are recorded but never blocked.
+
+`ci.yml` also carries the allow-lists the jobs are expected to need:
+
+| Variable | Used by | Covers |
+|:---|:---|:---|
+| `ALLOWED_ENDPOINTS_DOTNET` | Build validation, template option matrix | GitHub Actions infrastructure, the .NET SDK installer, and NuGet restore |
+| `ALLOWED_ENDPOINTS_SMOKE` | Template smoke test | The same endpoints plus the container registries used by the scaffolded Docker build and Compose run |
+
+Harden-Runner ignores `allowed-endpoints` while the policy is `audit`, so the lists are inert until block mode is used.
+
+To move to blocking:
+
+1. Run the workflow manually (`workflow_dispatch`) with `egress_policy` set to `block`.
+2. Compare the Harden-Runner insights for that run against the allow-lists and add any endpoint that was blocked but is legitimately required.
+3. Repeat until a full run, including the cross-platform smoke test and option matrix, passes in block mode.
+4. Change the `EGRESS_POLICY` default in `ci.yml` to `block`.
+
+Harden-Runner enforces policy on Linux runners only. The Windows and macOS smoke-test legs remain unenforced regardless of the policy value.
+
 ## Dependency Upgrade Policy
 
 Dependency updates should be reviewed by impact level.

@@ -17,6 +17,8 @@ public static class ApplicationAuditReconciliationServiceExtensions
             .AddOptions<ApplicationAuditReconciliationOptions>()
             .Validate(options => options.Interval > TimeSpan.Zero,
                 "The audit reconciliation interval must be greater than zero.")
+            .Validate(options => options.MaximumCycleRetryDelay >= options.Interval,
+                "The maximum audit reconciliation cycle retry delay must not be less than the interval.")
             .Validate(options => options.CompletionGracePeriod >= TimeSpan.Zero,
                 "The completion grace period must not be negative.")
             .Validate(options => options.StalePendingThreshold > TimeSpan.Zero,

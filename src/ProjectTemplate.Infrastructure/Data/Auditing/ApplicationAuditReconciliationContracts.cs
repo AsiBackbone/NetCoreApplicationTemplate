@@ -38,6 +38,12 @@ public sealed class ApplicationAuditReconciliationOptions
 
     public TimeSpan Interval { get; set; } = TimeSpan.FromMinutes(5);
 
+    /// <summary>
+    /// Gets or sets the maximum delay between reconciliation cycles after consecutive failures. The delay doubles for
+    /// each additional consecutive failure, up to this value, and returns to <see cref="Interval"/> after a success.
+    /// </summary>
+    public TimeSpan MaximumCycleRetryDelay { get; set; } = TimeSpan.FromMinutes(30);
+
     public TimeSpan CompletionGracePeriod { get; set; } = TimeSpan.FromMinutes(2);
 
     public TimeSpan StalePendingThreshold { get; set; } = TimeSpan.FromMinutes(15);
