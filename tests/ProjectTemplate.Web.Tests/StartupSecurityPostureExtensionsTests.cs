@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ProjectTemplate.Web.Authentication.Options;
 using ProjectTemplate.Web.Extensions;
+using ProjectTemplate.Web.Options;
 
 namespace ProjectTemplate.Web.Tests;
 
@@ -83,13 +84,90 @@ public sealed class StartupSecurityPostureExtensionsTests
         Assert.Empty(logger.Entries);
     }
 
-    private static IConfiguration CreateConfiguration(bool authenticationEnabled)
+    [Fact]
+    public void LogApplicationSecurityPosture_ProductionWithDataProtectionDefaults_EmitsKeyRingWarnings()
+    {
+        TestLogger logger = new();
+        IConfiguration configuration = CreateConfiguration(
+            authenticationEnabled: true,
+            useDataProtectionDefaults: true);
+        TestHostEnvironment environment = new(Environments.Production);
+
+        StartupSecurityPostureExtensions.LogApplicationSecurityPosture(
+            logger,
+            configuration,
+            environment);
+
+        Assert.Equal(3, logger.Entries.Count);
+        Assert.All(logger.Entries, entry => Assert.Equal(LogLevel.Warning, entry.Level));
+        Assert.Contains(
+            logger.Entries,
+            entry => entry.Message.Contains(
+                $"{ApplicationDataProtectionOptions.SectionName}:KeyRingPath is the relative path 'DataProtection-Keys'",
+                StringComparison.Ordinal));
+        Assert.Contains(
+            logger.Entries,
+            entry => entry.Message.Contains(
+                $"{ApplicationDataProtectionOptions.SectionName}:KeyEncryptionCertificatePath is not set",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void LogApplicationSecurityPosture_StagingWithRelativeKeyRingPath_EmitsKeyRingPathWarningOnly()
+    {
+        TestLogger logger = new();
+        IConfiguration configuration = CreateConfiguration(
+            authenticationEnabled: true,
+            keyRingPath: "keys");
+        TestHostEnvironment environment = new(Environments.Staging);
+
+        StartupSecurityPostureExtensions.LogApplicationSecurityPosture(
+            logger,
+            configuration,
+            environment);
+
+        LogEntry entry = Assert.Single(logger.Entries);
+        Assert.Contains("relative path 'keys'", entry.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void LogApplicationSecurityPosture_DevelopmentWithDataProtectionDefaults_DoesNotEmitKeyRingWarnings()
+    {
+        TestLogger logger = new();
+        IConfiguration configuration = CreateConfiguration(
+            authenticationEnabled: true,
+            useDataProtectionDefaults: true);
+        TestHostEnvironment environment = new(Environments.Development);
+
+        StartupSecurityPostureExtensions.LogApplicationSecurityPosture(
+            logger,
+            configuration,
+            environment);
+
+        Assert.Empty(logger.Entries);
+    }
+
+    private static IConfiguration CreateConfiguration(
+        bool authenticationEnabled,
+        string? keyRingPath = null,
+        string? keyEncryptionCertificatePath = null,
+        bool useDataProtectionDefaults = false)
     {
         Dictionary<string, string?> values = new()
         {
             [$"{ApplicationAuthenticationOptions.SectionName}:Enabled"] =
                 authenticationEnabled.ToString()
         };
+
+        // Unless a test is exercising Data Protection posture, supply a compliant configuration so each test observes
+        // only the warning it is written for.
+        if (!useDataProtectionDefaults)
+        {
+            values[$"{ApplicationDataProtectionOptions.SectionName}:KeyRingPath"] =
+                keyRingPath ?? Path.GetFullPath(Path.Combine(Path.GetTempPath(), "projecttemplate-keys"));
+            values[$"{ApplicationDataProtectionOptions.SectionName}:KeyEncryptionCertificatePath"] =
+                keyEncryptionCertificatePath ?? "/run/secrets/data-protection.pfx";
+        }
 
         return new ConfigurationBuilder()
             .AddInMemoryCollection(values)

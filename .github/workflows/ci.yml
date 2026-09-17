@@ -156,7 +156,7 @@ jobs:
 
       - name: Enforce security-critical coverage thresholds
         shell: pwsh
-        run: ./eng/Assert-SecurityCriticalCoverage.ps1 -CoverageFile "./artifacts/coverage-report/Cobertura.xml" -ConfigFile "./eng/security-critical-coverage.json"
+        run: ./eng/Assert-SecurityCriticalCoverage.ps1 -CoverageFile "./artifacts/coverage-report/Cobertura.xml" -ConfigFile "./eng/security-critical-coverage.json" -RepositoryLineCoverageThreshold ([double]$env:COVERAGE_THRESHOLD)
 
   template-smoke-test:
     name: Template smoke test (${{ matrix.os }})

@@ -49,6 +49,10 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * **Behavior change for API clients:** `429 Too Many Requests` responses for API-shaped requests are now `application/problem+json` Problem Details written through `IProblemDetailsService`, consistent with other error responses. The body contains `type`, `title`, `status`, `detail`, `instance`, `traceId`, `requestId`, and `correlationId` (plus `spanId` when an activity is present). The previous `{ "error", "statusCode", "traceId" }` shape is no longer returned. Clients that parsed `error` or `statusCode` should read `title`, `detail`, or `status` instead.
 * Requests that are not API-shaped now receive a short `text/plain` rejection body instead of JSON. `HEAD` requests receive no body. Rejections intentionally do not re-execute the browser error page, so rejected requests stay inexpensive under load.
 * `Retry-After` continues to be sent when the limiter reports a retry interval.
+* **Behavior change for adopters with custom authentication schemes:** a custom external provider must be registered with a display name to appear on the login page and be challengeable through `/External/Challenge`. A displayed scheme configured as the default authenticate, sign-in, or sign-out scheme is treated as a local scheme and is no longer challengeable.
+* Security-critical coverage floors are now stricter than the repository gate. `defaultMinimumLineCoverage` is raised from 60% to 75% and `defaultMinimumBranchCoverage` from 40% to 60%. Explicit per-file floors below those values were raised to match: `PersistenceTimestamp.cs` line 60% to 75%, and branch floors of 50% to 60% for `ProblemDetailsRequestClassifier.cs`, `PersistenceStringCanonicalizer.cs`, `PersistenceStringComparisonNormalizer.cs`, and `PersistenceTimestamp.cs`.
+* `Assert-SecurityCriticalCoverage.ps1` accepts `-RepositoryLineCoverageThreshold`. CI passes `COVERAGE_THRESHOLD`, and the script fails when any effective line floor is below the repository gate or any per-file branch floor is below the default.
+* Added `ExternalAuthenticationProviderSchemes.cs` and `DataProtectionServiceExtensions.cs` to the security-critical coverage list.
 
 ### Fixed
 
@@ -73,6 +77,10 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * Rate-limit rejection log entries (event ID `6100`) no longer record the client IP address unless `ProjectTemplate:RequestLogging:IncludeRemoteIpAddress` is `true`. Previously the rejection log wrote the address unconditionally, contradicting the privacy default applied to request logs.
 * Error-page log entries (event IDs `6000` and `6001`) now follow the same rule. Both previously recorded the remote IP address unconditionally.
 * Added `RequestLoggingPrivacy.GetLoggableRemoteIpAddress` so diagnostic log entries written outside the request-logging middleware apply `IncludeRemoteIpAddress` consistently.
+* `/External/Challenge` now accepts only schemes that the login page offers. A scheme is selectable when it has a display name and is not the cookie session scheme or the default authenticate, sign-in, or sign-out scheme. Previously any registered scheme other than `Cookies` could be challenged, including schemes registered without a display name such as bearer-token or test schemes. The login page and challenge endpoint now share one rule in `ExternalAuthenticationProviderSchemes`.
+* Data Protection key-ring files can now be encrypted at rest with a certificate. Set `ProjectTemplate:DataProtection:KeyEncryptionCertificatePath` to a PKCS#12 certificate that includes its private key, and supply `KeyEncryptionCertificatePassword` from a secret store. The same certificate is registered for decryption so encrypted key rings work on Linux and macOS without a certificate store.
+* Startup fails when the key-encryption certificate is missing, has no private key, or when a certificate password is configured without a certificate path.
+* Outside Development, startup now warns when the Data Protection key-ring path is relative to the content root (event `1003`) and when no key-encryption certificate is configured (event `1004`).
 
 ### Documentation
 
@@ -81,6 +89,8 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * Updated `docs/articles/rate-limiting.md` with the Problem Details and plain-text rejection shapes, the reasoning for not rendering the error page, and rejection log privacy.
 * Updated `docs/articles/error-handling.md` to remove `429` from the error-page status list, explain the rate-limit exception, and correct the example log line (`TraceIdentifier`, null remote IP address by default).
 * Updated `docs/articles/logging.md` to state that `IncludeRemoteIpAddress` also governs rate-limit and error-page log entries, and removed a duplicated `IncludeRemoteIpAddress` key from the configuration example.
+* Added key-ring encryption, certificate constraints, and startup posture warnings to `docs/articles/deployment.md`, with a production checklist item.
+* Documented the security-critical floor rules and the repository-gate check in `docs/articles/build-quality.md`.
 
 ### Tests
 
@@ -92,6 +102,9 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * Replaced the JSON rejection-shape test with `RejectedRequest_ApiShaped_ReturnsProblemDetails` and added `RejectedRequest_BrowserShaped_ReturnsPlainTextWithoutRenderingErrorPage`.
 * Added rejection log tests confirming the remote IP address is omitted by default and included only when request logging opts in.
 * Added `RequestLoggingPrivacyTests` covering the default, opt-in, unregistered-options, and missing-request-services cases.
+* Added external challenge tests for schemes without a display name, a displayed default sign-in scheme, and case-mismatched provider names, plus a login page test confirming non-challengeable schemes are not rendered.
+* Added Data Protection tests for certificate-encrypted key rings with cross-instance round trip, a missing certificate file, and a password without a certificate path.
+* Added startup posture tests for Data Protection warnings in Production, Staging, and Development. Existing posture tests supply a compliant Data Protection configuration so each observes only its own warning.
 
 ## 2.9.0 - 2026-09-11
 

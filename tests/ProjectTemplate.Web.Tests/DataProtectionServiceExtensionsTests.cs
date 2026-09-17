@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -92,20 +93,140 @@ public sealed class DataProtectionServiceExtensionsTests
         }
     }
 
-    private static ServiceProvider CreateServiceProvider(string contentRootPath, string applicationName)
+    [Fact]
+    public void KeyEncryptionCertificate_EncryptsKeyRingAndAllowsCrossInstanceRoundTrip()
     {
-        IConfiguration configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
+        string contentRootPath = CreateTemporaryDirectory();
+
+        try
+        {
+            string certificatePath = CreateKeyEncryptionCertificate(contentRootPath, "certificate-password");
+            Dictionary<string, string?> certificateSettings = new()
             {
-                [$"{ApplicationDataProtectionOptions.SectionName}:ApplicationName"] = applicationName,
-                [$"{ApplicationDataProtectionOptions.SectionName}:KeyRingPath"] = "keys"
-            })
+                [$"{ApplicationDataProtectionOptions.SectionName}:KeyEncryptionCertificatePath"] = certificatePath,
+                [$"{ApplicationDataProtectionOptions.SectionName}:KeyEncryptionCertificatePassword"] = "certificate-password"
+            };
+
+            string protectedPayload;
+
+            using (ServiceProvider firstInstance = CreateServiceProvider(contentRootPath, "EncryptedApplication", certificateSettings))
+            {
+                protectedPayload = firstInstance
+                    .GetRequiredService<IDataProtectionProvider>()
+                    .CreateProtector("encrypted-key-ring-test")
+                    .Protect("payload");
+            }
+
+            string keyFile = Assert.Single(Directory.GetFiles(Path.Combine(contentRootPath, "keys"), "key-*.xml"));
+            string keyXml = File.ReadAllText(keyFile);
+
+            Assert.Contains("EncryptedData", keyXml, StringComparison.Ordinal);
+            Assert.DoesNotContain("<masterKey", keyXml, StringComparison.Ordinal);
+
+            using ServiceProvider secondInstance = CreateServiceProvider(contentRootPath, "EncryptedApplication", certificateSettings);
+            IDataProtector secondProtector = secondInstance
+                .GetRequiredService<IDataProtectionProvider>()
+                .CreateProtector("encrypted-key-ring-test");
+
+            Assert.Equal("payload", secondProtector.Unprotect(protectedPayload));
+        }
+        finally
+        {
+            Directory.Delete(contentRootPath, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void KeyEncryptionCertificate_MissingFile_ThrowsInvalidOperationException()
+    {
+        string contentRootPath = CreateTemporaryDirectory();
+
+        try
+        {
+            InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
+                CreateServiceProvider(
+                    contentRootPath,
+                    "MissingCertificateApplication",
+                    new Dictionary<string, string?>
+                    {
+                        [$"{ApplicationDataProtectionOptions.SectionName}:KeyEncryptionCertificatePath"] = "missing.pfx"
+                    }));
+
+            Assert.Contains("was not found", exception.Message, StringComparison.Ordinal);
+        }
+        finally
+        {
+            Directory.Delete(contentRootPath, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void KeyEncryptionCertificatePasswordWithoutPath_ThrowsInvalidOperationException()
+    {
+        string contentRootPath = CreateTemporaryDirectory();
+
+        try
+        {
+            InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
+                CreateServiceProvider(
+                    contentRootPath,
+                    "PasswordOnlyApplication",
+                    new Dictionary<string, string?>
+                    {
+                        [$"{ApplicationDataProtectionOptions.SectionName}:KeyEncryptionCertificatePassword"] = "orphaned-password"
+                    }));
+
+            Assert.Contains("requires KeyEncryptionCertificatePath", exception.Message, StringComparison.Ordinal);
+        }
+        finally
+        {
+            Directory.Delete(contentRootPath, recursive: true);
+        }
+    }
+
+    private static ServiceProvider CreateServiceProvider(
+        string contentRootPath,
+        string applicationName,
+        IReadOnlyDictionary<string, string?>? additionalSettings = null)
+    {
+        Dictionary<string, string?> settings = new()
+        {
+            [$"{ApplicationDataProtectionOptions.SectionName}:ApplicationName"] = applicationName,
+            [$"{ApplicationDataProtectionOptions.SectionName}:KeyRingPath"] = "keys"
+        };
+
+        foreach (KeyValuePair<string, string?> setting in additionalSettings ?? new Dictionary<string, string?>())
+        {
+            settings[setting.Key] = setting.Value;
+        }
+
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(settings)
             .Build();
         ServiceCollection services = new();
         services.AddLogging();
         services.AddApplicationDataProtection(configuration, new TestHostEnvironment(contentRootPath));
 
         return services.BuildServiceProvider(validateScopes: true);
+    }
+
+    private static string CreateKeyEncryptionCertificate(string directory, string password)
+    {
+        using var rsa = RSA.Create(2048);
+        CertificateRequest request = new(
+            "CN=ProjectTemplate Data Protection Test",
+            rsa,
+            HashAlgorithmName.SHA256,
+            RSASignaturePadding.Pkcs1);
+
+        using X509Certificate2 certificate = request.CreateSelfSigned(
+            DateTimeOffset.UtcNow.AddDays(-1),
+            DateTimeOffset.UtcNow.AddDays(30));
+
+        string certificatePath = Path.Combine(directory, "data-protection-test.pfx");
+        File.WriteAllBytes(certificatePath, certificate.Export(X509ContentType.Pfx, password));
+
+        return certificatePath;
     }
 
     private static string CreateTemporaryDirectory()

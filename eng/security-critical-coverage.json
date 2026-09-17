@@ -1,6 +1,6 @@
 {
-  "defaultMinimumLineCoverage": 60,
-  "defaultMinimumBranchCoverage": 40,
+  "defaultMinimumLineCoverage": 75,
+  "defaultMinimumBranchCoverage": 60,
   "files": [
     {
       "path": "src/ProjectTemplate.Web/ErrorHandling/ProblemDetailsExceptionHandler.cs",
@@ -11,7 +11,7 @@
     {
       "path": "src/ProjectTemplate.Web/ErrorHandling/ProblemDetailsRequestClassifier.cs",
       "minimumLineCoverage": 75,
-      "minimumBranchCoverage": 50,
+      "minimumBranchCoverage": 60,
       "reason": "Request classification controls whether centralized Problem Details handling is applied."
     },
     {
@@ -33,25 +33,33 @@
       "reason": "Forwarded header configuration affects proxy trust boundaries and request identity."
     },
     {
+      "path": "src/ProjectTemplate.Web/Authentication/ExternalAuthenticationProviderSchemes.cs",
+      "reason": "External provider scheme selection controls which authentication schemes an anonymous request may challenge."
+    },
+    {
+      "path": "src/ProjectTemplate.Web/Extensions/DataProtectionServiceExtensions.cs",
+      "reason": "Data Protection key-ring persistence and encryption protect authentication cookies and antiforgery tokens."
+    },
+    {
       "path": "src/ProjectTemplate.Web/Extensions/RateLimitingServiceExtensions.cs",
       "reason": "Rate limiting protects request-processing surfaces from abuse."
     },
     {
       "path": "src/ProjectTemplate.Infrastructure/Data/PersistenceStringCanonicalizer.cs",
       "minimumLineCoverage": 75,
-      "minimumBranchCoverage": 50,
+      "minimumBranchCoverage": 60,
       "reason": "Persistence string canonicalization protects storage normalization behavior."
     },
     {
       "path": "src/ProjectTemplate.Infrastructure/Data/PersistenceStringComparisonNormalizer.cs",
       "minimumLineCoverage": 75,
-      "minimumBranchCoverage": 50,
+      "minimumBranchCoverage": 60,
       "reason": "Lookup/display string normalization protects persistence comparison behavior."
     },
     {
       "path": "src/ProjectTemplate.Infrastructure/Data/PersistenceTimestamp.cs",
-      "minimumLineCoverage": 60,
-      "minimumBranchCoverage": 50,
+      "minimumLineCoverage": 75,
+      "minimumBranchCoverage": 60,
       "reason": "Timestamp normalization protects persistence consistency."
     },
     {

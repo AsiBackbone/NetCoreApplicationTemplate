@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProjectTemplate.Web.Authentication;
 
 namespace ProjectTemplate.Web.Controllers;
 
@@ -44,10 +44,12 @@ public sealed class ExternalController(IAuthenticationSchemeProvider schemeProvi
             return BadRequest();
         }
 
-        AuthenticationScheme? scheme = await _schemeProvider.GetSchemeAsync(provider);
+        // Only schemes offered on the login page may be challenged. This excludes the cookie session scheme, the
+        // default authenticate, sign-in, and sign-out schemes, and any scheme registered without a display name.
+        AuthenticationScheme? scheme = await ExternalAuthenticationProviderSchemes
+            .FindSelectableSchemeAsync(_schemeProvider, provider);
 
-        if (scheme is null ||
-            string.Equals(scheme.Name, CookieAuthenticationDefaults.AuthenticationScheme, StringComparison.Ordinal))
+        if (scheme is null)
         {
             return BadRequest();
         }

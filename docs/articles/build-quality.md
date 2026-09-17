@@ -171,7 +171,18 @@ eng/Assert-SecurityCriticalCoverage.ps1
 
 The per-file gate evaluates ReportGenerator's generated Cobertura output and fails CI with actionable file-level messages when a protected file falls below its configured line or branch threshold.
 
-Protected files should be added when they control security, trust boundaries, request identity, safe failure, audit attribution, or persistence safety. Lowering a protected threshold should be treated as a quality-gate change and should include a reason in the pull request.
+The per-file gate is stricter than the repository gate by construction:
+
+| Setting | Value | Rule |
+|:---|:---|:---|
+| `defaultMinimumLineCoverage` | 75% | Applies to protected files without an explicit line floor. Must not be below the repository line gate (`COVERAGE_THRESHOLD`). |
+| `defaultMinimumBranchCoverage` | 60% | Applies to protected files without an explicit branch floor. The repository gate has no branch threshold, so this is the only branch floor. |
+| Per-file `minimumLineCoverage` | Optional | Must not be below the repository line gate. |
+| Per-file `minimumBranchCoverage` | Optional | Must not be below `defaultMinimumBranchCoverage`. |
+
+CI passes `COVERAGE_THRESHOLD` to the script as `-RepositoryLineCoverageThreshold`, and the script fails when any effective line floor is below it or when a per-file branch floor is below the default. This keeps a protected file from silently carrying a weaker requirement than an unprotected one. Run the script without `-RepositoryLineCoverageThreshold` for a local diagnostic report that skips the floor check.
+
+Protected files should be added when they control security, trust boundaries, request identity, safe failure, audit attribution, or persistence safety. Raising a file above the defaults is encouraged where tests support it. Lowering a protected threshold, including the defaults, is a quality-gate change and should include a reason in the pull request.
 
 
 ## Dependency Upgrade Policy

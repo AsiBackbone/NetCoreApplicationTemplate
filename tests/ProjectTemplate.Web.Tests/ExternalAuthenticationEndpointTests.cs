@@ -20,6 +20,9 @@ public sealed class ExternalAuthenticationEndpointTests
 {
     private const string _testExternalScheme = "TestExternal";
     private const string _testExternalDisplayName = "Test External";
+    private const string _testUndisplayedScheme = "TestUndisplayed";
+    private const string _testSignInScheme = "TestSignIn";
+    private const string _testSignInDisplayName = "Test Sign In";
 
     /// <summary>
     /// Verifies that a registered external provider can be challenged with a local return URL.
@@ -97,6 +100,73 @@ public sealed class ExternalAuthenticationEndpointTests
     /// Verifies that the baseline login page renders registered external providers.
     /// </summary>
     /// <returns>A task that represents the asynchronous test operation.</returns>
+    [Fact]
+    public async Task ExternalChallenge_SchemeWithoutDisplayName_ReturnsBadRequest()
+    {
+        using WebApplicationFactory<Program> factory = CreateFactoryWithTestExternalProvider(
+            services => services
+                .AddAuthentication()
+                .AddScheme<AuthenticationSchemeOptions, TestExternalChallengeAuthenticationHandler>(
+                    _testUndisplayedScheme,
+                    _ => { }));
+        using HttpClient client = factory.CreateHttpsClient();
+
+        using HttpResponseMessage response = await client.GetAsync(
+            $"/External/Challenge?provider={_testUndisplayedScheme}&returnUrl=%2F",
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ExternalChallenge_DefaultSignInScheme_ReturnsBadRequest()
+    {
+        using WebApplicationFactory<Program> factory = CreateFactoryWithTestSignInScheme();
+        using HttpClient client = factory.CreateHttpsClient();
+
+        using HttpResponseMessage response = await client.GetAsync(
+            $"/External/Challenge?provider={_testSignInScheme}&returnUrl=%2F",
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ExternalChallenge_ProviderNameWithDifferentCase_ReturnsBadRequest()
+    {
+        using WebApplicationFactory<Program> factory = CreateFactoryWithTestExternalProvider();
+        using HttpClient client = factory.CreateHttpsClient();
+
+        using HttpResponseMessage response = await client.GetAsync(
+            $"/External/Challenge?provider={_testExternalScheme.ToUpperInvariant()}&returnUrl=%2F",
+            TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task AccountLogin_DoesNotRenderSchemesThatCannotBeChallenged()
+    {
+        using WebApplicationFactory<Program> factory = CreateFactoryWithTestSignInScheme(
+            services => services
+                .AddAuthentication()
+                .AddScheme<AuthenticationSchemeOptions, TestExternalChallengeAuthenticationHandler>(
+                    _testUndisplayedScheme,
+                    _ => { }));
+        using HttpClient client = factory.CreateHttpsClient();
+
+        using HttpResponseMessage response = await client.GetAsync(
+            "/Account/Login",
+            TestContext.Current.CancellationToken);
+
+        string content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains(_testExternalDisplayName, content, StringComparison.Ordinal);
+        Assert.DoesNotContain(_testUndisplayedScheme, content, StringComparison.Ordinal);
+        Assert.DoesNotContain(_testSignInDisplayName, content, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task AccountLogin_RendersRegisteredExternalProviders()
     {
@@ -222,15 +292,41 @@ public sealed class ExternalAuthenticationEndpointTests
     /// Creates a test application factory with a test-only external authentication provider.
     /// </summary>
     /// <returns>A configured <see cref="WebApplicationFactory{TEntryPoint}"/> instance.</returns>
-    private static WebApplicationFactory<Program> CreateFactoryWithTestExternalProvider()
+    private static WebApplicationFactory<Program> CreateFactoryWithTestExternalProvider(
+        Action<IServiceCollection>? configureServices = null)
     {
         return new ApplicationWebApplicationFactory(new Dictionary<string, string?>())
-            .WithWebHostBuilder(builder => builder.ConfigureServices(services => services
-                        .AddAuthentication()
-                        .AddScheme<AuthenticationSchemeOptions, TestExternalChallengeAuthenticationHandler>(
-                            _testExternalScheme,
-                            _testExternalDisplayName,
-                            _ => { })));
+            .WithWebHostBuilder(builder => builder.ConfigureServices(services =>
+            {
+                _ = services
+                    .AddAuthentication()
+                    .AddScheme<AuthenticationSchemeOptions, TestExternalChallengeAuthenticationHandler>(
+                        _testExternalScheme,
+                        _testExternalDisplayName,
+                        _ => { });
+
+                configureServices?.Invoke(services);
+            }));
+    }
+
+    private static WebApplicationFactory<Program> CreateFactoryWithTestSignInScheme(
+        Action<IServiceCollection>? configureServices = null)
+    {
+        return CreateFactoryWithTestExternalProvider(services =>
+        {
+            _ = services
+                .AddAuthentication()
+                .AddScheme<AuthenticationSchemeOptions, TestExternalChallengeAuthenticationHandler>(
+                    _testSignInScheme,
+                    _testSignInDisplayName,
+                    _ => { });
+
+            // A displayed scheme configured as the default sign-in scheme is a local session scheme, not a provider.
+            _ = services.PostConfigure<AuthenticationOptions>(options =>
+                options.DefaultSignInScheme = _testSignInScheme);
+
+            configureServices?.Invoke(services);
+        });
     }
 
     /// <summary>

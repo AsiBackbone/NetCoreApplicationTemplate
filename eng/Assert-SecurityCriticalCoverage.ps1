@@ -1,7 +1,12 @@
 [CmdletBinding()]
 param(
     [string] $CoverageFile = "./artifacts/coverage-report/Cobertura.xml",
-    [string] $ConfigFile = "./eng/security-critical-coverage.json"
+    [string] $ConfigFile = "./eng/security-critical-coverage.json",
+
+    # The repository-wide line coverage gate. Security-critical files are a stricter gate, so no effective
+    # per-file line floor may be lower than this value. Zero disables the check for local diagnostic runs.
+    [ValidateRange(0, 100)]
+    [double] $RepositoryLineCoverageThreshold = 0
 )
 
 Set-StrictMode -Version Latest
@@ -94,6 +99,15 @@ $failures = New-Object System.Collections.Generic.List[string]
 Write-Host "Security-critical coverage gate"
 Write-Host "--------------------------------"
 
+if ($RepositoryLineCoverageThreshold -gt 0) {
+    Write-Host ("Repository line coverage gate: {0:N2}%" -f $RepositoryLineCoverageThreshold)
+
+    if ($defaultMinimumLineCoverage -lt $RepositoryLineCoverageThreshold) {
+        $failures.Add(
+            "defaultMinimumLineCoverage $defaultMinimumLineCoverage% is below the repository line coverage gate of $RepositoryLineCoverageThreshold%. Security-critical floors must not be weaker than the repository gate.")
+    }
+}
+
 foreach ($protectedFile in $protectedFiles) {
     $expectedPath = Normalize-RepositoryPath -Path ([string] $protectedFile.path)
 
@@ -120,6 +134,16 @@ foreach ($protectedFile in $protectedFiles) {
         -FileConfiguration $protectedFile `
         -PropertyName "minimumBranchCoverage" `
         -DefaultValue $defaultMinimumBranchCoverage
+
+    if ($RepositoryLineCoverageThreshold -gt 0 -and $minimumLineCoverage -lt $RepositoryLineCoverageThreshold) {
+        $failures.Add(
+            "Protected file '$expectedPath' has a configured line floor of $minimumLineCoverage%, below the repository line coverage gate of $RepositoryLineCoverageThreshold%. Security-critical floors must not be weaker than the repository gate.")
+    }
+
+    if ($minimumBranchCoverage -lt $defaultMinimumBranchCoverage) {
+        $failures.Add(
+            "Protected file '$expectedPath' has a configured branch floor of $minimumBranchCoverage%, below defaultMinimumBranchCoverage of $defaultMinimumBranchCoverage%. Raise the file floor or change the default deliberately.")
+    }
 
     $lineCoverage = @(
         $matchingClasses | ForEach-Object {
