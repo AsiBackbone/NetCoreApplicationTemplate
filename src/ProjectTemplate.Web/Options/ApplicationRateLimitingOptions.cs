@@ -23,9 +23,14 @@ public sealed class ApplicationRateLimitingOptions
 
     /// <summary>
     /// Gets or sets a value indicating whether requests without a resolved client IP address
-    /// should use one shared fallback partition key.
+    /// share one fallback partition key.
     /// </summary>
-    public bool UseSharedUnknownClientPartition { get; set; }
+    /// <remarks>
+    /// Defaults to <see langword="true"/> so unresolved clients remain rate limited. Setting this to
+    /// <see langword="false"/> gives each unresolved request its own partition, which effectively disables
+    /// client rate limiting for those requests.
+    /// </remarks>
+    public bool UseSharedUnknownClientPartition { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the base fallback partition key used when the client IP address cannot be resolved.
