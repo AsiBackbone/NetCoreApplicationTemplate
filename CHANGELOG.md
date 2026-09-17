@@ -21,8 +21,6 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
   compiler, analyzer, and code-style warnings now fail the build.
 * Distinguished permanent GitHub Release evidence from temporary Actions
   artifacts and separated NuGet publishing identity from OCI image signing.
-* Backfilled release `2.9.0` from its retained original container evidence and
-  exact public NuGet package, with regenerated evidence explicitly labeled.
 * **Behavior change for adopters:** applications that add inline `style` attributes or `<style>` blocks to their own views will have those styles blocked by the browser after upgrading. Either move the styles into static stylesheets (preferred), use nonce- or hash-based `style-src` sources, or restore the previous allowance through configuration:
 
   ```json
@@ -63,6 +61,7 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+* Backfilled release `2.9.0` from its retained original container evidence and exact public NuGet package, with regenerated evidence explicitly labeled.
 * `ApplicationAuditReconciler.RecordRemediationAsync` now records a remediation atomically. The finding status update and the remediation insert run in one transaction inside the EF Core execution strategy, so a failure in either statement leaves neither written. When the caller already owns an EF Core transaction, the method joins it and leaves commit or rollback to the caller.
 * `RecordRemediationAsync` now guards the finding update with the `ConcurrencyStamp` that was read. If a reconciliation run or another remediation changes the finding first, the method throws `DbUpdateConcurrencyException`, writes nothing, and the caller can reload and retry. Previously the later write silently overwrote the earlier one.
 * Remediation request fields (`ActionCode`, `ActorId`) are now validated before any database work begins.
@@ -71,6 +70,8 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ### Security
 
+* Made release evidence verifiable against the exact published package and image rather than against rebuilt or inferred artifacts.
+* Retained the deferred NuGet author-signing decision as an explicit, dated, owned record rather than an undocumented gap.
 * Tightened the default `Content-Security-Policy` by removing `'unsafe-inline'` from `style-src`. The default policy is now:
 
   ```text
@@ -121,6 +122,28 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * Added startup posture tests for Data Protection warnings in Production, Staging, and Development. Existing posture tests supply a compliant Data Protection configuration so each observes only its own warning.
 * Added startup posture tests for wildcard, absent, and Development `AllowedHosts`.
 * Added `BackgroundServiceRetryDelayTests` covering the normal interval, doubling, the cap, a maximum below the interval, and invalid arguments.
+
+### Compatibility
+
+* This is a backward-compatible minor release within the stable `2.x` package
+  line.
+* The public NuGet package ID remains `NetCoreApplicationTemplate`.
+* The template identity remains `AsiBackbone.NetCoreApplicationTemplate.CSharp`,
+  the group identity remains `AsiBackbone.NetCoreApplicationTemplate`, and the
+  short name remains `netcoreapp-template`.
+* Supported template options and generated runtime behavior remain unchanged.
+* Existing projects generated from earlier releases are not modified
+  automatically.
+* The target framework remains `net10.0`.
+* Newly generated projects treat compiler, analyzer, and code-style warnings as
+  build errors. Consumers who prefer warning-level diagnostics can override
+  `TreatWarningsAsErrors` in the generated `Directory.Build.props`.
+
+### Notes
+
+* The `2.x` line is feature-complete as of this release. Subsequent releases are
+  limited to security fixes, dependency servicing, and documentation
+  corrections.
 
 ## 2.9.0 - 2026-09-11
 
