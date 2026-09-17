@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProjectTemplate.Web.Authentication;
 using ProjectTemplate.Web.Models;
 
 namespace ProjectTemplate.Web.Controllers;
@@ -39,17 +40,13 @@ public class AccountController(IAuthenticationSchemeProvider schemeProvider) : C
             return BadRequest();
         }
 
-        IEnumerable<AuthenticationScheme> schemes = await _schemeProvider.GetAllSchemesAsync();
+        IReadOnlyList<AuthenticationScheme> schemes = await ExternalAuthenticationProviderSchemes
+            .GetSelectableSchemesAsync(_schemeProvider);
 
         AccountLoginViewModel model = new()
         {
             ReturnUrl = safeReturnUrl,
             ExternalProviders = schemes
-                .Where(scheme => !string.Equals(
-                    scheme.Name,
-                    CookieAuthenticationDefaults.AuthenticationScheme,
-                    StringComparison.Ordinal))
-                .Where(scheme => !string.IsNullOrWhiteSpace(scheme.DisplayName))
                 .Select(scheme => new ExternalAuthenticationProviderViewModel
                 {
                     Scheme = scheme.Name,
