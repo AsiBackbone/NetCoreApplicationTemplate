@@ -13,9 +13,26 @@
 [![NuGet Downloads](https://img.shields.io/nuget/dt/NetCoreApplicationTemplate?label=downloads)](https://www.nuget.org/packages/NetCoreApplicationTemplate)
 [![Zenodo DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20373042-blue)](https://doi.org/10.5281/zenodo.20373042)
 
-A reusable, production-oriented ASP.NET Core application template with structured logging, security headers, forwarded headers, rate limiting, centralized error handling, cookie authentication, authenticated-by-default routed endpoints, policy-based authorization, EF Core data access patterns, health checks, telemetry, and CI validation.
+A production-oriented ASP.NET Core application template for .NET 10. Routed
+endpoints require an authenticated user by default, anonymous access is explicit
+and regression-tested, and the generated scaffold ships with structured logging,
+security headers, forwarded-header validation, rate limiting, centralized
+Problem Details error handling, EF Core data access and auditing patterns, health
+checks, telemetry, and CI validation.
 
-Tagged releases publish a durable, hashed evidence bundle for the exact NuGet package and OCI image, including separate SPDX SBOMs, provenance, the signed image digest, and tested verification commands. See [Container Release Publishing](docs/articles/container-publish.md#durable-release-assets). NuGet author signing is separately tracked by [ADR-0005](docs/adr/0005-defer-nuget-package-signing.md).
+Install it:
+
+```bash
+dotnet new install NetCoreApplicationTemplate
+dotnet new netcoreapp-template -n ContosoSecurityPortal
+```
+
+Tagged releases publish a durable, hashed evidence bundle for the exact NuGet
+package and OCI image — separate SPDX SBOMs, provenance, the signed image digest,
+and tested verification commands. See
+[Container Release Publishing](docs/articles/container-publish.md#durable-release-assets).
+NuGet author signing is tracked separately by
+[ADR-0005](docs/adr/0005-defer-nuget-package-signing.md).
 
 ## Current Release
 
@@ -25,7 +42,7 @@ Current release: __[Release 2.9.0](https://github.com/AsiBackbone/NetCoreApplica
 Tag: `v2.9.0`
 <!-- END LATEST_RELEASE -->
 
-## Default Security Posture
+## What This Template Secures by Default
 
 The default scaffold enables cookie authentication as the session handler. It does not include local user accounts, a credential form, a seeded user, or an enabled external provider. Cookie authentication stores an identity after a sign-in flow succeeds; it does not verify credentials or provide a login path by itself.
 
@@ -40,19 +57,6 @@ The phrase **secure baseline** in this project refers to concrete controls—clo
 ### Authentication-disabled opt-out
 
 `--authProvider none` is an explicit architectural opt-out. It disables application authentication, cookie authentication, and the authenticated fallback policy in generated configuration. Unannotated routed endpoints are public in that variant until the consuming application adds another authentication mechanism and authorization posture.
-
-## Project Goals
-
-- Production-oriented ASP.NET Core startup and middleware organization.
-- Cookie authentication and authenticated-by-default routed endpoints in the default scaffold.
-- Explicit anonymous endpoint exceptions with regression coverage.
-- Named role and permission authorization policies.
-- Structured application and request logging.
-- Centralized exception, status-code, and Problem Details handling.
-- Reverse-proxy, security-header, rate-limiting, health-check, and telemetry foundations.
-- EF Core provider and auditing patterns.
-- Automated build, test, coverage, template smoke-test, CodeQL, and documentation workflows.
-- Package-based `dotnet new` scaffold support.
 
 ## Quick Start from Source
 
@@ -131,6 +135,19 @@ dotnet build --configuration Release
 dotnet test --configuration Release
 ```
 
+## Project Goals
+
+- Production-oriented ASP.NET Core startup and middleware organization.
+- Cookie authentication and authenticated-by-default routed endpoints in the default scaffold.
+- Explicit anonymous endpoint exceptions with regression coverage.
+- Named role and permission authorization policies.
+- Structured application and request logging.
+- Centralized exception, status-code, and Problem Details handling.
+- Reverse-proxy, security-header, rate-limiting, health-check, and telemetry foundations.
+- EF Core provider and auditing patterns.
+- Automated build, test, coverage, template smoke-test, CodeQL, and documentation workflows.
+- Package-based `dotnet new` scaffold support.
+
 ## Authentication and Authorization Terminology
 
 - **Authentication** establishes identity.
@@ -141,29 +158,6 @@ dotnet test --configuration Release
 - **Policy-based authorization** applies role, permission, claim, or custom requirements.
 
 `DefaultPolicy` and `FallbackPolicy` are distinct ASP.NET Core concepts and are not used interchangeably in NCAT documentation.
-
-## NCAT and AsiBackbone Boundary
-
-NCAT supplies ASP.NET Core authentication, endpoint authorization, middleware ordering, request protection, observability, and application infrastructure.
-
-A consuming application may integrate AsiBackbone for application-level policy decisions, acknowledgments, scoped capability grants, and decision audit records around protected operations. AsiBackbone complements but does not replace ASP.NET Core authentication or endpoint authorization.
-
-## Documentation Ownership
-
-The ASI Backbone organization separates broad architecture education from implementation-specific documentation:
-
-| Repository | Documentation responsibility |
-|:---|:---|
-| [AsiBackbone/Learning](https://asibackbone.github.io/Learning/) | Canonical educational source for organization-level software architecture, ASP.NET Core teaching, terminology, tutorials, tradeoffs, comparisons, labs, and general secure-by-default guidance. |
-| **NetCoreApplicationTemplate (NCAT)** | Authoritative source for this template's installation, options, generated structure, exact runtime defaults, configuration, authentication and authorization behavior, middleware order, data-access implementation, deployment, extensibility, ADRs, public surface, releases, compatibility, and operational guidance. |
-
-NCAT documentation should explain **what this template does and why this repository chose it**. When broader architectural teaching is useful, NCAT links to Learning rather than duplicating a second educational treatment.
-
-Learning does not define NCAT runtime behavior. The current NCAT source, generated output, release artifacts, ADRs, and implementation documentation remain authoritative for NCAT contracts and behavior.
-
-- [ASI Backbone Learning — published site](https://asibackbone.github.io/Learning/)
-- [AsiBackbone/Learning — source repository](https://github.com/AsiBackbone/Learning)
-- [NCAT documentation ownership contract](https://asibackbone.github.io/NetCoreApplicationTemplate/articles/documentation-ownership.html)
 
 ## Documentation
 
@@ -185,6 +179,31 @@ dotnet tool restore
 dotnet tool run docfx -- docs/docfx.json
 ```
 
+## Repository and Generated Content
+
+The repository contains source projects, tests, Docker support, DocFX documentation, CI workflows, release and governance files, template configuration, and package metadata.
+
+Generated projects include application source, tests, Docker support, configuration examples, license and asset notices, and a consumer-oriented README. Repository-maintainer workflows, ADRs, community and governance policies, contribution policy, security policy, and release-management files are excluded from generated output.
+
+## Related Projects
+
+NCAT is self-contained. It has no dependency on any other AsiBackbone project and
+requires no external governance, audit, or policy product.
+
+- **[ASI Backbone Learning](https://asibackbone.github.io/Learning/)** — the
+  organization's educational site for ASP.NET Core architecture, terminology,
+  labs, and secure-by-default guidance. NCAT links to Learning for broader
+  teaching rather than duplicating it. Learning does not define NCAT runtime
+  behavior; this repository and its published documentation remain authoritative
+  for NCAT's options, defaults, and contracts. See the
+  [documentation ownership contract](https://asibackbone.github.io/NetCoreApplicationTemplate/articles/documentation-ownership.html).
+
+- **[AsiBackbone](https://github.com/AsiBackbone/AsiBackbone)** — an optional
+  .NET library for application-level policy decisions, acknowledgments, scoped
+  capability grants, and decision audit records around protected operations. It
+  complements but does not replace ASP.NET Core authentication or endpoint
+  authorization, and NCAT does not require it.
+
 ## Support and Community
 
 - Use [GitHub Discussions](https://github.com/AsiBackbone/NetCoreApplicationTemplate/discussions) for setup and usage questions, design or extension guidance, and community feedback.
@@ -194,12 +213,6 @@ dotnet tool run docfx -- docs/docfx.json
 - See [Governance](GOVERNANCE.md) and [Maintainers](MAINTAINERS.md) for decision authority and operational ownership.
 
 See [SUPPORT.md](SUPPORT.md) for the complete support policy and version lifecycle.
-
-## Repository and Generated Content
-
-The repository contains source projects, tests, Docker support, DocFX documentation, CI workflows, release and governance files, template configuration, and package metadata.
-
-Generated projects include application source, tests, Docker support, configuration examples, license and asset notices, and a consumer-oriented README. Repository-maintainer workflows, ADRs, community and governance policies, contribution policy, security policy, and release-management files are excluded from generated output.
 
 ## Versioning and Citation
 
