@@ -71,6 +71,8 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ### Security
 
+* Made release evidence verifiable against the exact published package and image rather than against rebuilt or inferred artifacts.
+* Retained the deferred NuGet author-signing decision as an explicit, dated, owned record rather than an undocumented gap.
 * Tightened the default `Content-Security-Policy` by removing `'unsafe-inline'` from `style-src`. The default policy is now:
 
   ```text
@@ -121,6 +123,28 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * Added startup posture tests for Data Protection warnings in Production, Staging, and Development. Existing posture tests supply a compliant Data Protection configuration so each observes only its own warning.
 * Added startup posture tests for wildcard, absent, and Development `AllowedHosts`.
 * Added `BackgroundServiceRetryDelayTests` covering the normal interval, doubling, the cap, a maximum below the interval, and invalid arguments.
+
+### Compatibility
+
+* This is a backward-compatible minor release within the stable `2.x` package
+  line.
+* The public NuGet package ID remains `NetCoreApplicationTemplate`.
+* The template identity remains `AsiBackbone.NetCoreApplicationTemplate.CSharp`,
+  the group identity remains `AsiBackbone.NetCoreApplicationTemplate`, and the
+  short name remains `netcoreapp-template`.
+* Supported template options and generated runtime behavior remain unchanged.
+* Existing projects generated from earlier releases are not modified
+  automatically.
+* The target framework remains `net10.0`.
+* Newly generated projects treat compiler, analyzer, and code-style warnings as
+  build errors. Consumers who prefer warning-level diagnostics can override
+  `TreatWarningsAsErrors` in the generated `Directory.Build.props`.
+
+### Notes
+
+* The `2.x` line is feature-complete as of this release. Subsequent releases are
+  limited to security fixes, dependency servicing, and documentation
+  corrections.
 
 ## 2.9.0 - 2026-09-11
 
