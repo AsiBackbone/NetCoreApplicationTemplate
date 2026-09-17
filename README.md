@@ -209,10 +209,10 @@ requires no external governance, audit, or policy product.
 - Use [GitHub Discussions](https://github.com/AsiBackbone/NetCoreApplicationTemplate/discussions) for setup and usage questions, design or extension guidance, and community feedback.
 - Use [GitHub Issues](https://github.com/AsiBackbone/NetCoreApplicationTemplate/issues) for reproducible bugs, documentation gaps, and focused feature requests.
 - Report suspected vulnerabilities through the private process in [SECURITY.md](SECURITY.md).
-- Participate under the repository [Code of Conduct](CODE_OF_CONDUCT.md) and [Community Standards](COMMUNITY_STANDARDS.md).
-- See [Governance](GOVERNANCE.md) and [Maintainers](MAINTAINERS.md) for decision authority and operational ownership.
+- Participate under the repository [Code of Conduct](.github/CODE_OF_CONDUCT.md) and [Community Standards](.github/COMMUNITY_STANDARDS.md).
+- See [Governance](.github/GOVERNANCE.md) and [Maintainers](.github/MAINTAINERS.md) for decision authority and operational ownership.
 
-See [SUPPORT.md](SUPPORT.md) for the complete support policy and version lifecycle.
+See [SUPPORT.md](.github/SUPPORT.md) for the complete support policy and version lifecycle.
 
 ## Versioning and Citation
 

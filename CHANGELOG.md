@@ -59,6 +59,7 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * CI Harden-Runner steps now read their policy from the `EGRESS_POLICY` workflow variable, which still defaults to `audit`, and carry the allow-lists each job is expected to need. A `workflow_dispatch` input runs the workflow in `block` mode so the lists can be trialed before the default changes.
 * Documented `Strict-Transport-Security` as an intentional middleware omission, named the layer that owns HSTS, and added `max-age`, `includeSubDomains`, `preload`, and rollback decisions to the production deployment checklist.
 * Relocated community, governance, maintainer, support, release, and asset-notice documents to `.github/` and consolidated overlapping community and maintainer files. Content is unchanged; GitHub resolves community health files from `.github/` identically to the repository root.
+* Reordered the README so installation commands and the default security posture precede project goals, and consolidated the AsiBackbone boundary and documentation-ownership sections into a single related-projects block.
 
 ### Fixed
 

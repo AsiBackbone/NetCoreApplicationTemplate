@@ -274,7 +274,7 @@ Before completing deployment, verify:
 
 Related docs:
 
-- [Release Checklist](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/RELEASE.md)
+- [Release Checklist](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/.github/RELEASE.md)
 
 ## Summary
 

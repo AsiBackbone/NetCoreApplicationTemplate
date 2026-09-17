@@ -90,7 +90,7 @@ This policy works together with, rather than replaces:
 - [GitHub Workflow](github-workflow.md), including dependency and workflow review practices;
 - [Container Release Publishing](container-publish.md), including pinned base-image and release-evidence handling;
 - the repository-level [Security Policy](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/SECURITY.md);
-- the stable-release checklist in [RELEASE.md](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/RELEASE.md).
+- the stable-release checklist in [RELEASE.md](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/.github/RELEASE.md).
 
 Before a stable release, unresolved dependency or base-image security findings should be explicitly reviewed. A routine cooldown is not a justification to ship a known vulnerable dependency when a compatible remediation is available.
 

@@ -170,5 +170,5 @@ Trade-offs and risks:
 - [`CITATION.cff`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/CITATION.cff)
 - [`docs/articles/public-surface-v1.md`](../articles/public-surface-v1.md)
 - [`docs/articles/v1-migration-guide.md`](../articles/v1-migration-guide.md)
-- [`RELEASE.md`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/RELEASE.md)
+- [`RELEASE.md`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/.github/RELEASE.md)
 - [`CHANGELOG.md`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/CHANGELOG.md)

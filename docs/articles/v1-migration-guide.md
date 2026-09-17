@@ -39,7 +39,7 @@ Review these documents before migration:
 - [Configuration](configuration.md)
 - [Deployment Notes](deployment.md)
 - [Production Deployment Checklist](production-deployment-checklist.md)
-- [Release Checklist](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/RELEASE.md)
+- [Release Checklist](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/.github/RELEASE.md)
 - [Changelog](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/CHANGELOG.md)
 
 ## Template Identity
@@ -261,7 +261,7 @@ Recommended rollback posture:
 - Keep the previous deployable version available until the migrated version passes smoke testing.
 - If package artifacts are already published, prefer a corrective patch release over rewriting history.
 
-For release-level rollback and hotfix policy, see [Release Checklist](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/RELEASE.md).
+For release-level rollback and hotfix policy, see [Release Checklist](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/.github/RELEASE.md).
 
 ## Migration Acceptance Checklist
 

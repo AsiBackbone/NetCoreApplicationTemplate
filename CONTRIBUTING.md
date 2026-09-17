@@ -235,11 +235,11 @@ GitHub Actions workflows should use explicit workflow or job-level permissions, 
 
 ## Related Documentation
 
-- [Code of Conduct](CODE_OF_CONDUCT.md)
-- [Community Standards](COMMUNITY_STANDARDS.md)
-- [Governance](GOVERNANCE.md)
-- [Support Policy](SUPPORT.md)
-- [Maintainers](MAINTAINERS.md)
+- [Code of Conduct](.github/CODE_OF_CONDUCT.md)
+- [Community Standards](.github/COMMUNITY_STANDARDS.md)
+- [Governance](.github/GOVERNANCE.md)
+- [Support Policy](.github/SUPPORT.md)
+- [Maintainers](.github/MAINTAINERS.md)
 - [Security Policy](SECURITY.md)
 - [GitHub Workflow](docs/articles/github-workflow.md)
 - [Repository Security Profile](docs/articles/repository-security-profile.md)
