@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Options;
 using ProjectTemplate.Infrastructure.Data.Entities;
 
@@ -156,6 +157,60 @@ public sealed class ApplicationAuditReconciler(
         ArgumentNullException.ThrowIfNull(request);
         cancellationToken.ThrowIfCancellationRequested();
 
+        string actionCode = NormalizeRequired(request.ActionCode, 64, nameof(request.ActionCode));
+        string actorId = NormalizeRequired(request.ActorId, 256, nameof(request.ActorId));
+        string? evidenceReference = NormalizeOptional(request.EvidenceReference, 256);
+
+        // When the caller already owns an EF Core transaction, join it. The caller decides whether the
+        // remediation commits, and the execution strategy is bypassed because retrying strategies cannot
+        // replay work inside a caller-owned transaction.
+        if (_dbContext.Database.CurrentTransaction is not null)
+        {
+            return await RecordRemediationCoreAsync(
+                    findingId,
+                    actionCode,
+                    actorId,
+                    evidenceReference,
+                    request.ResolveFinding,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        // Otherwise own the transaction inside the execution strategy so a retrying provider replays the
+        // read, the guarded update, and the insert together.
+        IExecutionStrategy executionStrategy = _dbContext.Database.CreateExecutionStrategy();
+
+        return await executionStrategy.ExecuteAsync(
+                async strategyCancellationToken =>
+                {
+                    await using IDbContextTransaction transaction = await _dbContext.Database
+                        .BeginTransactionAsync(strategyCancellationToken)
+                        .ConfigureAwait(false);
+
+                    ApplicationAuditReconciliationRemediationItem remediation = await RecordRemediationCoreAsync(
+                            findingId,
+                            actionCode,
+                            actorId,
+                            evidenceReference,
+                            request.ResolveFinding,
+                            strategyCancellationToken)
+                        .ConfigureAwait(false);
+
+                    await transaction.CommitAsync(strategyCancellationToken).ConfigureAwait(false);
+                    return remediation;
+                },
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task<ApplicationAuditReconciliationRemediationItem> RecordRemediationCoreAsync(
+        Guid findingId,
+        string actionCode,
+        string actorId,
+        string? evidenceReference,
+        bool resolveFinding,
+        CancellationToken cancellationToken)
+    {
         ApplicationAuditReconciliationFinding finding = await _dbContext
             .ApplicationAuditReconciliationFindings
             .AsNoTracking()
@@ -163,31 +218,40 @@ public sealed class ApplicationAuditReconciler(
             .ConfigureAwait(false)
             ?? throw new KeyNotFoundException($"Audit reconciliation finding '{findingId}' was not found.");
 
-        string actionCode = NormalizeRequired(request.ActionCode, 64, nameof(request.ActionCode));
-        string actorId = NormalizeRequired(request.ActorId, 256, nameof(request.ActorId));
-        string? evidenceReference = NormalizeOptional(request.EvidenceReference, 256);
         DateTime now = UtcNow();
+        string remediationStatus = resolveFinding
+            ? ApplicationAuditReconciliationRemediationStatuses.Resolved
+            : ApplicationAuditReconciliationRemediationStatuses.Acknowledged;
+        DateTime? resolvedUtc = resolveFinding ? now : null;
+        string expectedFindingConcurrencyStamp = finding.ConcurrencyStamp;
+        string nextFindingConcurrencyStamp = Guid.NewGuid().ToString("N");
+
+        // Update the finding first, guarded by the stamp that was read. If a reconciliation run or another
+        // remediation changed the finding in the meantime, no row matches and nothing is written.
+        int updatedFindingCount = await _dbContext.Database.ExecuteSqlInterpolatedAsync($$"""
+            UPDATE [ApplicationAuditReconciliationFindings]
+            SET [RemediationStatus] = {{remediationStatus}},
+                [ResolvedUtc] = {{resolvedUtc}},
+                [ConcurrencyStamp] = {{nextFindingConcurrencyStamp}}
+            WHERE [Id] = {{findingId}}
+                AND [ConcurrencyStamp] = {{expectedFindingConcurrencyStamp}}
+            """, cancellationToken).ConfigureAwait(false);
+
+        if (updatedFindingCount != 1)
+        {
+            throw new DbUpdateConcurrencyException(
+                $"Audit reconciliation finding '{findingId}' was modified after it was read. " +
+                "No remediation was recorded. Reload the finding, verify its current state, and retry.");
+        }
+
         var remediationId = Guid.NewGuid();
-        string concurrencyStamp = Guid.NewGuid().ToString("N");
+        string remediationConcurrencyStamp = Guid.NewGuid().ToString("N");
 
         await _dbContext.Database.ExecuteSqlInterpolatedAsync($$"""
             INSERT INTO [ApplicationAuditReconciliationRemediations]
                 ([Id], [FindingId], [MutationBatchId], [ActionCode], [ActorId], [EvidenceReference], [RecordedUtc], [ConcurrencyStamp])
             VALUES
-                ({{remediationId}}, {{findingId}}, {{finding.MutationBatchId}}, {{actionCode}}, {{actorId}}, {{evidenceReference}}, {{now}}, {{concurrencyStamp}})
-            """, cancellationToken).ConfigureAwait(false);
-
-        string remediationStatus = request.ResolveFinding
-            ? ApplicationAuditReconciliationRemediationStatuses.Resolved
-            : ApplicationAuditReconciliationRemediationStatuses.Acknowledged;
-        DateTime? resolvedUtc = request.ResolveFinding ? now : null;
-
-        await _dbContext.Database.ExecuteSqlInterpolatedAsync($$"""
-            UPDATE [ApplicationAuditReconciliationFindings]
-            SET [RemediationStatus] = {{remediationStatus}},
-                [ResolvedUtc] = {{resolvedUtc}},
-                [ConcurrencyStamp] = {{Guid.NewGuid().ToString("N")}}
-            WHERE [Id] = {{findingId}}
+                ({{remediationId}}, {{findingId}}, {{finding.MutationBatchId}}, {{actionCode}}, {{actorId}}, {{evidenceReference}}, {{now}}, {{remediationConcurrencyStamp}})
             """, cancellationToken).ConfigureAwait(false);
 
         return new(
