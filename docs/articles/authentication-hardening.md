@@ -90,7 +90,7 @@ The fallback authorization policy establishes an authenticated-user floor. Named
 
 - Keep provider credentials and signing material outside committed configuration.
 - Confirm values can be rotated without rebuilding the application.
-- Retain tokens only when the application has a documented need and protection strategy.
+- Retain tokens only when the application has a documented need and protection strategy. `ProjectTemplate:Authentication:Providers:OpenIdConnect:SaveTokens` defaults to `false`. Setting it to `true` stores the provider's access, identity, and refresh tokens inside the authentication cookie, so every request carries them, the cookie grows past common size limits as claims and tokens accumulate, and the tokens live on the client rather than on the server. Enable it only to call downstream APIs with those tokens, and prefer a server-side token store for anything that outlives a single request.
 - Align token, cookie, refresh, and session lifetimes.
 - Confirm logs exclude authorization codes, assertions, cookies, and provider credentials.
 - Keep certificate and issuer validation enabled in production.

@@ -46,9 +46,15 @@ public sealed class OpenIdConnectAuthenticationOptions
     public string ResponseType { get; set; } = "code";
 
     /// <summary>
-    /// Gets or sets a value indicating whether tokens should be saved after authentication.
+    /// Gets or sets a value indicating whether provider tokens are stored in the authentication cookie after sign-in.
     /// </summary>
-    public bool SaveTokens { get; set; } = true;
+    /// <remarks>
+    /// Defaults to <see langword="false"/>. Saved tokens travel with the authentication cookie on every request, which
+    /// grows the cookie and keeps access, identity, and refresh tokens on the client. Enable this only when the
+    /// application calls downstream APIs with the provider's tokens and has a documented protection and lifetime
+    /// strategy; prefer server-side token storage for anything longer-lived.
+    /// </remarks>
+    public bool SaveTokens { get; set; }
 
     /// <summary>
     /// Gets or sets the requested OpenID Connect scopes.
