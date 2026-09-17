@@ -28,6 +28,12 @@ public sealed class ApplicationAuditCompletionOutboxOptions
 
     public TimeSpan PollInterval { get; set; } = TimeSpan.FromSeconds(5);
 
+    /// <summary>
+    /// Gets or sets the maximum delay between dispatch cycles after consecutive failures. The delay doubles for each
+    /// additional consecutive failure, up to this value, and returns to <see cref="PollInterval"/> after a success.
+    /// </summary>
+    public TimeSpan MaximumCycleRetryDelay { get; set; } = TimeSpan.FromMinutes(5);
+
     public TimeSpan BaseRetryDelay { get; set; } = TimeSpan.FromSeconds(5);
 
     public TimeSpan MaxRetryDelay { get; set; } = TimeSpan.FromMinutes(5);

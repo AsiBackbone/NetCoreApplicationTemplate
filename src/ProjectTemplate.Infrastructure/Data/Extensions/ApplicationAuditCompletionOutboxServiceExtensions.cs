@@ -33,6 +33,8 @@ public static class ApplicationAuditCompletionOutboxServiceExtensions
                 "The audit-completion outbox batch size must be greater than zero.")
             .Validate(options => options.PollInterval > TimeSpan.Zero,
                 "The audit-completion polling interval must be greater than zero.")
+            .Validate(options => options.MaximumCycleRetryDelay >= options.PollInterval,
+                "The maximum audit-completion cycle retry delay must not be less than the polling interval.")
             .Validate(options => options.BaseRetryDelay > TimeSpan.Zero,
                 "The base audit-completion retry delay must be greater than zero.")
             .Validate(options => options.MaxRetryDelay >= options.BaseRetryDelay,

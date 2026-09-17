@@ -15,6 +15,7 @@ builder.Services.AddApplicationAuditReconciliation(options =>
     options.Enabled = true;
     options.RunWorker = true;
     options.Interval = TimeSpan.FromMinutes(5);
+    options.MaximumCycleRetryDelay = TimeSpan.FromMinutes(30);
     options.CompletionGracePeriod = TimeSpan.FromMinutes(2);
     options.StalePendingThreshold = TimeSpan.FromMinutes(15);
     options.StaleRetryReadyThreshold = TimeSpan.FromMinutes(15);
@@ -22,6 +23,8 @@ builder.Services.AddApplicationAuditReconciliation(options =>
     options.HealthUnhealthyFindingCount = 10;
 });
 ```
+
+When a reconciliation cycle throws, the worker waits longer before the next attempt: the delay doubles for each additional consecutive failure, up to `MaximumCycleRetryDelay`, and returns to `Interval` after a cycle succeeds. The failure log entry reports `ConsecutiveFailureCount` and `RetryDelaySeconds`. The audit-completion outbox worker applies the same rule to `PollInterval` and its own `MaximumCycleRetryDelay`, which defaults to five minutes. This keeps a failing database or destination from absorbing one attempt per interval indefinitely and from filling the log with an entry per cycle. `MaximumCycleRetryDelay` governs the worker loop only; the outbox's separate `BaseRetryDelay`, `MaxRetryDelay`, and `MaxRetryAttempts` settings still govern per-entry delivery retries.
 
 `AddApplicationAuditReconciliationCore` registers the on-demand service without starting a hosted worker. This is useful for console jobs, controlled maintenance windows, or applications that already own scheduling.
 

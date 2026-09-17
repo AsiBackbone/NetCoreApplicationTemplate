@@ -22,8 +22,12 @@ public sealed partial class ApplicationAuditReconciliationHostedService(
     [LoggerMessage(
         EventId = 19110,
         Level = LogLevel.Error,
-        Message = "The audit reconciliation cycle failed and will be retried.")]
-    private static partial void LogReconciliationFailure(ILogger logger, Exception exception);
+        Message = "The audit reconciliation cycle failed and will be retried. ConsecutiveFailureCount: {ConsecutiveFailureCount}; RetryDelaySeconds: {RetryDelaySeconds}.")]
+    private static partial void LogReconciliationFailure(
+        ILogger logger,
+        Exception exception,
+        int consecutiveFailureCount,
+        double retryDelaySeconds);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -32,8 +36,12 @@ public sealed partial class ApplicationAuditReconciliationHostedService(
             return;
         }
 
+        int consecutiveFailureCount = 0;
+
         while (!stoppingToken.IsCancellationRequested)
         {
+            Exception? cycleFailure = null;
+
             try
             {
                 using IServiceScope scope = _scopeFactory.CreateScope();
@@ -52,6 +60,8 @@ public sealed partial class ApplicationAuditReconciliationHostedService(
                         .GetRequiredService<ApplicationAuditReconciliationMetrics>()
                         .UpdateDelivery(deliveryHealth);
                 }
+
+                consecutiveFailureCount = 0;
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -59,11 +69,25 @@ public sealed partial class ApplicationAuditReconciliationHostedService(
             }
             catch (Exception exception)
             {
-                LogReconciliationFailure(_logger, exception);
+                cycleFailure = exception;
+                consecutiveFailureCount++;
             }
 
-            await Task.Delay(_options.Interval, _timeProvider, stoppingToken)
-                .ConfigureAwait(false);
+            TimeSpan delay = BackgroundServiceRetryDelay.Calculate(
+                _options.Interval,
+                _options.MaximumCycleRetryDelay,
+                consecutiveFailureCount);
+
+            if (cycleFailure is not null)
+            {
+                LogReconciliationFailure(
+                    _logger,
+                    cycleFailure,
+                    consecutiveFailureCount,
+                    delay.TotalSeconds);
+            }
+
+            await Task.Delay(delay, _timeProvider, stoppingToken).ConfigureAwait(false);
         }
     }
 }

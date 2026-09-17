@@ -25,10 +25,12 @@ public sealed partial class ApplicationAuditCompletionOutboxHostedService(
     [LoggerMessage(
         EventId = 19100,
         Level = LogLevel.Error,
-        Message = "The audit-completion outbox dispatch cycle failed and will be retried.")]
+        Message = "The audit-completion outbox dispatch cycle failed and will be retried. ConsecutiveFailureCount: {ConsecutiveFailureCount}; RetryDelaySeconds: {RetryDelaySeconds}.")]
     private static partial void LogDispatchCycleFailure(
         ILogger logger,
-        Exception exception);
+        Exception exception,
+        int consecutiveFailureCount,
+        double retryDelaySeconds);
 
     /// <inheritdoc />
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -38,14 +40,19 @@ public sealed partial class ApplicationAuditCompletionOutboxHostedService(
             return;
         }
 
+        int consecutiveFailureCount = 0;
+
         while (!stoppingToken.IsCancellationRequested)
         {
+            Exception? cycleFailure = null;
+
             try
             {
                 using IServiceScope scope = _scopeFactory.CreateScope();
                 IApplicationAuditCompletionOutboxDispatcher dispatcher = scope.ServiceProvider
                     .GetRequiredService<IApplicationAuditCompletionOutboxDispatcher>();
                 _ = await dispatcher.DispatchReadyAsync(stoppingToken).ConfigureAwait(false);
+                consecutiveFailureCount = 0;
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -53,11 +60,25 @@ public sealed partial class ApplicationAuditCompletionOutboxHostedService(
             }
             catch (Exception exception)
             {
-                LogDispatchCycleFailure(_logger, exception);
+                cycleFailure = exception;
+                consecutiveFailureCount++;
             }
 
-            await Task.Delay(_options.PollInterval, _timeProvider, stoppingToken)
-                .ConfigureAwait(false);
+            TimeSpan delay = BackgroundServiceRetryDelay.Calculate(
+                _options.PollInterval,
+                _options.MaximumCycleRetryDelay,
+                consecutiveFailureCount);
+
+            if (cycleFailure is not null)
+            {
+                LogDispatchCycleFailure(
+                    _logger,
+                    cycleFailure,
+                    consecutiveFailureCount,
+                    delay.TotalSeconds);
+            }
+
+            await Task.Delay(delay, _timeProvider, stoppingToken).ConfigureAwait(false);
         }
     }
 }
