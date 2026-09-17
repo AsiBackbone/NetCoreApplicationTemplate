@@ -3,6 +3,7 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using ProjectTemplate.Web.Constants;
+using ProjectTemplate.Web.Diagnostics;
 using ProjectTemplate.Web.Options;
 
 namespace ProjectTemplate.Web.Extensions;
@@ -24,6 +25,10 @@ public static partial class RateLimitingServiceExtensions
         IConfiguration configuration,
         IHostEnvironment environment)
     {
+        RateLimitingFallbackWarningThrottle fallbackWarningThrottle = new(
+            TimeProvider.System,
+            RateLimitingFallbackWarningThrottle.DefaultInterval);
+
         services.Configure<ApplicationRateLimitingOptions>(options =>
         {
             ApplicationRateLimitingOptions defaultOptions = CreateDefaultOptions(environment);
@@ -126,13 +131,13 @@ public static partial class RateLimitingServiceExtensions
                 {
                     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
                         RateLimitPartition.GetFixedWindowLimiter(
-                            partitionKey: GetClientPartitionKey(httpContext, rateLimitingOptions),
+                            partitionKey: GetClientPartitionKey(httpContext, rateLimitingOptions, fallbackWarningThrottle),
                             factory: _ => CreateFixedWindowRateLimiterOptions(rateLimitingOptions.GlobalFixedWindow)));
                 }
 
                 options.AddPolicy(ApplicationRateLimitingPolicyNames.Fixed, httpContext =>
                     RateLimitPartition.GetFixedWindowLimiter(
-                        partitionKey: GetClientPartitionKey(httpContext, rateLimitingOptions),
+                        partitionKey: GetClientPartitionKey(httpContext, rateLimitingOptions, fallbackWarningThrottle),
                         factory: _ => CreateFixedWindowRateLimiterOptions(rateLimitingOptions.FixedWindowPolicy)));
 
                 options.AddPolicy(ApplicationRateLimitingPolicyNames.Concurrency, httpContext =>
@@ -187,19 +192,21 @@ public static partial class RateLimitingServiceExtensions
 
     private static string GetClientPartitionKey(
         HttpContext httpContext,
-        ApplicationRateLimitingOptions options)
+        ApplicationRateLimitingOptions options,
+        RateLimitingFallbackWarningThrottle fallbackWarningThrottle)
     {
         ILogger logger = httpContext.RequestServices
             .GetRequiredService<ILoggerFactory>()
             .CreateLogger("Template.Web.RateLimiting");
 
-        return GetClientPartitionKey(httpContext, options, logger);
+        return GetClientPartitionKey(httpContext, options, logger, fallbackWarningThrottle);
     }
 
     internal static string GetClientPartitionKey(
         HttpContext httpContext,
         ApplicationRateLimitingOptions options,
-        ILogger logger)
+        ILogger logger,
+        RateLimitingFallbackWarningThrottle? fallbackWarningThrottle = null)
     {
         string? remoteIpAddress = httpContext.Connection.RemoteIpAddress?.ToString();
 
@@ -221,11 +228,18 @@ public static partial class RateLimitingServiceExtensions
             fallbackPartitionKey = $"{fallbackPartitionKey}:{fallbackDiscriminator}";
         }
 
-        LogRateLimitingClientPartitionFallback(
-            logger,
-            fallbackMode,
-            fallbackPartitionKey,
-            fallbackDiscriminator);
+        long suppressedWarningCount = 0;
+
+        if (fallbackWarningThrottle is null ||
+            fallbackWarningThrottle.TryAcquire(out suppressedWarningCount))
+        {
+            LogRateLimitingClientPartitionFallback(
+                logger,
+                fallbackMode,
+                fallbackPartitionKey,
+                fallbackDiscriminator,
+                suppressedWarningCount);
+        }
 
         return fallbackPartitionKey;
     }
@@ -258,10 +272,11 @@ public static partial class RateLimitingServiceExtensions
     [LoggerMessage(
         EventId = 6002,
         Level = LogLevel.Warning,
-        Message = "Rate limiting used fallback client partition because RemoteIpAddress was unavailable. FallbackMode: {FallbackMode}; PartitionKey: {PartitionKey}; TraceIdentifier: {TraceIdentifier}. Verify forwarded headers and trusted proxy configuration when running behind a proxy or load balancer.")]
+        Message = "Rate limiting used fallback client partition because RemoteIpAddress was unavailable. FallbackMode: {FallbackMode}; PartitionKey: {PartitionKey}; TraceIdentifier: {TraceIdentifier}; SuppressedWarningCount: {SuppressedWarningCount}. Verify forwarded headers and trusted proxy configuration when running behind a proxy or load balancer.")]
     private static partial void LogRateLimitingClientPartitionFallback(
         ILogger logger,
         string fallbackMode,
         string partitionKey,
-        string traceIdentifier);
+        string traceIdentifier,
+        long suppressedWarningCount);
 }

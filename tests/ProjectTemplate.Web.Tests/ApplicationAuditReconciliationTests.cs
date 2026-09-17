@@ -1,5 +1,8 @@
+using System.Data.Common;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging.Abstractions;
 using ProjectTemplate.Infrastructure.Data;
 using ProjectTemplate.Infrastructure.Data.Auditing;
@@ -162,6 +165,113 @@ public sealed class ApplicationAuditReconciliationTests
     }
 
     [Fact]
+    public async Task RecordRemediationAsync_InsertFails_RollsBackFindingUpdate()
+    {
+        var interceptor = new NonQueryInterceptor();
+        await using TestDatabase database = await TestDatabase.CreateAsync(interceptor: interceptor);
+        ApplicationAuditReconciliationFinding finding = await CreateOpenFindingAsync(database, "rollback-batch");
+
+        interceptor.OnNonQueryExecuting = (command, _) =>
+            command.CommandText.Contains("INSERT INTO [ApplicationAuditReconciliationRemediations]", StringComparison.Ordinal)
+                ? throw new InvalidOperationException("Simulated remediation insert failure.")
+                : Task.CompletedTask;
+
+        _ = await Assert.ThrowsAsync<InvalidOperationException>(() => database.Reconciler
+            .RecordRemediationAsync(
+                finding.Id,
+                new("OperatorReviewed", "operator-1", "ticket-456", ResolveFinding: true),
+                TestContext.Current.CancellationToken));
+
+        interceptor.OnNonQueryExecuting = null;
+
+        await AssertFindingUnchangedAsync(database, finding);
+    }
+
+    [Fact]
+    public async Task RecordRemediationAsync_FindingChangedAfterRead_ThrowsConcurrencyExceptionAndWritesNothing()
+    {
+        var interceptor = new NonQueryInterceptor();
+        await using TestDatabase database = await TestDatabase.CreateAsync(interceptor: interceptor);
+        ApplicationAuditReconciliationFinding finding = await CreateOpenFindingAsync(database, "concurrency-batch");
+
+        bool simulatedConcurrentWrite = false;
+        interceptor.OnNonQueryExecuting = async (command, cancellationToken) =>
+        {
+            if (simulatedConcurrentWrite ||
+                !command.CommandText.Contains("UPDATE [ApplicationAuditReconciliationFindings]", StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            simulatedConcurrentWrite = true;
+
+            // Simulate another writer changing the finding between the remediation read and its guarded update.
+            await using DbCommand concurrentWrite = command.Connection!.CreateCommand();
+            concurrentWrite.Transaction = command.Transaction;
+            concurrentWrite.CommandText =
+                "UPDATE [ApplicationAuditReconciliationFindings] SET [ConcurrencyStamp] = 'concurrent-writer'";
+            _ = await concurrentWrite.ExecuteNonQueryAsync(cancellationToken);
+        };
+
+        DbUpdateConcurrencyException exception = await Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => database.Reconciler
+            .RecordRemediationAsync(
+                finding.Id,
+                new("OperatorReviewed", "operator-1", "ticket-789", ResolveFinding: true),
+                TestContext.Current.CancellationToken));
+
+        interceptor.OnNonQueryExecuting = null;
+
+        Assert.True(simulatedConcurrentWrite);
+        Assert.Contains(finding.Id.ToString(), exception.Message, StringComparison.Ordinal);
+        Assert.Empty(await database.Context.ApplicationAuditReconciliationRemediations
+            .AsNoTracking()
+            .ToListAsync(TestContext.Current.CancellationToken));
+        ApplicationAuditReconciliationFinding current = await database.Context
+            .ApplicationAuditReconciliationFindings
+            .AsNoTracking()
+            .SingleAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(ApplicationAuditReconciliationRemediationStatuses.Open, current.RemediationStatus);
+        Assert.Null(current.ResolvedUtc);
+    }
+
+    [Fact]
+    public async Task RecordRemediationAsync_CallerOwnedTransaction_JoinsTransactionWithoutCommitting()
+    {
+        await using TestDatabase database = await TestDatabase.CreateAsync();
+        ApplicationAuditReconciliationFinding finding = await CreateOpenFindingAsync(database, "caller-transaction-batch");
+
+        await using (IDbContextTransaction transaction = await database.Context.Database
+            .BeginTransactionAsync(TestContext.Current.CancellationToken))
+        {
+            _ = await database.Reconciler.RecordRemediationAsync(
+                finding.Id,
+                new("OperatorReviewed", "operator-1", "ticket-321", ResolveFinding: true),
+                TestContext.Current.CancellationToken);
+
+            Assert.Same(transaction, database.Context.Database.CurrentTransaction);
+
+            await transaction.RollbackAsync(TestContext.Current.CancellationToken);
+        }
+
+        await AssertFindingUnchangedAsync(database, finding);
+    }
+
+    [Fact]
+    public async Task RecordRemediationAsync_InvalidRequest_ThrowsBeforeWriting()
+    {
+        await using TestDatabase database = await TestDatabase.CreateAsync();
+        ApplicationAuditReconciliationFinding finding = await CreateOpenFindingAsync(database, "invalid-request-batch");
+
+        _ = await Assert.ThrowsAsync<ArgumentException>(() => database.Reconciler
+            .RecordRemediationAsync(
+                finding.Id,
+                new(" ", "operator-1"),
+                TestContext.Current.CancellationToken));
+
+        await AssertFindingUnchangedAsync(database, finding);
+    }
+
+    [Fact]
     public async Task DisabledMode_DoesNotCreateFindings()
     {
         await using TestDatabase database = await TestDatabase.CreateAsync(enabled: false);
@@ -174,6 +284,39 @@ public sealed class ApplicationAuditReconciliationTests
         Assert.False(summary.Enabled);
         Assert.Empty(await database.Context.ApplicationAuditReconciliationFindings
             .ToListAsync(TestContext.Current.CancellationToken));
+    }
+
+    private static async Task<ApplicationAuditReconciliationFinding> CreateOpenFindingAsync(
+        TestDatabase database,
+        string batchId)
+    {
+        database.Context.AuditRecords.Add(CreateAuditRecord(batchId));
+        _ = await database.Context.SaveChangesAsync(TestContext.Current.CancellationToken);
+        _ = await database.Reconciler.ReconcileAsync(TestContext.Current.CancellationToken);
+
+        ApplicationAuditReconciliationFinding finding = await database.Context
+            .ApplicationAuditReconciliationFindings
+            .AsNoTracking()
+            .SingleAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(ApplicationAuditReconciliationRemediationStatuses.Open, finding.RemediationStatus);
+        return finding;
+    }
+
+    private static async Task AssertFindingUnchangedAsync(
+        TestDatabase database,
+        ApplicationAuditReconciliationFinding original)
+    {
+        Assert.Empty(await database.Context.ApplicationAuditReconciliationRemediations
+            .AsNoTracking()
+            .ToListAsync(TestContext.Current.CancellationToken));
+
+        ApplicationAuditReconciliationFinding current = await database.Context
+            .ApplicationAuditReconciliationFindings
+            .AsNoTracking()
+            .SingleAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(original.RemediationStatus, current.RemediationStatus);
+        Assert.Equal(original.ResolvedUtc, current.ResolvedUtc);
+        Assert.Equal(original.ConcurrencyStamp, current.ConcurrencyStamp);
     }
 
     private static AuditRecord CreateAuditRecord(string batchId)
@@ -241,14 +384,21 @@ public sealed class ApplicationAuditReconciliationTests
 
         public ApplicationAuditReconciliationMetrics Metrics { get; }
 
-        public static async Task<TestDatabase> CreateAsync(bool enabled = true)
+        public static async Task<TestDatabase> CreateAsync(
+            bool enabled = true,
+            IInterceptor? interceptor = null)
         {
             var connection = new SqliteConnection("Data Source=:memory:");
             await connection.OpenAsync(TestContext.Current.CancellationToken);
-            DbContextOptions<ApplicationDbContext> dbOptions =
+            DbContextOptionsBuilder<ApplicationDbContext> dbOptionsBuilder =
                 new DbContextOptionsBuilder<ApplicationDbContext>()
-                    .UseSqlite(connection)
-                    .Options;
+                    .UseSqlite(connection);
+            if (interceptor is not null)
+            {
+                _ = dbOptionsBuilder.AddInterceptors(interceptor);
+            }
+
+            DbContextOptions<ApplicationDbContext> dbOptions = dbOptionsBuilder.Options;
             var pipeline = new ApplicationSaveChangesPipeline(
                 new TestCurrentActorAccessor(),
                 Microsoft.Extensions.Options.Options.Create(new DataAccessOptions
@@ -284,6 +434,26 @@ public sealed class ApplicationAuditReconciliationTests
             Metrics.Dispose();
             await Context.DisposeAsync();
             await Connection.DisposeAsync();
+        }
+    }
+
+    private sealed class NonQueryInterceptor : DbCommandInterceptor
+    {
+        public Func<DbCommand, CancellationToken, Task>? OnNonQueryExecuting { get; set; }
+
+        public override async ValueTask<InterceptionResult<int>> NonQueryExecutingAsync(
+            DbCommand command,
+            CommandEventData eventData,
+            InterceptionResult<int> result,
+            CancellationToken cancellationToken = default)
+        {
+            Func<DbCommand, CancellationToken, Task>? callback = OnNonQueryExecuting;
+            if (callback is not null)
+            {
+                await callback(command, cancellationToken);
+            }
+
+            return result;
         }
     }
 

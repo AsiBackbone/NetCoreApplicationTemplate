@@ -7,6 +7,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using ProjectTemplate.Web.Diagnostics;
 using ProjectTemplate.Web.Extensions;
 using ProjectTemplate.Web.Options;
 using ProjectTemplate.Web.Tests.Extensions;
@@ -170,7 +171,7 @@ public sealed class RateLimitingTests
         {
             ["ProjectTemplate:RateLimiting:Enabled"] = "true",
             ["ProjectTemplate:RateLimiting:UseGlobalLimiter"] = "true",
-            ["ProjectTemplate:RateLimiting:UseSharedUnknownClientPartition"] = "true",
+            ["ProjectTemplate:RateLimiting:UseSharedUnknownClientPartition"] = "false",
             ["ProjectTemplate:RateLimiting:UnknownClientPartitionKey"] = "configured-unknown-client",
             ["ProjectTemplate:RateLimiting:GlobalFixedWindow:PermitLimit"] = "7",
             ["ProjectTemplate:RateLimiting:GlobalFixedWindow:WindowSeconds"] = "30",
@@ -188,7 +189,7 @@ public sealed class RateLimitingTests
 
         Assert.True(options.Enabled);
         Assert.True(options.UseGlobalLimiter);
-        Assert.True(options.UseSharedUnknownClientPartition);
+        Assert.False(options.UseSharedUnknownClientPartition);
         Assert.Equal("configured-unknown-client", options.UnknownClientPartitionKey);
 
         Assert.Equal(7, options.GlobalFixedWindow.PermitLimit);
@@ -223,10 +224,22 @@ public sealed class RateLimitingTests
     }
 
     /// <summary>
-    /// Verifies that unresolved client IP addresses use a per-request fallback partition by default.
+    /// Verifies that the rate limiting options default to a shared fallback partition for unresolved clients.
     /// </summary>
     [Fact]
-    public void GetClientPartitionKey_UsesPerRequestFallback_WhenRemoteIpAddressIsUnavailableByDefault()
+    public void RateLimitingOptions_CodeDefault_UsesSharedUnknownClientPartition()
+    {
+        ApplicationRateLimitingOptions options = new();
+
+        Assert.True(options.UseSharedUnknownClientPartition);
+        Assert.Equal("unknown-client", options.UnknownClientPartitionKey);
+    }
+
+    /// <summary>
+    /// Verifies that unresolved client IP addresses share one fallback partition by default so they remain rate limited.
+    /// </summary>
+    [Fact]
+    public void GetClientPartitionKey_UsesSharedFallback_WhenRemoteIpAddressIsUnavailableByDefault()
     {
         DefaultHttpContext httpContext = new()
         {
@@ -241,18 +254,18 @@ public sealed class RateLimitingTests
 
         LogEntry entry = Assert.Single(logger.Entries);
 
-        Assert.Equal("unknown-client:trace-331", partitionKey);
+        Assert.Equal("unknown-client", partitionKey);
         Assert.Equal(LogLevel.Warning, entry.Level);
         Assert.Equal(6002, entry.EventId.Id);
         Assert.Contains("RemoteIpAddress was unavailable", entry.Message, StringComparison.Ordinal);
-        Assert.Contains("PerRequest", entry.Message, StringComparison.Ordinal);
+        Assert.Contains("FallbackMode: Shared", entry.Message, StringComparison.Ordinal);
     }
 
     /// <summary>
-    /// Verifies that unresolved client IP addresses only share a fallback partition when explicitly configured.
+    /// Verifies that unresolved client IP addresses share the configured fallback partition key.
     /// </summary>
     [Fact]
-    public void GetClientPartitionKey_UsesSharedFallback_WhenExplicitlyConfigured()
+    public void GetClientPartitionKey_UsesConfiguredSharedFallbackKey()
     {
         DefaultHttpContext httpContext = new()
         {
@@ -261,7 +274,6 @@ public sealed class RateLimitingTests
         TestLogger logger = new();
         ApplicationRateLimitingOptions options = new()
         {
-            UseSharedUnknownClientPartition = true,
             UnknownClientPartitionKey = "configured-unknown-client"
         };
 
@@ -275,7 +287,81 @@ public sealed class RateLimitingTests
         Assert.Equal("configured-unknown-client", partitionKey);
         Assert.Equal(LogLevel.Warning, entry.Level);
         Assert.Equal(6002, entry.EventId.Id);
-        Assert.Contains("Shared", entry.Message, StringComparison.Ordinal);
+        Assert.Contains("FallbackMode: Shared", entry.Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Verifies that unresolved client IP addresses only receive per-request fallback partitions when explicitly configured.
+    /// </summary>
+    [Fact]
+    public void GetClientPartitionKey_UsesPerRequestFallback_WhenExplicitlyConfigured()
+    {
+        DefaultHttpContext httpContext = new()
+        {
+            TraceIdentifier = "trace-331-per-request"
+        };
+        TestLogger logger = new();
+        ApplicationRateLimitingOptions options = new()
+        {
+            UseSharedUnknownClientPartition = false
+        };
+
+        string partitionKey = RateLimitingServiceExtensions.GetClientPartitionKey(
+            httpContext,
+            options,
+            logger);
+
+        LogEntry entry = Assert.Single(logger.Entries);
+
+        Assert.Equal("unknown-client:trace-331-per-request", partitionKey);
+        Assert.Equal(LogLevel.Warning, entry.Level);
+        Assert.Equal(6002, entry.EventId.Id);
+        Assert.Contains("FallbackMode: PerRequest", entry.Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Verifies that the fallback warning is written at most once per throttle interval and reports suppressed occurrences.
+    /// </summary>
+    [Fact]
+    public void GetClientPartitionKey_ThrottlesFallbackWarning_AndReportsSuppressedCount()
+    {
+        ManualTimestampProvider timeProvider = new();
+        RateLimitingFallbackWarningThrottle throttle = new(timeProvider, TimeSpan.FromMinutes(1));
+        ApplicationRateLimitingOptions options = new();
+        TestLogger logger = new();
+
+        for (int requestNumber = 0; requestNumber < 3; requestNumber++)
+        {
+            _ = RateLimitingServiceExtensions.GetClientPartitionKey(
+                new DefaultHttpContext { TraceIdentifier = $"trace-throttle-{requestNumber}" },
+                options,
+                logger,
+                throttle);
+        }
+
+        LogEntry firstEntry = Assert.Single(logger.Entries);
+        Assert.Contains("SuppressedWarningCount: 0", firstEntry.Message, StringComparison.Ordinal);
+
+        timeProvider.Advance(TimeSpan.FromMinutes(1));
+
+        _ = RateLimitingServiceExtensions.GetClientPartitionKey(
+            new DefaultHttpContext { TraceIdentifier = "trace-throttle-after-interval" },
+            options,
+            logger,
+            throttle);
+
+        Assert.Equal(2, logger.Entries.Count);
+        Assert.Contains("SuppressedWarningCount: 2", logger.Entries[1].Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Verifies that the fallback warning throttle rejects a non-positive interval.
+    /// </summary>
+    [Fact]
+    public void RateLimitingFallbackWarningThrottle_NonPositiveInterval_Throws()
+    {
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new RateLimitingFallbackWarningThrottle(TimeProvider.System, TimeSpan.Zero));
     }
 
     /// <summary>
@@ -419,6 +505,23 @@ public sealed class RateLimitingTests
     }
 
     private sealed record LogEntry(LogLevel Level, EventId EventId, string Message);
+
+    private sealed class ManualTimestampProvider : TimeProvider
+    {
+        private long _timestamp = 1_000_000;
+
+        public override long TimestampFrequency => TimeSpan.TicksPerSecond;
+
+        public override long GetTimestamp()
+        {
+            return _timestamp;
+        }
+
+        public void Advance(TimeSpan duration)
+        {
+            _timestamp += duration.Ticks;
+        }
+    }
 
     private sealed class NullScope : IDisposable
     {

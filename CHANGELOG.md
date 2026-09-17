@@ -35,6 +35,24 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
   Setting a value in `appsettings.json` or an environment-specific settings file overrides the code default. JavaScript that sets styles through the CSSOM (for example `element.style.display`) is not affected by `style-src`.
 
+* **Behavior change for adopters:** in deployments where `RemoteIpAddress` is unavailable (for example, some Unix domain socket or in-process hosting arrangements), all unresolved clients now share the global and fixed-window permits. Heavy traffic can produce `429` responses across those clients. Resolve client identity through trusted forwarded headers, or, only when an upstream gateway already enforces limits, restore the previous behavior:
+
+  ```json
+  "ProjectTemplate": {
+    "RateLimiting": {
+      "UseSharedUnknownClientPartition": false
+    }
+  }
+  ```
+
+* Callers of `RecordRemediationAsync` should handle `DbUpdateConcurrencyException` by reloading the finding and deciding whether to retry.
+
+### Fixed
+
+* `ApplicationAuditReconciler.RecordRemediationAsync` now records a remediation atomically. The finding status update and the remediation insert run in one transaction inside the EF Core execution strategy, so a failure in either statement leaves neither written. When the caller already owns an EF Core transaction, the method joins it and leaves commit or rollback to the caller.
+* `RecordRemediationAsync` now guards the finding update with the `ConcurrencyStamp` that was read. If a reconciliation run or another remediation changes the finding first, the method throws `DbUpdateConcurrencyException`, writes nothing, and the caller can reload and retry. Previously the later write silently overwrote the earlier one.
+* Remediation request fields (`ActionCode`, `ActorId`) are now validated before any database work begins.
+
 ### Security
 
 * Tightened the default `Content-Security-Policy` by removing `'unsafe-inline'` from `style-src`. The default policy is now:
@@ -45,15 +63,21 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
   The change applies to the `ApplicationSecurityHeadersOptions` code default, the repository `appsettings.json`, and the generated template `appsettings.json`. The template's own views and pages contain no inline `style` attributes or `<style>` blocks.
 
+* Rate limiting now fails closed for clients without a resolved `RemoteIpAddress`. `UseSharedUnknownClientPartition` defaults to `true` in the options code default, the repository `appsettings.json`, and the generated template `appsettings.json`, so unresolved clients share one rate-limited fallback partition. Previously each unresolved request received its own partition, which effectively left those clients unlimited.
+* The unknown-client fallback warning (event ID `6002`) is now written at most once per minute and includes `SuppressedWarningCount`. Previously a deployment that never resolved client IP addresses wrote one warning per request.
+
 ### Documentation
 
 * Updated the security header contract table, configuration example, and expected response header sample in `docs/articles/security-headers.md` to reflect the tightened default policy.
+* Rewrote the unknown-client fallback section of `docs/articles/rate-limiting.md` to describe the shared default, the risk of each mode, and warning throttling.
 
 ### Tests
 
 * Updated `DefaultSecurityHeaders_AreApplied` to expect the tightened policy.
 * Added `SecurityHeadersOptions_CodeDefault_UsesStrictContentSecurityPolicy` and `SecurityHeadersOptions_MissingConfigurationSection_ResolvesCodeDefaultContentSecurityPolicy` so the code default is verified independently of `appsettings.json`.
 * Removed the unused `FindOptionsValidationException` helper from `SecurityHeadersTests`.
+* Added remediation tests for insert-failure rollback, concurrent modification, caller-owned transaction joining, and request validation before writes.
+* Added rate-limiting tests for the shared fallback default, explicit per-request mode, the options code default, warning throttling with suppressed counts, and throttle argument validation. The configuration binding test now binds `false` to prove configuration overrides the default.
 
 ## 2.9.0 - 2026-09-11
 

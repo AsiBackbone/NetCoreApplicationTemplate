@@ -36,7 +36,7 @@ The application supports:
 - JSON rejection responses.
 - `429 Too Many Requests` responses when limits are exceeded.
 - Logging for rejected requests.
-- Warning logging when client IP partitioning must use the unknown-client fallback path.
+- Throttled warning logging when client IP partitioning must use the unknown-client fallback path.
 
 Rejected requests return a response similar to:
 
@@ -56,7 +56,7 @@ Rate limiting values can be configured from `appsettings.json`:
   "RateLimiting": {
     "Enabled": true,
     "UseGlobalLimiter": true,
-    "UseSharedUnknownClientPartition": false,
+    "UseSharedUnknownClientPartition": true,
     "UnknownClientPartitionKey": "unknown-client",
     "GlobalFixedWindow": {
       "PermitLimit": 60,
@@ -86,18 +86,27 @@ The rate limiter does **not** parse or trust raw `X-Forwarded-For` values direct
 
 Outside Development, the generated application fails startup by default when forwarded client-IP processing and rate limiting are enabled without either trust setting. This prevents all users behind an ingress from silently sharing the ingress address's rate-limit bucket.
 
-When `RemoteIpAddress` is unavailable, the default behavior is to use a per-request fallback partition based on `UnknownClientPartitionKey` and the request trace identifier. This avoids silently collapsing unrelated unresolved clients into one shared bucket.
+When `RemoteIpAddress` is unavailable, the default behavior is to place every unresolved client in one shared fallback partition named by `UnknownClientPartitionKey`. Unresolved clients therefore remain rate limited, and the fixed-window limiters fail closed rather than open.
 
-Set `UseSharedUnknownClientPartition` to `true` only when you intentionally want every unresolved client to share the configured `UnknownClientPartitionKey` bucket:
+The shared partition is a safety floor, not a substitute for client identity. Because all unresolved clients draw from the same permits, heavy traffic from one unresolved client can cause `429` responses for other unresolved clients. When that happens, resolve client identity rather than loosening the fallback.
+
+Setting `UseSharedUnknownClientPartition` to `false` gives each unresolved request its own partition based on `UnknownClientPartitionKey` and the request trace identifier:
 
 ```json
 "RateLimiting": {
-  "UseSharedUnknownClientPartition": true,
+  "UseSharedUnknownClientPartition": false,
   "UnknownClientPartitionKey": "unknown-client"
 }
 ```
 
-A warning is emitted whenever this fallback path is used. In production, treat that warning as a signal to review forwarded-header configuration, proxy trust settings, and middleware ordering.
+Because every request receives a new partition, this mode **effectively disables client rate limiting for unresolved clients**. Use it only when an upstream gateway, ingress, or platform already enforces rate limits for that traffic.
+
+| `UseSharedUnknownClientPartition` | Unresolved-client behavior | Risk |
+|:---|:---|:---|
+| `true` (default) | All unresolved clients share one bucket | Unrelated unresolved clients can throttle each other |
+| `false` | Each unresolved request gets its own bucket | Unresolved clients are not rate limited by the application |
+
+A warning (event ID `6002`) is emitted when this fallback path is used. The warning is written at most once per minute per rate-limiting registration and includes `SuppressedWarningCount`, the number of fallback occurrences since the previous warning, so a deployment that never resolves client IP addresses does not write one warning per request. In production, treat that warning as a signal to review forwarded-header configuration, proxy trust settings, and middleware ordering.
 
 ## Endpoint-Specific Policies
 
