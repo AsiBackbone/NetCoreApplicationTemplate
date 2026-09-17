@@ -39,8 +39,65 @@ This contract applies when `ProjectTemplate:SecurityHeaders:Enabled` is `true` a
 | `Permissions-Policy` | `camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)` | Configurable | Controlled by `EnablePermissionsPolicy` and `PermissionsPolicy` |
 | `Content-Security-Policy` | `default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; script-src 'self'; style-src 'self';` | Configurable | Controlled by `EnableContentSecurityPolicy` and `ContentSecurityPolicy` |
 | `X-XSS-Protection` | Not emitted | Intentionally omitted | Not supported |
+| `Strict-Transport-Security` | Not emitted  | Intentionally omitted  | See [HSTS and Transport Security](#hsts-and-transport-security)         |
 
 The middleware intentionally does not add `X-XSS-Protection` because that header is obsolete and can create inconsistent behavior in modern browsers.
+
+## HSTS and Transport Security
+
+`Strict-Transport-Security` is intentionally not emitted by this middleware.
+
+HSTS is a transport-layer commitment, not a response-shaping concern. It instructs
+a browser to refuse plain HTTP to an origin for the lifetime of `max-age`, and a
+misconfigured value cannot be withdrawn by redeploying the application — the
+browser honors the cached directive until it expires. That decision belongs to
+whoever owns the certificate, the origin, and the rollback path, which in most
+deployments is the reverse proxy, ingress controller, CDN, or host platform
+rather than the application process.
+
+NCAT therefore emits headers that are safe to apply per-response and defers HSTS
+to an explicit deployment decision.
+
+### Where HSTS belongs
+
+ASP.NET Core provides `UseHsts()` and `AddHsts(...)` for application-emitted HSTS.
+The generated pipeline does not call `UseHsts()`. A consuming application may add
+it, or may leave HSTS to the edge. Emitting it from both layers is not an error,
+but only one layer should own the values.
+
+| Layer                                | When it is the right owner                                                                                      |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| Reverse proxy, ingress, CDN, gateway | TLS terminates at the edge; the edge serves every host on the origin; rollback is an edge configuration change.  |
+| Application (`UseHsts()`)            | The application terminates TLS itself, or the edge cannot be configured and the application owns the public origin. |
+
+If TLS terminates at the edge, the application does not observe the public scheme
+without correct forwarded-header trust. See
+[Forwarded Headers](forwarded-headers.md) before enabling application-emitted HSTS.
+
+### The decision to make
+
+Whichever layer owns HSTS, the following are explicit choices, not defaults:
+
+- **`max-age`** — start short (for example `300`) and confirm the origin serves
+  HTTPS correctly on every path before raising it. Production values are commonly
+  `31536000` (one year). A long `max-age` shipped before the origin is ready is
+  not reversible from the server side.
+- **`includeSubDomains`** — this covers every present and future subdomain of the
+  origin, including internal, legacy, or non-HTTPS hosts. Inventory subdomains
+  before enabling it.
+- **`preload`** — submission to the browser preload list is effectively permanent
+  on a multi-month timescale and removal is slow. Treat it as a separate,
+  later decision made only after `max-age` and `includeSubDomains` have been
+  stable in production.
+- **Redirect behavior** — HSTS does not replace an HTTP-to-HTTPS redirect for the
+  first request from a browser that has never seen the origin. Confirm the
+  redirect exists at the layer that receives plain HTTP.
+- **Local development** — ASP.NET Core's `UseHsts()` excludes `localhost` by
+  default. Do not add development hosts to an HSTS policy; a cached directive on
+  a developer machine outlives the branch that caused it.
+
+NCAT does not validate, emit, or test HSTS behavior. An application that adopts
+HSTS owns its values, its rollout, and its rollback.
 
 ## Intentional Opt-Outs
 

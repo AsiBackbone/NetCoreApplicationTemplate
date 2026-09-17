@@ -29,6 +29,8 @@ Related docs:
 [ ] `AllowedHosts` is configured for expected production hosts.
 [ ] HTTPS is enforced at the correct layer.
 [ ] TLS termination location is documented.
+[ ] HSTS ownership is assigned to exactly one layer (edge or application).
+[ ] HSTS `max-age`, `includeSubDomains`, and `preload` values are deliberately chosen, and the rollback path is understood.
 [ ] Deployment slot, region, and environment names are documented.
 [ ] Platform-specific startup command or container entry point is verified.
 [ ] Startup configuration validation has been tested with the production configuration source.
@@ -118,6 +120,7 @@ Related docs:
 [ ] Referrer Policy is reviewed.
 [ ] Cross-origin header behavior is tested with authentication and static assets.
 [ ] No broad wildcard sources are used unless intentionally accepted.
+[ ] `Strict-Transport-Security` is confirmed present from the owning layer, or deliberately absent.
 ```
 
 Related docs:
