@@ -19,12 +19,12 @@ jobs:
     name: Publish template package evidence and package
     permissions:
       attestations: write
+      checks: read
       contents: write
       id-token: write
       packages: write
     uses: ./.github/workflows/publish-template-package.yml
     with:
-      publish_source: 'https://api.nuget.org/v3/index.json'
       skip_publish: false
 
   publish-container:
@@ -39,9 +39,35 @@ jobs:
       security-events: write
     uses: ./.github/workflows/publish-container.yml
 
+  update-readme:
+    name: Request README release update
+    needs: publish-container
+    if: ${{ !contains(github.ref_name, '-') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - name: Dispatch README update workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: >
+          gh workflow run publish-release.yml
+          --repo "$REPOSITORY"
+          --ref main
+          -f release-tag="$RELEASE_TAG"
+
   release-complete:
     name: Stable release publication complete
-    needs: publish-container
+    needs:
+      - publish-container
+      - update-readme
+    if: >-
+      ${{ !cancelled() &&
+          needs.publish-container.result == 'success' &&
+          needs.update-readme.result != 'failure' }}
     runs-on: ubuntu-latest
     permissions: {}
     steps:

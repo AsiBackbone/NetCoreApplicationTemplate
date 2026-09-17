@@ -1,8 +1,11 @@
 name: Update README release section
 
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+    inputs:
+      release-tag:
+        description: "Stable release tag to update the README with (for example, v2.9.0)"
+        required: true
 
 # Deny all token permissions unless granted by a job.
 permissions: {}
@@ -16,6 +19,7 @@ concurrency:
 jobs:
   update-readme:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     permissions:
       contents: read
@@ -45,24 +49,57 @@ jobs:
           clean: true
           persist-credentials: false
 
-      - name: Update README release section
+      # Resolve release metadata from the release itself so manual dispatch and
+      # release events produce identical README content.
+      - name: Resolve release metadata
+        id: release
         shell: bash
         env:
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
-          RELEASE_NAME: ${{ github.event.release.name }}
-          RELEASE_URL: ${{ github.event.release.html_url }}
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_TAG: ${{ github.event.release.tag_name }}
+          INPUT_TAG: ${{ inputs.release-tag }}
+        run: |
+          set -euo pipefail
+
+          tag="$EVENT_TAG"
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            tag="$INPUT_TAG"
+          fi
+
+          # Stable tags only; prereleases must not become the README's current release.
+          if ! [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Skipping README update: '$tag' is not a stable release tag."
+            printf 'skip=true\n' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          gh release view "$tag" --repo "$REPOSITORY" --json tagName,name,url \
+            > "$RUNNER_TEMP/release.json"
+
+          printf 'skip=false\n' >> "$GITHUB_OUTPUT"
+          printf 'tag=%s\n' "$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Update README release section
+        if: steps.release.outputs.skip == 'false'
+        shell: bash
+        env:
+          RELEASE_JSON: ${{ runner.temp }}/release.json
         run: |
           python <<'PY'
           from pathlib import Path
+          import json
           import os
           import re
 
+          release = json.loads(Path(os.environ["RELEASE_JSON"]).read_text(encoding="utf-8"))
+          tag = release["tagName"]
+          name = release.get("name") or tag
+          url = release["url"]
+
           readme = Path("README.md")
           text = readme.read_text(encoding="utf-8")
-
-          tag = os.environ["RELEASE_TAG"]
-          name = os.environ["RELEASE_NAME"] or tag
-          url = os.environ["RELEASE_URL"]
 
           replacement = f"""<!-- BEGIN LATEST_RELEASE -->
           Current release: __[{name}]({url})__
@@ -72,12 +109,7 @@ jobs:
 
           pattern = r"<!-- BEGIN LATEST_RELEASE -->.*?<!-- END LATEST_RELEASE -->"
 
-          updated, count = re.subn(
-              pattern,
-              replacement,
-              text,
-              flags=re.DOTALL,
-          )
+          updated, count = re.subn(pattern, replacement, text, flags=re.DOTALL)
 
           if count == 0:
               raise SystemExit("README release markers were not found.")
@@ -87,13 +119,14 @@ jobs:
           PY
 
       - name: Create pull request
+        if: steps.release.outputs.skip == 'false'
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
         with:
           token: ${{ steps.release-pr-app-token.outputs.token }}
           commit-message: "Update README latest release section"
           title: "Update README latest release section"
           body: |
-            Updates the README latest release section after publishing `${{ github.event.release.tag_name }}`.
+            Updates the README latest release section after publishing `${{ steps.release.outputs.tag }}`.
           branch: docs/update-latest-release
           base: main
           delete-branch: true
