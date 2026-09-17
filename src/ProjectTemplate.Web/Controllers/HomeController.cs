@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using ProjectTemplate.Web.Constants;
+using ProjectTemplate.Web.Diagnostics;
 using ProjectTemplate.Web.Models;
 
 namespace ProjectTemplate.Web.Controllers;
@@ -52,7 +53,7 @@ public partial class HomeController(ILogger<HomeController> logger) : Controller
             statusCodeFeature?.OriginalPath ??
             HttpContext.Request.Path.ToString();
 
-        string? remoteIpAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+        string? remoteIpAddress = RequestLoggingPrivacy.GetLoggableRemoteIpAddress(HttpContext);
 
         string requestId = HttpContext.TraceIdentifier;
 
