@@ -78,7 +78,8 @@ Development configuration should favor local productivity while avoiding real pr
 Common development overrides include:
 
 - Local SQLite database connection strings.
-- LocalDB SQL Server examples.
+- LocalDB SQL Server examples. The generated `appsettings.Development.json` holds the LocalDB connection string, which uses `TrustServerCertificate=True`; the base `appsettings.json` keeps an encrypted placeholder instead.
+- `AllowedHosts` set to `*`. The base `appsettings.json` no longer ships that value, so a deployment must state its own host names.
 - Debug-level logging.
 - Shorter log retention.
 - Disabled or relaxed CSP while debugging local assets.
@@ -229,7 +230,7 @@ Before production release, review:
 
 ```text
 [ ] ASPNETCORE_ENVIRONMENT is set correctly.
-[ ] AllowedHosts matches the public host names.
+[ ] AllowedHosts matches the public host names. Outside Development, startup warns (event `1005`) when it is absent or set to `*`.
 [ ] Forwarded header settings match the proxy or load balancer topology.
 [ ] Data Protection application name and durable key-ring storage match the deployment topology.
 [ ] Production connection strings come from environment or secret storage.
