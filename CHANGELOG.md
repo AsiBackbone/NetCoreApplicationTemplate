@@ -63,6 +63,7 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+* Backfilled release `2.9.0` from its retained original container evidence and exact public NuGet package, with regenerated evidence explicitly labeled.
 * `ApplicationAuditReconciler.RecordRemediationAsync` now records a remediation atomically. The finding status update and the remediation insert run in one transaction inside the EF Core execution strategy, so a failure in either statement leaves neither written. When the caller already owns an EF Core transaction, the method joins it and leaves commit or rollback to the caller.
 * `RecordRemediationAsync` now guards the finding update with the `ConcurrencyStamp` that was read. If a reconciliation run or another remediation changes the finding first, the method throws `DbUpdateConcurrencyException`, writes nothing, and the caller can reload and retry. Previously the later write silently overwrote the earlier one.
 * Remediation request fields (`ActionCode`, `ActorId`) are now validated before any database work begins.
