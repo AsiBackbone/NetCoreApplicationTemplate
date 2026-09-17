@@ -37,7 +37,7 @@ This contract applies when `ProjectTemplate:SecurityHeaders:Enabled` is `true` a
 | `Cross-Origin-Opener-Policy` | `same-origin` | Configurable group | Controlled by `EnableCrossOriginHeaders` |
 | `Cross-Origin-Resource-Policy` | `same-origin` | Configurable group | Controlled by `EnableCrossOriginHeaders` |
 | `Permissions-Policy` | `camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)` | Configurable | Controlled by `EnablePermissionsPolicy` and `PermissionsPolicy` |
-| `Content-Security-Policy` | `default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline';` | Configurable | Controlled by `EnableContentSecurityPolicy` and `ContentSecurityPolicy` |
+| `Content-Security-Policy` | `default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; script-src 'self'; style-src 'self';` | Configurable | Controlled by `EnableContentSecurityPolicy` and `ContentSecurityPolicy` |
 | `X-XSS-Protection` | Not emitted | Intentionally omitted | Not supported |
 
 The middleware intentionally does not add `X-XSS-Protection` because that header is obsolete and can create inconsistent behavior in modern browsers.
@@ -64,7 +64,7 @@ Security headers can be configured from `appsettings.json`:
     "EnableContentSecurityPolicy": true,
     "EnablePermissionsPolicy": true,
     "EnableCrossOriginHeaders": true,
-    "ContentSecurityPolicy": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline';",
+    "ContentSecurityPolicy": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; script-src 'self'; style-src 'self';",
     "PermissionsPolicy": "camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)",
     "ExcludedPathPrefixes": [
       "/health",
@@ -126,7 +126,7 @@ X-Permitted-Cross-Domain-Policies: none
 Cross-Origin-Opener-Policy: same-origin
 Cross-Origin-Resource-Policy: same-origin
 Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)
-Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline';
+Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; script-src 'self'; style-src 'self';
 ```
 The exact CSP and Permissions-Policy values may differ if overridden by configuration.
 

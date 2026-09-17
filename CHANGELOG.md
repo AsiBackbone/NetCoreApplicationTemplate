@@ -23,6 +23,37 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
   artifacts and separated NuGet publishing identity from OCI image signing.
 * Backfilled release `2.9.0` from its retained original container evidence and
   exact public NuGet package, with regenerated evidence explicitly labeled.
+* **Behavior change for adopters:** applications that add inline `style` attributes or `<style>` blocks to their own views will have those styles blocked by the browser after upgrading. Either move the styles into static stylesheets (preferred), use nonce- or hash-based `style-src` sources, or restore the previous allowance through configuration:
+
+  ```json
+  "ProjectTemplate": {
+    "SecurityHeaders": {
+      "ContentSecurityPolicy": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline';"
+    }
+  }
+  ```
+
+  Setting a value in `appsettings.json` or an environment-specific settings file overrides the code default. JavaScript that sets styles through the CSSOM (for example `element.style.display`) is not affected by `style-src`.
+
+### Security
+
+* Tightened the default `Content-Security-Policy` by removing `'unsafe-inline'` from `style-src`. The default policy is now:
+
+  ```text
+  default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; script-src 'self'; style-src 'self';
+  ```
+
+  The change applies to the `ApplicationSecurityHeadersOptions` code default, the repository `appsettings.json`, and the generated template `appsettings.json`. The template's own views and pages contain no inline `style` attributes or `<style>` blocks.
+
+### Documentation
+
+* Updated the security header contract table, configuration example, and expected response header sample in `docs/articles/security-headers.md` to reflect the tightened default policy.
+
+### Tests
+
+* Updated `DefaultSecurityHeaders_AreApplied` to expect the tightened policy.
+* Added `SecurityHeadersOptions_CodeDefault_UsesStrictContentSecurityPolicy` and `SecurityHeadersOptions_MissingConfigurationSection_ResolvesCodeDefaultContentSecurityPolicy` so the code default is verified independently of `appsettings.json`.
+* Removed the unused `FindOptionsValidationException` helper from `SecurityHeadersTests`.
 
 ## 2.9.0 - 2026-09-11
 

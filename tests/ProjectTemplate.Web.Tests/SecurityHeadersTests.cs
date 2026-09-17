@@ -42,7 +42,7 @@ public sealed class SecurityHeadersTests
         AssertHeader(
             response,
             "Content-Security-Policy",
-            "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline';");
+            "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; script-src 'self'; style-src 'self';");
 
         AssertHeaderMissing(response, "X-XSS-Protection");
     }

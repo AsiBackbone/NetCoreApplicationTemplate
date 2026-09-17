@@ -41,7 +41,7 @@ public sealed class ApplicationSecurityHeadersOptions
         "form-action 'self'; " +
         "img-src 'self' data:; " +
         "script-src 'self'; " +
-        "style-src 'self' 'unsafe-inline';";
+        "style-src 'self';";
 
     /// <summary>
     /// Gets or sets the Permissions-Policy header value applied to responses.
