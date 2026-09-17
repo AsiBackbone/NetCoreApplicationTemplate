@@ -12,12 +12,65 @@ on:
       - 'v*.*.*'
 
   workflow_dispatch:
+    inputs:
+      egress_policy:
+        description: 'Harden-Runner egress policy for this run. Use block to trial the allow-list before changing the default.'
+        type: choice
+        default: audit
+        options:
+          - audit
+          - block
 
 permissions:
   contents: read
 
 env:
   CONFIGURATION: Release
+  # Harden-Runner runs in audit mode by default. Run the workflow manually with egress_policy=block to trial the
+  # allow-lists below against a real run before changing this default. See docs/articles/build-quality.md.
+  EGRESS_POLICY: ${{ github.event.inputs.egress_policy || 'audit' }}
+  # Endpoints required to restore NuGet packages, install the .NET SDK, and talk to GitHub Actions infrastructure.
+  ALLOWED_ENDPOINTS_DOTNET: |
+    api.github.com:443
+    api.nuget.org:443
+    builds.dotnet.microsoft.com:443
+    ci.dot.net:443
+    codeload.github.com:443
+    dotnetbuilds.azureedge.net:443
+    dotnetcli.azureedge.net:443
+    github.com:443
+    globalcdn.nuget.org:443
+    objects.githubusercontent.com:443
+    pkgs.dev.azure.com:443
+    raw.githubusercontent.com:443
+    release-assets.githubusercontent.com:443
+    results-receiver.actions.githubusercontent.com:443
+    www.nuget.org:443
+    *.actions.githubusercontent.com:443
+  # The scaffolded Docker build and Compose run also reach container registries.
+  ALLOWED_ENDPOINTS_SMOKE: |
+    api.github.com:443
+    api.nuget.org:443
+    auth.docker.io:443
+    builds.dotnet.microsoft.com:443
+    ci.dot.net:443
+    codeload.github.com:443
+    dotnetbuilds.azureedge.net:443
+    dotnetcli.azureedge.net:443
+    github.com:443
+    globalcdn.nuget.org:443
+    index.docker.io:443
+    mcr.microsoft.com:443
+    objects.githubusercontent.com:443
+    pkgs.dev.azure.com:443
+    production.cloudflare.docker.com:443
+    raw.githubusercontent.com:443
+    registry-1.docker.io:443
+    release-assets.githubusercontent.com:443
+    results-receiver.actions.githubusercontent.com:443
+    www.nuget.org:443
+    *.actions.githubusercontent.com:443
+    *.data.mcr.microsoft.com:443
   COVERAGE_THRESHOLD: '75'
   SOLUTION_FILE: './NetCoreApplicationTemplate.slnx'
   DOTNET_NOLOGO: true
@@ -55,10 +108,11 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - name: Harden the runner (Audit outbound calls)
+      - name: Harden the runner
         uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
-          egress-policy: audit
+          egress-policy: ${{ env.EGRESS_POLICY }}
+          allowed-endpoints: ${{ env.ALLOWED_ENDPOINTS_DOTNET }}
 
       - name: Checkout source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -172,10 +226,11 @@ jobs:
           - macos-latest
 
     steps:
-      - name: Harden the runner (Audit outbound calls)
+      - name: Harden the runner
         uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
-          egress-policy: audit
+          egress-policy: ${{ env.EGRESS_POLICY }}
+          allowed-endpoints: ${{ env.ALLOWED_ENDPOINTS_SMOKE }}
 
       - name: Checkout source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -336,10 +391,11 @@ jobs:
       DB_PROVIDER: ${{ matrix.dbProvider }}
 
     steps:
-      - name: Harden the runner (Audit outbound calls)
+      - name: Harden the runner
         uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
-          egress-policy: audit
+          egress-policy: ${{ env.EGRESS_POLICY }}
+          allowed-endpoints: ${{ env.ALLOWED_ENDPOINTS_DOTNET }}
 
       - name: Checkout source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
