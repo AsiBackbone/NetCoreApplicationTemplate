@@ -21,8 +21,6 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
   compiler, analyzer, and code-style warnings now fail the build.
 * Distinguished permanent GitHub Release evidence from temporary Actions
   artifacts and separated NuGet publishing identity from OCI image signing.
-* Backfilled release `2.9.0` from its retained original container evidence and
-  exact public NuGet package, with regenerated evidence explicitly labeled.
 * **Behavior change for adopters:** applications that add inline `style` attributes or `<style>` blocks to their own views will have those styles blocked by the browser after upgrading. Either move the styles into static stylesheets (preferred), use nonce- or hash-based `style-src` sources, or restore the previous allowance through configuration:
 
   ```json
