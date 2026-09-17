@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -104,36 +105,95 @@ public sealed class RateLimitingTests
     }
 
     /// <summary>
-    /// Verifies that rejected requests return the expected JSON 429 Too Many Requests response payload.
+    /// Verifies that API-shaped rejected requests return a Problem Details 429 response with the shared identifiers.
     /// </summary>
     /// <returns>A task that represents the asynchronous test operation.</returns>
     [Fact]
-    public async Task RejectedRequest_ReturnsJsonTooManyRequestsResponseShape()
+    public async Task RejectedRequest_ApiShaped_ReturnsProblemDetails()
     {
-        using ApplicationWebApplicationFactory factory = CreateFactory(new Dictionary<string, string?>
-        {
-            ["ProjectTemplate:RateLimiting:Enabled"] = "true",
-            ["ProjectTemplate:RateLimiting:UseGlobalLimiter"] = "true",
-            ["ProjectTemplate:RateLimiting:UseSharedUnknownClientPartition"] = "true",
-            ["ProjectTemplate:RateLimiting:GlobalFixedWindow:PermitLimit"] = "1",
-            ["ProjectTemplate:RateLimiting:GlobalFixedWindow:WindowSeconds"] = "60",
-            ["ProjectTemplate:RateLimiting:GlobalFixedWindow:QueueLimit"] = "0"
-        });
-
+        using ApplicationWebApplicationFactory factory = CreateSinglePermitGlobalLimiterFactory();
         using HttpClient client = factory.CreateHttpsClient();
 
-        using HttpResponseMessage firstResponse = await client.GetAsync("/", TestContext.Current.CancellationToken);
-        using HttpResponseMessage rejectedResponse = await client.GetAsync("/", TestContext.Current.CancellationToken);
+        using HttpResponseMessage firstResponse = await SendWithAcceptAsync(client, "application/json");
+        using HttpResponseMessage rejectedResponse = await SendWithAcceptAsync(client, "application/json");
 
         Assert.Equal(HttpStatusCode.OK, firstResponse.StatusCode);
         Assert.Equal(HttpStatusCode.TooManyRequests, rejectedResponse.StatusCode);
-        Assert.Equal("application/json", rejectedResponse.Content.Headers.ContentType?.MediaType);
+        Assert.Equal("application/problem+json", rejectedResponse.Content.Headers.ContentType?.MediaType);
+        Assert.NotNull(rejectedResponse.Headers.RetryAfter);
 
         using var document = JsonDocument.Parse(await rejectedResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
+        JsonElement root = document.RootElement;
 
-        Assert.Equal("Too many requests.", document.RootElement.GetProperty("error").GetString());
-        Assert.Equal(429, document.RootElement.GetProperty("statusCode").GetInt32());
-        Assert.False(string.IsNullOrWhiteSpace(document.RootElement.GetProperty("traceId").GetString()));
+        Assert.Equal(429, root.GetProperty("status").GetInt32());
+        Assert.Equal(RateLimitingServiceExtensions.RejectionTitle, root.GetProperty("title").GetString());
+        Assert.Equal(RateLimitingServiceExtensions.RejectionProblemType, root.GetProperty("type").GetString());
+        Assert.Equal(RateLimitingServiceExtensions.RejectionDetail, root.GetProperty("detail").GetString());
+        Assert.Equal("/", root.GetProperty("instance").GetString());
+        Assert.False(string.IsNullOrWhiteSpace(root.GetProperty("traceId").GetString()));
+        Assert.False(string.IsNullOrWhiteSpace(root.GetProperty("requestId").GetString()));
+        Assert.False(string.IsNullOrWhiteSpace(root.GetProperty("correlationId").GetString()));
+        Assert.False(root.TryGetProperty("error", out _));
+    }
+
+    /// <summary>
+    /// Verifies that browser-shaped rejected requests receive a short plain-text 429 response rather than a rendered error page.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous test operation.</returns>
+    [Fact]
+    public async Task RejectedRequest_BrowserShaped_ReturnsPlainTextWithoutRenderingErrorPage()
+    {
+        using ApplicationWebApplicationFactory factory = CreateSinglePermitGlobalLimiterFactory();
+        using HttpClient client = factory.CreateHttpsClient();
+
+        using HttpResponseMessage firstResponse = await SendWithAcceptAsync(client, "text/html");
+        using HttpResponseMessage rejectedResponse = await SendWithAcceptAsync(client, "text/html");
+
+        Assert.Equal(HttpStatusCode.OK, firstResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.TooManyRequests, rejectedResponse.StatusCode);
+        Assert.Equal("text/plain", rejectedResponse.Content.Headers.ContentType?.MediaType);
+        Assert.NotNull(rejectedResponse.Headers.RetryAfter);
+        Assert.Equal(
+            RateLimitingServiceExtensions.RejectionDetail,
+            await rejectedResponse.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
+    }
+
+    /// <summary>
+    /// Verifies that the rejection log entry omits the remote IP address by default.
+    /// </summary>
+    [Fact]
+    public void LogRejectedRequest_OmitsRemoteIpAddress_ByDefault()
+    {
+        using ServiceProvider services = CreateRequestLoggingServices(new ApplicationRequestLoggingOptions());
+        DefaultHttpContext httpContext = CreateRejectedHttpContext(services);
+        TestLogger logger = new();
+
+        RateLimitingServiceExtensions.LogRejectedRequest(httpContext, logger, TimeSpan.FromSeconds(30));
+
+        LogEntry entry = Assert.Single(logger.Entries);
+
+        Assert.Equal(6100, entry.EventId.Id);
+        Assert.Equal(LogLevel.Warning, entry.Level);
+        Assert.DoesNotContain("203.0.113.10", entry.Message, StringComparison.Ordinal);
+        Assert.Contains("TraceIdentifier: trace-rejected", entry.Message, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Verifies that the rejection log entry includes the remote IP address only when request logging opts in.
+    /// </summary>
+    [Fact]
+    public void LogRejectedRequest_IncludesRemoteIpAddress_WhenRequestLoggingOptsIn()
+    {
+        using ServiceProvider services = CreateRequestLoggingServices(
+            new ApplicationRequestLoggingOptions { IncludeRemoteIpAddress = true });
+        DefaultHttpContext httpContext = CreateRejectedHttpContext(services);
+        TestLogger logger = new();
+
+        RateLimitingServiceExtensions.LogRejectedRequest(httpContext, logger, TimeSpan.FromSeconds(30));
+
+        LogEntry entry = Assert.Single(logger.Entries);
+
+        Assert.Contains("RemoteIpAddress: 203.0.113.10", entry.Message, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -473,6 +533,49 @@ public sealed class RateLimitingTests
             provider
                 .GetRequiredService<IOptions<ApplicationRateLimitingOptions>>()
                 .Value);
+    }
+
+    private static ApplicationWebApplicationFactory CreateSinglePermitGlobalLimiterFactory()
+    {
+        return CreateFactory(new Dictionary<string, string?>
+        {
+            ["ProjectTemplate:RateLimiting:Enabled"] = "true",
+            ["ProjectTemplate:RateLimiting:UseGlobalLimiter"] = "true",
+            ["ProjectTemplate:RateLimiting:UseSharedUnknownClientPartition"] = "true",
+            ["ProjectTemplate:RateLimiting:GlobalFixedWindow:PermitLimit"] = "1",
+            ["ProjectTemplate:RateLimiting:GlobalFixedWindow:WindowSeconds"] = "60",
+            ["ProjectTemplate:RateLimiting:GlobalFixedWindow:QueueLimit"] = "0"
+        });
+    }
+
+    private static async Task<HttpResponseMessage> SendWithAcceptAsync(HttpClient client, string mediaType)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/");
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(mediaType));
+
+        return await client.SendAsync(request, TestContext.Current.CancellationToken);
+    }
+
+    private static ServiceProvider CreateRequestLoggingServices(ApplicationRequestLoggingOptions requestLoggingOptions)
+    {
+        ServiceCollection services = new();
+        _ = services.AddSingleton(Microsoft.Extensions.Options.Options.Create(requestLoggingOptions));
+
+        return services.BuildServiceProvider();
+    }
+
+    private static DefaultHttpContext CreateRejectedHttpContext(IServiceProvider services)
+    {
+        DefaultHttpContext httpContext = new()
+        {
+            RequestServices = services,
+            TraceIdentifier = "trace-rejected"
+        };
+        httpContext.Request.Method = HttpMethods.Get;
+        httpContext.Request.Path = "/api/orders";
+        httpContext.Connection.RemoteIpAddress = IPAddress.Parse("203.0.113.10");
+
+        return httpContext;
     }
 
     private sealed class TestLogger : ILogger

@@ -140,7 +140,6 @@ Configuration is controlled through `appsettings.json`:
     "CorrelationHeaderName": "X-Correlation-ID",
     "IncludeUserName": false,
     "IncludeRemoteIpAddress": false,
-    "IncludeRemoteIpAddress": true,
     "ExcludedPathPrefixes": [
       "/health",
       "/metrics",
@@ -162,6 +161,8 @@ User name and remote IP address logging are disabled by default for the same rea
 "IncludeUserName": true,
 "IncludeRemoteIpAddress": true
 ```
+
+`IncludeRemoteIpAddress` is the application-wide decision for client IP addresses in logs. It also governs the remote IP address recorded by rate-limit rejection entries and error-page entries; when it is `false`, those entries record the address as null.
 
 A logged remote IP address is only meaningful behind a proxy once forwarded headers are configured with trusted proxies or networks; see [Forwarded Headers](forwarded-headers.md). Without that, the value recorded is the proxy's address rather than the client's.
 

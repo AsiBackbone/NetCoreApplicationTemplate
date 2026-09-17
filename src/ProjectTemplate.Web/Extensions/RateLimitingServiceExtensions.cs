@@ -1,9 +1,11 @@
 using System.Globalization;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using ProjectTemplate.Web.Constants;
 using ProjectTemplate.Web.Diagnostics;
+using ProjectTemplate.Web.ErrorHandling;
 using ProjectTemplate.Web.Options;
 
 namespace ProjectTemplate.Web.Extensions;
@@ -13,6 +15,10 @@ namespace ProjectTemplate.Web.Extensions;
 /// </summary>
 public static partial class RateLimitingServiceExtensions
 {
+    internal const string RejectionTitle = "Too Many Requests";
+    internal const string RejectionDetail = "Too many requests were received. Please try again later.";
+    internal const string RejectionProblemType = "https://www.rfc-editor.org/rfc/rfc6585#section-4";
+
     /// <summary>
     /// Adds the application's predefined rate limiting policies to the service collection.
     /// </summary>
@@ -85,41 +91,19 @@ public static partial class RateLimitingServiceExtensions
                 options.OnRejected = async (context, cancellationToken) =>
                 {
                     HttpContext httpContext = context.HttpContext;
-                    HttpResponse response = httpContext.Response;
 
-                    TimeSpan? retryAfter = null;
-
-                    if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfterValue))
-                    {
-                        retryAfter = retryAfterValue;
-
-                        response.Headers.RetryAfter =
-                            Math.Ceiling(retryAfterValue.TotalSeconds)
-                                .ToString(CultureInfo.InvariantCulture);
-                    }
+                    TimeSpan? retryAfter = context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfterValue)
+                        ? retryAfterValue
+                        : null;
 
                     ILogger logger = httpContext.RequestServices
                         .GetRequiredService<ILoggerFactory>()
                         .CreateLogger("Template.Web.RateLimiting");
 
-                    LogRateLimitRejectedRequest(
-                        logger,
-                        httpContext.Request.Method,
-                        httpContext.Request.Path.Value ?? string.Empty,
-                        httpContext.Connection.RemoteIpAddress?.ToString(),
-                        httpContext.GetEndpoint()?.DisplayName,
-                        retryAfter?.TotalSeconds,
-                        httpContext.TraceIdentifier);
+                    LogRejectedRequest(httpContext, logger, retryAfter);
 
-                    response.StatusCode = StatusCodes.Status429TooManyRequests;
-                    response.ContentType = "application/json";
-
-                    await response.WriteAsJsonAsync(new
-                    {
-                        error = "Too many requests.",
-                        statusCode = StatusCodes.Status429TooManyRequests,
-                        traceId = httpContext.TraceIdentifier
-                    }, cancellationToken);
+                    await WriteRejectionResponseAsync(httpContext, retryAfter, cancellationToken)
+                        .ConfigureAwait(false);
                 };
 
                 if (!rateLimitingOptions.Enabled)
@@ -148,6 +132,95 @@ public static partial class RateLimitingServiceExtensions
 
         return services;
     }
+    /// <summary>
+    /// Writes the rejection log entry for a rate-limited request, honoring the request-logging privacy options.
+    /// </summary>
+    /// <param name="httpContext">The rejected request's HTTP context.</param>
+    /// <param name="logger">The logger that receives the entry.</param>
+    /// <param name="retryAfter">The retry interval reported by the limiter lease, when available.</param>
+    internal static void LogRejectedRequest(
+        HttpContext httpContext,
+        ILogger logger,
+        TimeSpan? retryAfter)
+    {
+        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(logger);
+
+        LogRateLimitRejectedRequest(
+            logger,
+            httpContext.Request.Method,
+            httpContext.Request.Path.Value ?? string.Empty,
+            RequestLoggingPrivacy.GetLoggableRemoteIpAddress(httpContext),
+            httpContext.GetEndpoint()?.DisplayName,
+            retryAfter?.TotalSeconds,
+            httpContext.TraceIdentifier);
+    }
+
+    /// <summary>
+    /// Writes the <c>429 Too Many Requests</c> response for a rate-limited request.
+    /// </summary>
+    /// <remarks>
+    /// API-shaped requests, as classified by <see cref="ProblemDetailsRequestClassifier"/>, receive a Problem Details
+    /// response through <see cref="IProblemDetailsService"/>, so the shared customization adds the trace, request, and
+    /// correlation identifiers. Other requests receive a short plain-text body. The browser error page is intentionally
+    /// not re-executed: rejections must stay cheap, and rendering a view for every rejected request would work against
+    /// the protection the limiter provides.
+    /// </remarks>
+    /// <param name="httpContext">The rejected request's HTTP context.</param>
+    /// <param name="retryAfter">The retry interval reported by the limiter lease, when available.</param>
+    /// <param name="cancellationToken">A token that cancels writing the response.</param>
+    /// <returns>A task that completes when the response has been written.</returns>
+    internal static async Task WriteRejectionResponseAsync(
+        HttpContext httpContext,
+        TimeSpan? retryAfter,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
+        HttpResponse response = httpContext.Response;
+        response.StatusCode = StatusCodes.Status429TooManyRequests;
+
+        if (retryAfter is TimeSpan retryAfterValue)
+        {
+            response.Headers.RetryAfter = Math.Ceiling(retryAfterValue.TotalSeconds)
+                .ToString(CultureInfo.InvariantCulture);
+        }
+
+        if (ProblemDetailsRequestClassifier.ShouldWriteProblemDetails(httpContext))
+        {
+            IProblemDetailsService? problemDetailsService = httpContext.RequestServices?
+                .GetService<IProblemDetailsService>();
+
+            if (problemDetailsService is not null)
+            {
+                ProblemDetailsContext problemDetailsContext = new()
+                {
+                    HttpContext = httpContext,
+                    ProblemDetails = new ProblemDetails
+                    {
+                        Status = StatusCodes.Status429TooManyRequests,
+                        Title = RejectionTitle,
+                        Type = RejectionProblemType,
+                        Detail = RejectionDetail
+                    }
+                };
+
+                if (await problemDetailsService.TryWriteAsync(problemDetailsContext).ConfigureAwait(false))
+                {
+                    return;
+                }
+            }
+        }
+
+        if (HttpMethods.IsHead(httpContext.Request.Method))
+        {
+            return;
+        }
+
+        response.ContentType = "text/plain; charset=utf-8";
+        await response.WriteAsync(RejectionDetail, cancellationToken).ConfigureAwait(false);
+    }
+
     private static ApplicationRateLimitingOptions CreateDefaultOptions(IHostEnvironment environment)
     {
         ApplicationRateLimitingOptions options = new();
@@ -257,7 +330,7 @@ public static partial class RateLimitingServiceExtensions
     }
 
     [LoggerMessage(
-        EventId = 6001,
+        EventId = ApplicationLogEventIds.RateLimitRejectedRequest,
         Level = LogLevel.Warning,
         Message = "Rate limit rejected request. Method: {Method}; Path: {Path}; RemoteIpAddress: {RemoteIpAddress}; Endpoint: {Endpoint}; RetryAfterSeconds: {RetryAfterSeconds}; TraceIdentifier: {TraceIdentifier}")]
     private static partial void LogRateLimitRejectedRequest(
@@ -270,7 +343,7 @@ public static partial class RateLimitingServiceExtensions
         string traceIdentifier);
 
     [LoggerMessage(
-        EventId = 6002,
+        EventId = ApplicationLogEventIds.RateLimitClientPartitionFallback,
         Level = LogLevel.Warning,
         Message = "Rate limiting used fallback client partition because RemoteIpAddress was unavailable. FallbackMode: {FallbackMode}; PartitionKey: {PartitionKey}; TraceIdentifier: {TraceIdentifier}; SuppressedWarningCount: {SuppressedWarningCount}. Verify forwarded headers and trusted proxy configuration when running behind a proxy or load balancer.")]
     private static partial void LogRateLimitingClientPartitionFallback(

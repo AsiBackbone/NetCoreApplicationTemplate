@@ -33,19 +33,35 @@ The application supports:
 - A global fixed-window limiter for baseline request protection.
 - A named fixed-window policy for endpoint-specific use.
 - A named concurrency policy for sensitive or resource-heavy operations.
-- JSON rejection responses.
+- Problem Details rejection responses for API-shaped requests and short plain-text responses for other requests.
 - `429 Too Many Requests` responses when limits are exceeded.
-- Logging for rejected requests.
+- Logging for rejected requests that honors the request-logging remote IP address privacy option.
 - Throttled warning logging when client IP partitioning must use the unknown-client fallback path.
 
-Rejected requests return a response similar to:
+Rejected requests always return `429 Too Many Requests`. When the limiter reports a retry interval, the response includes a `Retry-After` header in seconds.
+
+API-shaped requests, classified the same way as the rest of centralized error handling (a path under `/api`, an `X-Requested-With: XMLHttpRequest` header, or an `Accept` header that includes JSON), receive an `application/problem+json` response written through `IProblemDetailsService`. The shared Problem Details customization adds the same `instance`, `traceId`, `spanId`, `requestId`, and `correlationId` members used by other error responses:
 
 ```json
 {
-  "error": "Too many requests.",
-  "statusCode": 429
+  "type": "https://www.rfc-editor.org/rfc/rfc6585#section-4",
+  "title": "Too Many Requests",
+  "status": 429,
+  "detail": "Too many requests were received. Please try again later.",
+  "instance": "/api/orders",
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "requestId": "0HNL9ADUFCPUT:00000009",
+  "correlationId": "0HNL9ADUFCPUT:00000009"
 }
 ```
+
+Other requests receive a short `text/plain` body with the same detail message. `HEAD` requests receive no body.
+
+Rejections intentionally do not re-execute the browser error page. A rate limiter protects the application under load, so a rejection must stay inexpensive; rendering a Razor view for every rejected request would work against that protection.
+
+### Rejection Logging
+
+Each rejection writes a warning with event ID `6100` containing the method, path, endpoint, retry interval, and trace identifier. The remote IP address is included only when `ProjectTemplate:RequestLogging:IncludeRemoteIpAddress` is `true`, the same option that governs request logs; otherwise it is recorded as null. See [Logging](logging.md).
 
 ## Configuration
 
@@ -182,7 +198,8 @@ This keeps production endpoints unchanged while allowing the tests to verify:
 - Global fixed-window limiter behavior.
 - Named fixed-window policy behavior.
 - Named concurrency policy behavior.
-- JSON `429 Too Many Requests` rejection responses.
+- Problem Details and plain-text `429 Too Many Requests` rejection responses.
+- Rejection log privacy for the remote IP address.
 - Disabled rate limiting behavior.
 - Configuration binding for application rate limiting options.
 - Client IP partition fallback behavior when `RemoteIpAddress` is unavailable.

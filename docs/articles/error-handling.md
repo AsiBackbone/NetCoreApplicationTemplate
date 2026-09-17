@@ -38,7 +38,9 @@ Status code pages are handled centrally using:
 app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
 ```
 
-This allows common HTTP responses such as `404 Not Found`, `401 Unauthorized`, `403 Forbidden`, and `429 Too Many Requests` to use the shared error page strategy for browser-oriented requests.
+This allows common HTTP responses such as `404 Not Found`, `401 Unauthorized`, and `403 Forbidden` to use the shared error page strategy for browser-oriented requests.
+
+Rate-limit rejections are the exception. The rate limiter writes its own `429 Too Many Requests` response, using Problem Details for API-shaped requests and a short plain-text body otherwise, so a rejection does not re-execute and render the error page. See [Rate Limiting](rate-limiting.md).
 
 Problem Details requests use ASP.NET Core status code pages without re-executing the browser error page.
 
@@ -65,7 +67,7 @@ Request ID: 0HNL9ADUFCPUT:00000009
 Example log output:
 
 ```text
-Status code page routed to error page. StatusCode: 404; OriginalPath: /invalid; RemoteIpAddress: ::1; RequestId: 0HNL9ADUFCPUT:00000009
+Status code page routed to error page. StatusCode: 404; OriginalPath: /invalid; RemoteIpAddress: (null); TraceIdentifier: 0HNL9ADUFCPUT:00000009
 ```
 
 This makes it easier to match a user-facing error page with the corresponding application log entry.
@@ -76,7 +78,7 @@ Error handling logs include:
 
 - Status code routed to the error page.
 - Original request path.
-- Remote IP address when available.
+- Remote IP address, only when `ProjectTemplate:RequestLogging:IncludeRemoteIpAddress` is `true`; otherwise recorded as null.
 - Request ID.
 - Exception details for unhandled exceptions.
 

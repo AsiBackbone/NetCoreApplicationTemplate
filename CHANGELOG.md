@@ -46,12 +46,17 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
   ```
 
 * Callers of `RecordRemediationAsync` should handle `DbUpdateConcurrencyException` by reloading the finding and deciding whether to retry.
+* **Behavior change for API clients:** `429 Too Many Requests` responses for API-shaped requests are now `application/problem+json` Problem Details written through `IProblemDetailsService`, consistent with other error responses. The body contains `type`, `title`, `status`, `detail`, `instance`, `traceId`, `requestId`, and `correlationId` (plus `spanId` when an activity is present). The previous `{ "error", "statusCode", "traceId" }` shape is no longer returned. Clients that parsed `error` or `statusCode` should read `title`, `detail`, or `status` instead.
+* Requests that are not API-shaped now receive a short `text/plain` rejection body instead of JSON. `HEAD` requests receive no body. Rejections intentionally do not re-execute the browser error page, so rejected requests stay inexpensive under load.
+* `Retry-After` continues to be sent when the limiter reports a retry interval.
 
 ### Fixed
 
 * `ApplicationAuditReconciler.RecordRemediationAsync` now records a remediation atomically. The finding status update and the remediation insert run in one transaction inside the EF Core execution strategy, so a failure in either statement leaves neither written. When the caller already owns an EF Core transaction, the method joins it and leaves commit or rollback to the caller.
 * `RecordRemediationAsync` now guards the finding update with the `ConcurrencyStamp` that was read. If a reconciliation run or another remediation changes the finding first, the method throws `DbUpdateConcurrencyException`, writes nothing, and the caller can reload and retry. Previously the later write silently overwrote the earlier one.
 * Remediation request fields (`ActionCode`, `ActorId`) are now validated before any database work begins.
+* The rate-limit rejection log entry now uses its reserved event ID `ApplicationLogEventIds.RateLimitRejectedRequest` (`6100`). It previously used a literal `6001`, which collided with `StatusCodePageRoutedToErrorPage`.
+* The unknown-client fallback warning now uses the named constant `ApplicationLogEventIds.RateLimitClientPartitionFallback`; its value remains `6002`.
 
 ### Security
 
@@ -65,11 +70,17 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 * Rate limiting now fails closed for clients without a resolved `RemoteIpAddress`. `UseSharedUnknownClientPartition` defaults to `true` in the options code default, the repository `appsettings.json`, and the generated template `appsettings.json`, so unresolved clients share one rate-limited fallback partition. Previously each unresolved request received its own partition, which effectively left those clients unlimited.
 * The unknown-client fallback warning (event ID `6002`) is now written at most once per minute and includes `SuppressedWarningCount`. Previously a deployment that never resolved client IP addresses wrote one warning per request.
+* Rate-limit rejection log entries (event ID `6100`) no longer record the client IP address unless `ProjectTemplate:RequestLogging:IncludeRemoteIpAddress` is `true`. Previously the rejection log wrote the address unconditionally, contradicting the privacy default applied to request logs.
+* Error-page log entries (event IDs `6000` and `6001`) now follow the same rule. Both previously recorded the remote IP address unconditionally.
+* Added `RequestLoggingPrivacy.GetLoggableRemoteIpAddress` so diagnostic log entries written outside the request-logging middleware apply `IncludeRemoteIpAddress` consistently.
 
 ### Documentation
 
 * Updated the security header contract table, configuration example, and expected response header sample in `docs/articles/security-headers.md` to reflect the tightened default policy.
 * Rewrote the unknown-client fallback section of `docs/articles/rate-limiting.md` to describe the shared default, the risk of each mode, and warning throttling.
+* Updated `docs/articles/rate-limiting.md` with the Problem Details and plain-text rejection shapes, the reasoning for not rendering the error page, and rejection log privacy.
+* Updated `docs/articles/error-handling.md` to remove `429` from the error-page status list, explain the rate-limit exception, and correct the example log line (`TraceIdentifier`, null remote IP address by default).
+* Updated `docs/articles/logging.md` to state that `IncludeRemoteIpAddress` also governs rate-limit and error-page log entries, and removed a duplicated `IncludeRemoteIpAddress` key from the configuration example.
 
 ### Tests
 
@@ -78,6 +89,9 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * Removed the unused `FindOptionsValidationException` helper from `SecurityHeadersTests`.
 * Added remediation tests for insert-failure rollback, concurrent modification, caller-owned transaction joining, and request validation before writes.
 * Added rate-limiting tests for the shared fallback default, explicit per-request mode, the options code default, warning throttling with suppressed counts, and throttle argument validation. The configuration binding test now binds `false` to prove configuration overrides the default.
+* Replaced the JSON rejection-shape test with `RejectedRequest_ApiShaped_ReturnsProblemDetails` and added `RejectedRequest_BrowserShaped_ReturnsPlainTextWithoutRenderingErrorPage`.
+* Added rejection log tests confirming the remote IP address is omitted by default and included only when request logging opts in.
+* Added `RequestLoggingPrivacyTests` covering the default, opt-in, unregistered-options, and missing-request-services cases.
 
 ## 2.9.0 - 2026-09-11
 
