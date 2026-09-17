@@ -42,6 +42,20 @@ Current release: __[Release 2.9.0](https://github.com/AsiBackbone/NetCoreApplica
 Tag: `v2.9.0`
 <!-- END LATEST_RELEASE -->
 
+## Maintenance Status
+
+The `2.x` line is feature-complete. NCAT is actively maintained for security
+fixes, dependency servicing, and documentation corrections. New template
+options, configuration surfaces, and runtime capabilities are out of scope for
+this line.
+
+Generated projects are not modified by later releases. Applications scaffolded
+from any `2.x` version continue to build and run independently of the template's
+release cadence.
+
+See [SUPPORT.md](.github/SUPPORT.md) for the complete support policy and version
+lifecycle.
+
 ## What This Template Secures by Default
 
 The default scaffold enables cookie authentication as the session handler. It does not include local user accounts, a credential form, a seeded user, or an enabled external provider. Cookie authentication stores an identity after a sign-in flow succeeds; it does not verify credentials or provide a login path by itself.
