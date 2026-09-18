@@ -67,7 +67,8 @@ Users should not expect:
 
 | Version line | Support expectation |
 |:---|:---|
-| `2.x` | Current stable line, feature-complete as of `2.10.0`. Supported for security fixes, dependency servicing, reproducible defects, and documentation fixes. || `1.0.x` | Legacy stable line under the previous NuGet package identity. Best effort unless a release note states otherwise. |
+| `2.x` | Current stable line, feature-complete as of `2.10.0`. Supported for security fixes, dependency servicing, reproducible defects, and documentation fixes. |
+| `1.0.x` | Legacy stable line under the previous NuGet package identity. Best effort unless a release note states otherwise. |
 | Pre-1.0 releases | Best effort only. Consumers should upgrade to the current stable release when practical. |
 | Older stable releases after a newer minor or major release | Best effort unless a release note states otherwise. |
 | Unreleased `main` branch | Development line only. Behavior may change before the next release. |
