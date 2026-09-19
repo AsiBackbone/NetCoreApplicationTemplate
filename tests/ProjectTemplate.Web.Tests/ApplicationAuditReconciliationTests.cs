@@ -405,10 +405,13 @@ public sealed class ApplicationAuditReconciliationTests
                 {
                     Auditing = new DataAuditingOptions { Enabled = false }
                 }));
+
+            var interceptorForSavePipeline = new ApplicationSaveChangesInterceptor(pipeline);
+
             var context = new ApplicationDbContext(
                 dbOptions,
                 NullLogger<ApplicationDbContext>.Instance,
-                pipeline);
+                interceptorForSavePipeline);
             _ = await context.Database.EnsureCreatedAsync(TestContext.Current.CancellationToken);
             var builder = new CanonicalApplicationMutationManifestBuilder();
             var hasher = new Sha256ApplicationMutationManifestHasher();

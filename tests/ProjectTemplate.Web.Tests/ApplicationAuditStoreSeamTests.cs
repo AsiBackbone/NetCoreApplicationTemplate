@@ -70,10 +70,12 @@ public sealed class ApplicationAuditStoreSeamTests
             Microsoft.Extensions.Options.Options.Create(dataAccessOptions),
             auditStore);
 
+        var interceptorForSavePipeline = new ApplicationSaveChangesInterceptor(saveChangesPipeline);
+
         return new ApplicationDbContext(
             options,
             NullLogger<ApplicationDbContext>.Instance,
-            saveChangesPipeline);
+            interceptorForSavePipeline);
     }
 
     private sealed class CapturingApplicationAuditStore : IApplicationAuditStore

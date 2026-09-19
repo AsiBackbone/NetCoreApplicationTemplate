@@ -67,10 +67,12 @@ public sealed class ApplicationMutationManifestPipelineTests
             .UseSqlite(connection)
             .Options;
 
+        var interceptorForSavePipeline = new ApplicationSaveChangesInterceptor(pipeline);
+
         return new ApplicationDbContext(
             options,
             NullLogger<ApplicationDbContext>.Instance,
-            pipeline);
+            interceptorForSavePipeline);
     }
 
     private static DataAccessOptions CreateDataAccessOptions()

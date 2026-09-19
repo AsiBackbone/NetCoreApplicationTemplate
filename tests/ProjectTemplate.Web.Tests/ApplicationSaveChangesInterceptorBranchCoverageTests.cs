@@ -139,10 +139,12 @@ public sealed class ApplicationSaveChangesInterceptorBranchCoverageTests
             .UseSqlite(connection)
             .Options;
 
+        var interceptorForSavePipeline = new ApplicationSaveChangesInterceptor(saveChangesPipeline);
+
         return new ApplicationDbContext(
             options,
             NullLogger<ApplicationDbContext>.Instance,
-            saveChangesPipeline);
+            interceptorForSavePipeline);
     }
 
     private static ExternalLoginAccount CreatePersistableAccount(string providerUserId)

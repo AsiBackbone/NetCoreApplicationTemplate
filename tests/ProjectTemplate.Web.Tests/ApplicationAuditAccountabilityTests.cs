@@ -118,16 +118,18 @@ public sealed class ApplicationAuditAccountabilityTests
 
     private static ApplicationDbContext CreateContext(
         SqliteConnection connection,
-        ApplicationSaveChangesPipeline pipeline)
+        ApplicationSaveChangesPipeline saveChangesPipeline)
     {
         DbContextOptions<ApplicationDbContext> options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseSqlite(connection)
             .Options;
 
+        ApplicationSaveChangesInterceptor interceptor = new(saveChangesPipeline);
+
         return new ApplicationDbContext(
             options,
             NullLogger<ApplicationDbContext>.Instance,
-            pipeline);
+            interceptor);
     }
 
     private static DataAccessOptions CreateDataAccessOptions()
