@@ -368,10 +368,13 @@ public sealed class ApplicationAuditedTransactionTests
             _ = optionsBuilder.ReplaceService<IModelCustomizer, GeneratedKeyModelCustomizer>();
         }
 
+        // create the interceptor wrapper expected by ApplicationDbContext
+        var saveChangesInterceptor = new ApplicationSaveChangesInterceptor(pipeline);
+
         return new ApplicationDbContext(
             optionsBuilder.Options,
             NullLogger<ApplicationDbContext>.Instance,
-            pipeline);
+            saveChangesInterceptor);
     }
 
     private static DataAccessOptions CreateDataAccessOptions()

@@ -237,10 +237,12 @@ public sealed class ApplicationDbContextBranchGapTests
             new TestCurrentActorAccessor(),
             Microsoft.Extensions.Options.Options.Create(dataAccessOptions));
 
+        var interceptorForSavePipeline = new ApplicationSaveChangesInterceptor(saveChangesPipeline);
+
         return new ApplicationDbContext(
             options,
             NullLogger<ApplicationDbContext>.Instance,
-            saveChangesPipeline);
+            interceptorForSavePipeline);
     }
 
     private static DateTime NormalizeExpectedUtc(DateTime value)

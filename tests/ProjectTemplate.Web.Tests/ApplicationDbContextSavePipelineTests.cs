@@ -59,7 +59,7 @@ public sealed class ApplicationDbContextSavePipelineTests
     }
 
     [Fact]
-    public async Task Constructor_WithNullSaveChangesPipeline_ThrowsArgumentNullException()
+    public async Task Constructor_WithNullSaveChangesInterceptor_ThrowsArgumentNullException()
     {
         await using SqliteConnection connection = await CreateOpenConnectionAsync();
 
@@ -70,9 +70,9 @@ public sealed class ApplicationDbContextSavePipelineTests
         ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() => new ApplicationDbContext(
             options,
             NullLogger<ApplicationDbContext>.Instance,
-            saveChangesPipeline: null!));
+            saveChangesInterceptor: null!));
 
-        Assert.Equal("saveChangesPipeline", exception.ParamName);
+        Assert.Equal("saveChangesInterceptor", exception.ParamName);
     }
 
     private static async Task<SqliteConnection> CreateOpenConnectionAsync()
@@ -107,10 +107,12 @@ public sealed class ApplicationDbContextSavePipelineTests
             .UseSqlite(connection)
             .Options;
 
+        ApplicationSaveChangesInterceptor interceptor = new(saveChangesPipeline);
+
         return new ApplicationDbContext(
             options,
             NullLogger<ApplicationDbContext>.Instance,
-            saveChangesPipeline);
+            interceptor);
     }
 
     private sealed class TrackingSaveChangesPipeline : IApplicationSaveChangesPipeline

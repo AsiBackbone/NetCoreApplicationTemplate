@@ -78,7 +78,9 @@ public sealed class InfrastructureDataAccessServiceExtensionsTests
         ServiceCollection services = new();
 
         services.AddLogging();
-        services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite("Data Source=:memory:"));
+        services.AddScoped<ApplicationSaveChangesInterceptor>();
+        services.AddDbContext<ApplicationDbContext>(
+            options => options.UseSqlite("Data Source=:memory:"));
 
         using ServiceProvider serviceProvider = services.BuildServiceProvider();
         using IServiceScope scope = serviceProvider.CreateScope();
@@ -86,7 +88,10 @@ public sealed class InfrastructureDataAccessServiceExtensionsTests
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(
             scope.ServiceProvider.GetRequiredService<ApplicationDbContext>);
 
-        Assert.Contains(nameof(IApplicationSaveChangesPipeline), exception.Message, StringComparison.Ordinal);
+        Assert.Contains(
+            nameof(IApplicationSaveChangesPipeline),
+            exception.Message,
+            StringComparison.Ordinal);
     }
 
     [Fact]

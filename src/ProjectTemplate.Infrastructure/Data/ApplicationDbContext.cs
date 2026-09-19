@@ -11,15 +11,13 @@ namespace ProjectTemplate.Infrastructure.Data;
 public sealed partial class ApplicationDbContext(
     DbContextOptions<ApplicationDbContext> options,
     ILogger<ApplicationDbContext> logger,
-    IApplicationSaveChangesPipeline saveChangesPipeline,
-    ApplicationSaveChangesInterceptor? saveChangesInterceptor = null
+    ApplicationSaveChangesInterceptor saveChangesInterceptor
 )
     : DbContext(options)
 {
     private readonly ILogger<ApplicationDbContext> _logger = logger;
-    private readonly IApplicationSaveChangesPipeline _saveChangesPipeline =
-        saveChangesPipeline ?? throw new ArgumentNullException(nameof(saveChangesPipeline));
-    private readonly ApplicationSaveChangesInterceptor? _configuredSaveChangesInterceptor = saveChangesInterceptor;
+    private readonly ApplicationSaveChangesInterceptor _saveChangesInterceptor =
+        saveChangesInterceptor ?? throw new ArgumentNullException(nameof(saveChangesInterceptor));
 
     /// <summary>
     /// Gets the audit records for the application.
@@ -63,10 +61,7 @@ public sealed partial class ApplicationDbContext(
     {
         ArgumentNullException.ThrowIfNull(optionsBuilder);
 
-        ApplicationSaveChangesInterceptor interceptor =
-            _configuredSaveChangesInterceptor ?? new ApplicationSaveChangesInterceptor(_saveChangesPipeline);
-
-        _ = optionsBuilder.AddInterceptors(interceptor);
+        _ = optionsBuilder.AddInterceptors(_saveChangesInterceptor);
 
         base.OnConfiguring(optionsBuilder);
     }

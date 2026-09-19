@@ -198,7 +198,8 @@ public sealed class ApplicationAuditCompletionOutboxTests
             {
                 Auditing = new DataAuditingOptions { Enabled = false }
             }));
-        return new ApplicationDbContext(options, NullLogger<ApplicationDbContext>.Instance, pipeline);
+        var interceptor = new ApplicationSaveChangesInterceptor(pipeline);
+        return new ApplicationDbContext(options, NullLogger<ApplicationDbContext>.Instance, interceptor);
     }
 
     private static ApplicationAuditCompletionOutbox CreateOutbox(
