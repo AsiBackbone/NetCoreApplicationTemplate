@@ -119,7 +119,7 @@ The default covers only the entity the template ships. Production applications s
 services.AddScoped<IApplicationAuditValuePolicy, ApplicationAuditValuePolicy>();
 ```
 
-Redaction occurs before values are serialized into `KeyValues`, `OriginalValues`, or `CurrentValues`, and before the canonical manifest is hashed. Do not copy raw NCAT mutation values wholesale into telemetry, an external archive, a governance outbox, or a SIEM.
+Redaction occurs before values are serialized into `KeyValues`, `OriginalValues`, or `CurrentValues`, and before the canonical manifest is hashed. Do not copy raw NCAT mutation values wholesale into telemetry, an external archive, an outbox, or a SIEM.
 
 ## Atomic local persistence
 

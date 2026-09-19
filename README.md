@@ -214,7 +214,7 @@ requires no external governance, audit, or policy product.
 
 - **[AsiBackbone](https://github.com/AsiBackbone/AsiBackbone)** — an optional
   .NET library for application-level policy decisions, acknowledgments, scoped
-  capability grants, and decision audit records around protected operations. It
+  capability grants, and decision receipts around protected operations. It
   complements but does not replace ASP.NET Core authentication or endpoint
   authorization, and NCAT does not require it.
 
