@@ -4,6 +4,14 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
+## Unreleased
+
+### Changed
+
+* Completed the AsiBackbone 6.0 and Learning 1.0 alignment review, updated
+  current terminology, and confirmed that NCAT remains compatible with its 2.x
+  public and generated-template contracts.
+
 ## 2.10.0 - 2026-09-19
 
 ### Added

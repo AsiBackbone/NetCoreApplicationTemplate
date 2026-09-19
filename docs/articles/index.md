@@ -51,6 +51,7 @@ This section is the task-oriented implementation reference for the .NET Core App
 - [Build Quality and Reproducibility](build-quality.md)
 - [Container Release Publishing](container-publish.md)
 - [GitHub Workflow](github-workflow.md)
+- [AsiBackbone 6.0 Alignment Review](asibackbone-6-alignment-review.md)
 
 ## Historical Archive
 
