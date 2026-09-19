@@ -72,6 +72,7 @@ updates:
     # Dependabot alerts are not generated for SHA-pinned Actions. Excluding all
     # Actions from cooldown avoids adding an extra delay to the weekly check.
     cooldown:
+      default-days: 7
       exclude:
         - "*"
     open-pull-requests-limit: 5
