@@ -56,7 +56,10 @@ internal static class ApplicationAuditValueProtector
 
     private static string HmacSha256(object? value, string? key)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            throw new ArgumentException("HMAC-SHA-256 audit values require a non-empty key.", nameof(key));
+        }
 
         byte[] canonicalValue = Encoding.UTF8.GetBytes(ToCanonicalString(value));
         byte[] keyBytes = Encoding.UTF8.GetBytes(key);
