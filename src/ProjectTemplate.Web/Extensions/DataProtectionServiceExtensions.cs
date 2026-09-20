@@ -45,17 +45,10 @@ public static class DataProtectionServiceExtensions
                 _keyEncryptionPasswordWithoutPathMessage)
             .ValidateOnStart();
 
-        ApplicationDataProtectionOptions options = new();
-        section.Bind(options);
+        ApplicationDataProtectionOptions options = section.Get<ApplicationDataProtectionOptions>() ?? new();
 
-        ApplicationDataProtectionOptions defaultOptions = new();
-
-        string applicationName = string.IsNullOrWhiteSpace(options.ApplicationName)
-            ? defaultOptions.ApplicationName
-            : options.ApplicationName.Trim();
-        string configuredKeyRingPath = string.IsNullOrWhiteSpace(options.KeyRingPath)
-            ? defaultOptions.KeyRingPath
-            : options.KeyRingPath.Trim();
+        string applicationName = options.ApplicationName.Trim();
+        string configuredKeyRingPath = options.KeyRingPath.Trim();
         string keyRingPath = Path.IsPathFullyQualified(configuredKeyRingPath)
             ? configuredKeyRingPath
             : Path.GetFullPath(configuredKeyRingPath, environment.ContentRootPath);

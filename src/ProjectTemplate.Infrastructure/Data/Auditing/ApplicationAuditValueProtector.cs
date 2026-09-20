@@ -79,7 +79,7 @@ internal static class ApplicationAuditValueProtector
             throw new InvalidOperationException("Truncated audit values require a positive maximum length.");
         }
 
-        string text = Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty;
+        string text = ToCanonicalString(value);
         if (text.Length <= maximumLength.Value)
         {
             return text;
