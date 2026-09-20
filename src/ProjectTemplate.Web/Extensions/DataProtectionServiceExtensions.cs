@@ -45,14 +45,17 @@ public static class DataProtectionServiceExtensions
                 _keyEncryptionPasswordWithoutPathMessage)
             .ValidateOnStart();
 
-        ApplicationDataProtectionOptions options = section.Get<ApplicationDataProtectionOptions>() ?? new();
+        ApplicationDataProtectionOptions options = new();
+        section.Bind(options);
 
-        string applicationName = !string.IsNullOrWhiteSpace(options.ApplicationName)
-            ? options.ApplicationName.Trim()
-            : throw new InvalidOperationException("ProjectTemplate:DataProtection:ApplicationName is required.");
-        string configuredKeyRingPath = !string.IsNullOrWhiteSpace(options.KeyRingPath)
-            ? options.KeyRingPath.Trim()
-            : throw new InvalidOperationException("ProjectTemplate:DataProtection:KeyRingPath is required.");
+        ApplicationDataProtectionOptions defaultOptions = new();
+
+        string applicationName = string.IsNullOrWhiteSpace(options.ApplicationName)
+            ? defaultOptions.ApplicationName
+            : options.ApplicationName.Trim();
+        string configuredKeyRingPath = string.IsNullOrWhiteSpace(options.KeyRingPath)
+            ? defaultOptions.KeyRingPath
+            : options.KeyRingPath.Trim();
         string keyRingPath = Path.IsPathFullyQualified(configuredKeyRingPath)
             ? configuredKeyRingPath
             : Path.GetFullPath(configuredKeyRingPath, environment.ContentRootPath);
@@ -75,10 +78,6 @@ public static class DataProtectionServiceExtensions
             _ = dataProtectionBuilder
                 .ProtectKeysWithCertificate(keyEncryptionCertificate)
                 .UnprotectKeysWithAnyCertificate(keyEncryptionCertificate);
-        }
-        else if (!string.IsNullOrEmpty(options.KeyEncryptionCertificatePassword))
-        {
-            throw new InvalidOperationException(_keyEncryptionPasswordWithoutPathMessage);
         }
 
         return services;
