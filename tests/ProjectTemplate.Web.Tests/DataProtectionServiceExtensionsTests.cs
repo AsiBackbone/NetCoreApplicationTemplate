@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using ProjectTemplate.Web.Extensions;
 using ProjectTemplate.Web.Options;
 
@@ -81,6 +82,7 @@ public sealed class DataProtectionServiceExtensionsTests
                 })
                 .Build();
             ServiceCollection services = new();
+            services.AddLogging();
 
             InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
                 services.AddApplicationDataProtection(configuration, new TestHostEnvironment(contentRootPath)));
@@ -161,20 +163,22 @@ public sealed class DataProtectionServiceExtensionsTests
     }
 
     [Fact]
-    public void KeyEncryptionCertificatePasswordWithoutPath_ThrowsInvalidOperationException()
+    public void KeyEncryptionCertificatePasswordWithoutPath_ThrowsOptionsValidationException()
     {
         string contentRootPath = CreateTemporaryDirectory();
 
         try
         {
-            InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
-                CreateServiceProvider(
-                    contentRootPath,
-                    "PasswordOnlyApplication",
-                    new Dictionary<string, string?>
-                    {
-                        [$"{ApplicationDataProtectionOptions.SectionName}:KeyEncryptionCertificatePassword"] = "orphaned-password"
-                    }));
+            using ServiceProvider provider = CreateServiceProvider(
+                contentRootPath,
+                "PasswordOnlyApplication",
+                new Dictionary<string, string?>
+                {
+                    [$"{ApplicationDataProtectionOptions.SectionName}:KeyEncryptionCertificatePassword"] = "orphaned-password"
+                });
+
+            OptionsValidationException exception = Assert.Throws<OptionsValidationException>(() =>
+                _ = provider.GetRequiredService<IOptions<ApplicationDataProtectionOptions>>().Value);
 
             Assert.Contains("requires KeyEncryptionCertificatePath", exception.Message, StringComparison.Ordinal);
         }

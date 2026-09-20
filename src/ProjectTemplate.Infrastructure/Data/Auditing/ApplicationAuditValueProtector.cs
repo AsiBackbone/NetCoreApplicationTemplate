@@ -33,6 +33,9 @@ internal static class ApplicationAuditValueProtector
             case ApplicationAuditValueDisposition.Hash:
                 protectedValue = Hash(value);
                 return true;
+            case ApplicationAuditValueDisposition.HmacSha256:
+                protectedValue = HmacSha256(value, decision.HmacSha256Key);
+                return true;
             case ApplicationAuditValueDisposition.Omit:
                 protectedValue = string.Empty;
                 return false;
@@ -46,9 +49,27 @@ internal static class ApplicationAuditValueProtector
 
     private static string Hash(object? value)
     {
-        string canonicalValue = Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty;
-        byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(canonicalValue));
+        byte[] canonicalValue = Encoding.UTF8.GetBytes(ToCanonicalString(value));
+        byte[] hash = SHA256.HashData(canonicalValue);
         return Convert.ToHexString(hash);
+    }
+
+    private static string HmacSha256(object? value, string? key)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            throw new ArgumentException("HMAC-SHA-256 audit values require a non-empty key.", nameof(key));
+        }
+
+        byte[] canonicalValue = Encoding.UTF8.GetBytes(ToCanonicalString(value));
+        byte[] keyBytes = Encoding.UTF8.GetBytes(key);
+        byte[] hash = HMACSHA256.HashData(keyBytes, canonicalValue);
+        return Convert.ToHexString(hash);
+    }
+
+    private static string ToCanonicalString(object? value)
+    {
+        return Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty;
     }
 
     private static string Truncate(object? value, int? maximumLength)
@@ -58,9 +79,19 @@ internal static class ApplicationAuditValueProtector
             throw new InvalidOperationException("Truncated audit values require a positive maximum length.");
         }
 
-        string text = Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty;
-        return text.Length <= maximumLength.Value
-            ? text
-            : text[..maximumLength.Value];
+        string text = ToCanonicalString(value);
+        if (text.Length <= maximumLength.Value)
+        {
+            return text;
+        }
+
+        int truncationLength = maximumLength.Value;
+        if (char.IsHighSurrogate(text[truncationLength - 1])
+            && char.IsLowSurrogate(text[truncationLength]))
+        {
+            truncationLength--;
+        }
+
+        return text[..truncationLength];
     }
 }
