@@ -45,17 +45,17 @@ public static class PipelineExtensions
         // 7. Routing.
         app.UseRouting();
 
-        // 8. CORS, when needed, should be after routing and before auth.
-        app.UseCors();
+        // CORS is intentionally not enabled by default in the template. If your app needs cross-origin
+        // access, register an explicit policy with AddCors and insert UseCors between routing and auth.
 
-        // 9. Rate limiting after routing when endpoint-specific policies are used.
+        // 8. Rate limiting after routing when endpoint-specific policies are used.
         app.UseRateLimiter();
 
-        // 10. Authentication and authorization.
+        // 9. Authentication and authorization.
         app.UseApplicationAuthentication();
         app.UseAuthorization();
 
-        // 11. Endpoint mapping.
+        // 10. Endpoint mapping.
         app.MapControllers();
         app.MapRazorPages();
 
