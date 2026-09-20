@@ -47,8 +47,12 @@ public static class DataProtectionServiceExtensions
 
         ApplicationDataProtectionOptions options = section.Get<ApplicationDataProtectionOptions>() ?? new();
 
-        string applicationName = options.ApplicationName.Trim();
-        string configuredKeyRingPath = options.KeyRingPath.Trim();
+        string applicationName = !string.IsNullOrWhiteSpace(options.ApplicationName)
+            ? options.ApplicationName.Trim()
+            : throw new InvalidOperationException("ProjectTemplate:DataProtection:ApplicationName is required.");
+        string configuredKeyRingPath = !string.IsNullOrWhiteSpace(options.KeyRingPath)
+            ? options.KeyRingPath.Trim()
+            : throw new InvalidOperationException("ProjectTemplate:DataProtection:KeyRingPath is required.");
         string keyRingPath = Path.IsPathFullyQualified(configuredKeyRingPath)
             ? configuredKeyRingPath
             : Path.GetFullPath(configuredKeyRingPath, environment.ContentRootPath);

@@ -69,7 +69,7 @@ public sealed class DataProtectionServiceExtensionsTests
     [Theory]
     [InlineData("ProjectTemplate:DataProtection:ApplicationName")]
     [InlineData("ProjectTemplate:DataProtection:KeyRingPath")]
-    public void BlankRequiredSetting_ThrowsOptionsValidationException(string settingName)
+    public void BlankRequiredSetting_ThrowsInvalidOperationException(string settingName)
     {
         string contentRootPath = CreateTemporaryDirectory();
 
@@ -83,12 +83,9 @@ public sealed class DataProtectionServiceExtensionsTests
                 .Build();
             ServiceCollection services = new();
             services.AddLogging();
-            services.AddApplicationDataProtection(configuration, new TestHostEnvironment(contentRootPath));
 
-            using ServiceProvider provider = services.BuildServiceProvider(validateScopes: true);
-
-            OptionsValidationException exception = Assert.Throws<OptionsValidationException>(() =>
-                _ = provider.GetRequiredService<IOptions<ApplicationDataProtectionOptions>>().Value);
+            InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
+                services.AddApplicationDataProtection(configuration, new TestHostEnvironment(contentRootPath)));
 
             Assert.Contains($"{settingName} is required.", exception.Message, StringComparison.Ordinal);
         }

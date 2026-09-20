@@ -8,7 +8,8 @@ public sealed record ApplicationAuditValueDecision(
     int? MaximumLength = null)
 {
     /// <summary>
-    /// Gets an optional UTF-8 key used when <see cref="Disposition" /> is <see cref="ApplicationAuditValueDisposition.HmacSha256" />.
+    /// Gets the UTF-8 key used when <see cref="Disposition" /> is <see cref="ApplicationAuditValueDisposition.HmacSha256" />.
+    /// Required for HMAC-SHA-256 and ignored for other dispositions.
     /// </summary>
     public string? HmacSha256Key { get; init; }
 
