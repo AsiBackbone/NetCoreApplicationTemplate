@@ -45,14 +45,16 @@ public static class DataProtectionServiceExtensions
                 _keyEncryptionPasswordWithoutPathMessage)
             .ValidateOnStart();
 
-        ApplicationDataProtectionOptions options = section.Get<ApplicationDataProtectionOptions>() ?? new();
+        ApplicationDataProtectionOptions defaults = new();
 
-        string applicationName = !string.IsNullOrWhiteSpace(options.ApplicationName)
-            ? options.ApplicationName.Trim()
-            : throw new InvalidOperationException("ProjectTemplate:DataProtection:ApplicationName is required.");
-        string configuredKeyRingPath = !string.IsNullOrWhiteSpace(options.KeyRingPath)
-            ? options.KeyRingPath.Trim()
-            : throw new InvalidOperationException("ProjectTemplate:DataProtection:KeyRingPath is required.");
+        string applicationName = ResolveRequiredSetting(
+            section[nameof(ApplicationDataProtectionOptions.ApplicationName)],
+            defaults.ApplicationName,
+            $"{ApplicationDataProtectionOptions.SectionName}:ApplicationName");
+        string configuredKeyRingPath = ResolveRequiredSetting(
+            section[nameof(ApplicationDataProtectionOptions.KeyRingPath)],
+            defaults.KeyRingPath,
+            $"{ApplicationDataProtectionOptions.SectionName}:KeyRingPath");
         string keyRingPath = Path.IsPathFullyQualified(configuredKeyRingPath)
             ? configuredKeyRingPath
             : Path.GetFullPath(configuredKeyRingPath, environment.ContentRootPath);
@@ -62,11 +64,14 @@ public static class DataProtectionServiceExtensions
             .SetApplicationName(applicationName)
             .PersistKeysToFileSystem(new DirectoryInfo(keyRingPath));
 
-        if (!string.IsNullOrWhiteSpace(options.KeyEncryptionCertificatePath))
+        string? configuredCertificatePath = section[nameof(ApplicationDataProtectionOptions.KeyEncryptionCertificatePath)];
+        string? configuredCertificatePassword = section[nameof(ApplicationDataProtectionOptions.KeyEncryptionCertificatePassword)];
+
+        if (!string.IsNullOrWhiteSpace(configuredCertificatePath))
         {
             X509Certificate2 keyEncryptionCertificate = LoadKeyEncryptionCertificate(
-                options.KeyEncryptionCertificatePath.Trim(),
-                options.KeyEncryptionCertificatePassword,
+                configuredCertificatePath.Trim(),
+                configuredCertificatePassword,
                 environment.ContentRootPath);
 
             // ProtectKeysWithCertificate encrypts new keys. UnprotectKeysWithAnyCertificate supplies the same
@@ -78,6 +83,20 @@ public static class DataProtectionServiceExtensions
         }
 
         return services;
+    }
+
+    private static string ResolveRequiredSetting(
+        string? configuredValue,
+        string defaultValue,
+        string settingName)
+    {
+        return configuredValue switch
+        {
+            null => defaultValue,
+            var value when string.IsNullOrWhiteSpace(value) =>
+                throw new InvalidOperationException($"{settingName} is required."),
+            var value => value.Trim()
+        };
     }
 
     private static X509Certificate2 LoadKeyEncryptionCertificate(
