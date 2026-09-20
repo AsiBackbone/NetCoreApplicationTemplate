@@ -6,7 +6,7 @@ namespace ProjectTemplate.Infrastructure.Data.Auditing;
 public enum ApplicationAuditValueDisposition
 {
     /// <summary>
-    /// Records the value unchanged.
+    /// Records the value unchanged, except null is normalized to <see cref="string.Empty" />.
     /// </summary>
     Include = 0,
 
