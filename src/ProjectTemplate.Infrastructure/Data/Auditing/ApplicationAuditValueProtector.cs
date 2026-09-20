@@ -59,8 +59,18 @@ internal static class ApplicationAuditValueProtector
         }
 
         string text = Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty;
-        return text.Length <= maximumLength.Value
-            ? text
-            : text[..maximumLength.Value];
+        if (text.Length <= maximumLength.Value)
+        {
+            return text;
+        }
+
+        int truncationLength = maximumLength.Value;
+        if (char.IsHighSurrogate(text[truncationLength - 1])
+            && char.IsLowSurrogate(text[truncationLength]))
+        {
+            truncationLength--;
+        }
+
+        return text[..truncationLength];
     }
 }
