@@ -18,11 +18,6 @@ namespace ProjectTemplate.Infrastructure.Data.Auditing;
 /// this policy rather than extend it, since the fields worth protecting depend on the application's own model. See
 /// the audit accountability documentation for the replacement seam.
 /// </para>
-/// <para>
-/// Masking is used rather than hashing. The hash disposition is an unsalted SHA-256, which does not protect a
-/// low-entropy value such as an email address: an attacker holding the audit table can recover addresses by hashing
-/// candidates. Hashing suits high-entropy identifiers where correlation matters more than secrecy.
-/// </para>
 /// </remarks>
 public sealed class DefaultApplicationAuditValuePolicy : IApplicationAuditValuePolicy
 {

@@ -33,6 +33,9 @@ internal static class ApplicationAuditValueProtector
             case ApplicationAuditValueDisposition.Hash:
                 protectedValue = Hash(value);
                 return true;
+            case ApplicationAuditValueDisposition.HmacSha256:
+                protectedValue = HmacSha256(value, decision.HmacSha256Key);
+                return true;
             case ApplicationAuditValueDisposition.Omit:
                 protectedValue = string.Empty;
                 return false;
@@ -46,9 +49,24 @@ internal static class ApplicationAuditValueProtector
 
     private static string Hash(object? value)
     {
-        string canonicalValue = Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty;
-        byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(canonicalValue));
+        byte[] canonicalValue = Encoding.UTF8.GetBytes(ToCanonicalString(value));
+        byte[] hash = SHA256.HashData(canonicalValue);
         return Convert.ToHexString(hash);
+    }
+
+    private static string HmacSha256(object? value, string? key)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
+        byte[] canonicalValue = Encoding.UTF8.GetBytes(ToCanonicalString(value));
+        byte[] keyBytes = Encoding.UTF8.GetBytes(key);
+        byte[] hash = HMACSHA256.HashData(keyBytes, canonicalValue);
+        return Convert.ToHexString(hash);
+    }
+
+    private static string ToCanonicalString(object? value)
+    {
+        return Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty;
     }
 
     private static string Truncate(object? value, int? maximumLength)
