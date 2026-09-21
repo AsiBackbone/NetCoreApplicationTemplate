@@ -77,29 +77,19 @@ internal static class ApplicationAuditValueProtector
     // binary and collection columns does not collapse to a single constant digest.
     internal static string ToCanonicalString(object? value)
     {
-        switch (value)
+        return value switch
         {
-            case null:
-                return string.Empty;
-            case string text:
-                return text;
-            case byte[] bytes:
-                return Convert.ToHexString(bytes);
-            case ReadOnlyMemory<byte> memory:
-                return Convert.ToHexString(memory.Span);
-            case Memory<byte> memory:
-                return Convert.ToHexString(memory.Span);
-            case DateTime dateTime:
-                return dateTime.ToString("O", CultureInfo.InvariantCulture);
-            case DateTimeOffset dateTimeOffset:
-                return dateTimeOffset.ToString("O", CultureInfo.InvariantCulture);
-            case IFormattable formattable:
-                return formattable.ToString(null, CultureInfo.InvariantCulture);
-            case IEnumerable sequence:
-                return JsonSerializer.Serialize(sequence.Cast<object?>().Select(ToCanonicalString).ToArray());
-            default:
-                return Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty;
-        }
+            null => string.Empty,
+            string text => text,
+            byte[] bytes => Convert.ToHexString(bytes),
+            ReadOnlyMemory<byte> memory => Convert.ToHexString(memory.Span),
+            Memory<byte> memory => Convert.ToHexString(memory.Span),
+            DateTime dateTime => dateTime.ToString("O", CultureInfo.InvariantCulture),
+            DateTimeOffset dateTimeOffset => dateTimeOffset.ToString("O", CultureInfo.InvariantCulture),
+            IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
+            IEnumerable sequence => JsonSerializer.Serialize(sequence.Cast<object?>().Select(ToCanonicalString).ToArray()),
+            _ => Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty,
+        };
     }
 
     private static string Truncate(object? value, int? maximumLength)
