@@ -1,3 +1,4 @@
+using System.Globalization;
 using ProjectTemplate.Infrastructure.Data.Auditing;
 
 namespace ProjectTemplate.Web.Tests;
@@ -98,6 +99,72 @@ public sealed class ApplicationAuditValueProtectorTests
                 out _));
 
         Assert.Contains("Unsupported audit value disposition", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(ApplicationAuditValueDisposition.Hash)]
+    [InlineData(ApplicationAuditValueDisposition.HmacSha256)]
+    public void TryProtect_DigestDispositions_DistinctByteArrays_ProduceDistinctDigests(
+        ApplicationAuditValueDisposition disposition)
+    {
+        ApplicationAuditValueDecision decision = disposition == ApplicationAuditValueDisposition.HmacSha256
+            ? ApplicationAuditValueDecision.HmacSha256("audit-key-1")
+            : new(disposition);
+
+        object first = Protect(decision, new byte[] { 0x01, 0x02 });
+        object second = Protect(decision, new byte[] { 0x01, 0x03 });
+
+        Assert.NotEqual(first, second);
+        Assert.NotEqual(Protect(decision, "System.Byte[]"), first);
+    }
+
+    [Fact]
+    public void TryProtect_TruncateDisposition_ByteArray_UsesHexRatherThanTypeName()
+    {
+        object protectedValue = Protect(
+            new(ApplicationAuditValueDisposition.Truncate, MaximumLength: 64),
+            new byte[] { 0xDE, 0xAD, 0xBE, 0xEF });
+
+        Assert.Equal("DEADBEEF", protectedValue);
+    }
+
+    [Fact]
+    public void ToCanonicalString_Collections_ExpandElementsDistinctly()
+    {
+        Assert.Equal("[\"a\",\"b\"]", ApplicationAuditValueProtector.ToCanonicalString(new List<string> { "a", "b" }));
+        Assert.NotEqual(
+            ApplicationAuditValueProtector.ToCanonicalString(new List<string> { "a,b" }),
+            ApplicationAuditValueProtector.ToCanonicalString(new List<string> { "a", "b" }));
+    }
+
+    [Fact]
+    public void ToCanonicalString_FormattableValues_AreCultureInvariantAndPrecise()
+    {
+        CultureInfo original = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
+
+            Assert.Equal("1.5", ApplicationAuditValueProtector.ToCanonicalString(1.5m));
+            Assert.NotEqual(
+                ApplicationAuditValueProtector.ToCanonicalString(new DateTime(2026, 1, 1, 0, 0, 0, 1, DateTimeKind.Utc)),
+                ApplicationAuditValueProtector.ToCanonicalString(new DateTime(2026, 1, 1, 0, 0, 0, 2, DateTimeKind.Utc)));
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = original;
+        }
+    }
+
+    private static object Protect(ApplicationAuditValueDecision decision, object? value)
+    {
+        Assert.True(ApplicationAuditValueProtector.TryProtect(
+            new FixedDecisionPolicy(decision),
+            typeof(string),
+            "Field",
+            value,
+            out object protectedValue));
+        return protectedValue;
     }
 
     private sealed class FixedDecisionPolicy(ApplicationAuditValueDecision decision) : IApplicationAuditValuePolicy
