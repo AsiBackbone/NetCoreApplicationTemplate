@@ -380,6 +380,33 @@ public sealed class ApplicationAuditReconciliationTests
     }
 
     [Fact]
+    public async Task ReconcileAsync_RecordsWithoutBatchId_AreBoundedPerRunNewestFirst()
+    {
+        await using TestDatabase database = await TestDatabase.CreateAsync(maximumMalformedRecordsPerRun: 2);
+        var malformed = new List<AuditRecord>();
+        for (int index = 0; index < 5; index++)
+        {
+            AuditRecord record = CreateAuditRecord(string.Empty);
+            record.ModifiedOnUtc = _now.AddMinutes(-10 - index);
+            malformed.Add(record);
+        }
+
+        database.Context.AuditRecords.AddRange(malformed);
+        _ = await database.Context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        _ = await database.Reconciler.ReconcileAsync(TestContext.Current.CancellationToken);
+
+        List<string> findingKeys = await database.Context.ApplicationAuditReconciliationFindings
+            .AsNoTracking()
+            .Where(finding => finding.ReasonCode == ApplicationAuditReconciliationReasonCodes.MalformedCorrelation)
+            .Select(finding => finding.MutationBatchId)
+            .ToListAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(
+            malformed.Take(2).Select(record => $"missing-{record.Id:N}").Order(StringComparer.Ordinal),
+            findingKeys.Order(StringComparer.Ordinal));
+    }
+
+    [Fact]
     public async Task DisabledMode_DoesNotCreateFindings()
     {
         await using TestDatabase database = await TestDatabase.CreateAsync(enabled: false);
@@ -494,7 +521,8 @@ public sealed class ApplicationAuditReconciliationTests
 
         public static async Task<TestDatabase> CreateAsync(
             bool enabled = true,
-            IInterceptor? interceptor = null)
+            IInterceptor? interceptor = null,
+            int maximumMalformedRecordsPerRun = 1_000)
         {
             var connection = new SqliteConnection("Data Source=:memory:");
             await connection.OpenAsync(TestContext.Current.CancellationToken);
@@ -533,7 +561,8 @@ public sealed class ApplicationAuditReconciliationTests
                     Enabled = enabled,
                     CompletionGracePeriod = TimeSpan.Zero,
                     StalePendingThreshold = TimeSpan.FromMinutes(15),
-                    StaleRetryReadyThreshold = TimeSpan.FromMinutes(15)
+                    StaleRetryReadyThreshold = TimeSpan.FromMinutes(15),
+                    MaximumMalformedRecordsPerRun = maximumMalformedRecordsPerRun
                 }),
                 metrics,
                 new FixedTimeProvider(_now));

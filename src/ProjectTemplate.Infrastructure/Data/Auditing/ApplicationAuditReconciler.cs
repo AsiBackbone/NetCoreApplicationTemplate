@@ -48,9 +48,21 @@ public sealed class ApplicationAuditReconciler(
 
         List<AuditRecord> auditRecords = await _dbContext.AuditRecords
             .AsNoTracking()
-            .Where(record => batchIds.Contains(record.MutationBatchId) || record.MutationBatchId == string.Empty)
+            .Where(record => batchIds.Contains(record.MutationBatchId))
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
+
+        // Records without a batch id are not bounded by the batch selection above, so cap them separately;
+        // otherwise every such record ever written would be loaded on every reconciliation pass.
+        List<AuditRecord> malformedRecords = await _dbContext.AuditRecords
+            .AsNoTracking()
+            .Where(record => record.MutationBatchId == string.Empty)
+            .OrderByDescending(record => record.ModifiedOnUtc)
+            .ThenByDescending(record => record.Id)
+            .Take(_options.MaximumMalformedRecordsPerRun)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+        auditRecords.AddRange(malformedRecords);
 
         List<ApplicationAuditCompletionOutboxEntry> completionEntries = await _dbContext
             .ApplicationAuditCompletionOutboxEntries

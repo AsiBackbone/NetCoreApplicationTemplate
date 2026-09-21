@@ -52,6 +52,8 @@ public sealed class ApplicationAuditReconciliationOptions
 
     public int MaximumBatchesPerRun { get; set; } = 1_000;
 
+    public int MaximumMalformedRecordsPerRun { get; set; } = 1_000;
+
     public int HealthWarningFindingCount { get; set; } = 1;
 
     public int HealthUnhealthyFindingCount { get; set; } = 10;
