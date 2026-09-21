@@ -16,10 +16,11 @@ public enum ApplicationAuditValueDisposition
     Mask = 1,
 
     /// <summary>
-    /// Records an unsalted SHA-256 hash of the value.
-    /// This does not protect low-entropy values such as email addresses because
-    /// an attacker holding the audit table can brute-force candidate values.
-    /// Use this only for high-entropy values where correlation matters more than secrecy.
+    /// Records an unsalted, unkeyed SHA-256 hash of the value for integrity and change detection only.
+    /// This is not a confidentiality control: low-entropy values such as email addresses, phone numbers,
+    /// national identifiers, booleans, enum names, and small numbers are trivially recovered by a
+    /// dictionary attack against the audit table. Use <see cref="HmacSha256" /> when the value must stay
+    /// confidential, and use this only for high-entropy values where correlation matters more than secrecy.
     /// </summary>
     Hash = 2,
 

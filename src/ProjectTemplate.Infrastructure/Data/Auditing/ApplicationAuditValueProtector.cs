@@ -1,6 +1,8 @@
+using System.Collections;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 
 namespace ProjectTemplate.Infrastructure.Data.Auditing;
 
@@ -47,6 +49,9 @@ internal static class ApplicationAuditValueProtector
         }
     }
 
+    // Unkeyed SHA-256 is an integrity / change-detection digest only. It provides no confidentiality for
+    // low-entropy values (email addresses, phone numbers, identifiers, booleans, enum names, small numbers),
+    // which a holder of the audit table can recover by dictionary attack. HmacSha256 is the confidential option.
     private static string Hash(object? value)
     {
         byte[] canonicalValue = Encoding.UTF8.GetBytes(ToCanonicalString(value));
@@ -67,9 +72,24 @@ internal static class ApplicationAuditValueProtector
         return Convert.ToHexString(hash);
     }
 
-    private static string ToCanonicalString(object? value)
+    // Produces a culture-invariant representation that is distinct for distinct values. Types whose
+    // Object.ToString() is only the type name (byte[], collections) are expanded, so change detection on
+    // binary and collection columns does not collapse to a single constant digest.
+    internal static string ToCanonicalString(object? value)
     {
-        return Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty;
+        return value switch
+        {
+            null => string.Empty,
+            string text => text,
+            byte[] bytes => Convert.ToHexString(bytes),
+            ReadOnlyMemory<byte> memory => Convert.ToHexString(memory.Span),
+            Memory<byte> memory => Convert.ToHexString(memory.Span),
+            DateTime dateTime => dateTime.ToString("O", CultureInfo.InvariantCulture),
+            DateTimeOffset dateTimeOffset => dateTimeOffset.ToString("O", CultureInfo.InvariantCulture),
+            IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
+            IEnumerable sequence => JsonSerializer.Serialize(sequence.Cast<object?>().Select(ToCanonicalString).ToArray()),
+            _ => Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty,
+        };
     }
 
     private static string Truncate(object? value, int? maximumLength)

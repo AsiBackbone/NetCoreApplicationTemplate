@@ -11,6 +11,23 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * Completed the AsiBackbone 6.0 and Learning 1.0 alignment review, updated
   current terminology, and confirmed that NCAT remains compatible with its 2.x
   public and generated-template contracts.
+* **Behavior change:** audit value canonicalization used by the `Hash`,
+  `HmacSha256`, and `Truncate` dispositions now renders `byte[]` values as hex,
+  collections as JSON arrays of canonical elements, and `DateTime` /
+  `DateTimeOffset` values in round-trip (`O`) format. Digests for these types
+  differ from earlier releases; string and numeric digests are unchanged.
+* Clarified that the `Hash` disposition is an unkeyed integrity digest with no
+  confidentiality for low-entropy values; use `HmacSha256` instead.
+
+### Fixed
+
+* Audit reconciliation runs now persist findings in a single transaction inside
+  the execution strategy (or join a caller-owned transaction), guard every
+  finding update with its `ConcurrencyStamp`, and insert findings only when the
+  key is absent. A concurrent writer now causes a `DbUpdateConcurrencyException`
+  and a full rollback instead of a last-writer-wins or partially applied run.
+* `byte[]` audit values no longer canonicalize to the literal `System.Byte[]`,
+  which made every binary value hash and truncate to the same constant.
 
 ## 2.10.0 - 2026-09-19
 

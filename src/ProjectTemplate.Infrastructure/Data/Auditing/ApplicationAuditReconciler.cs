@@ -439,21 +439,73 @@ public sealed class ApplicationAuditReconciler(
         DateTime now,
         CancellationToken cancellationToken)
     {
+        // When the caller already owns an EF Core transaction, join it and let the caller decide whether
+        // the reconciliation writes commit.
+        if (_dbContext.Database.CurrentTransaction is not null)
+        {
+            await PersistCandidatesCoreAsync(candidates, auditBatchIds, completionEntries, now, cancellationToken)
+                .ConfigureAwait(false);
+            return;
+        }
+
+        // Otherwise persist every finding change in one transaction inside the execution strategy, so a run
+        // applies all of its inserts and guarded updates or none of them, and a retrying provider replays
+        // the reads together with the writes.
+        IExecutionStrategy executionStrategy = _dbContext.Database.CreateExecutionStrategy();
+
+        await executionStrategy.ExecuteAsync(
+                async strategyCancellationToken =>
+                {
+                    await using IDbContextTransaction transaction = await _dbContext.Database
+                        .BeginTransactionAsync(strategyCancellationToken)
+                        .ConfigureAwait(false);
+
+                    await PersistCandidatesCoreAsync(
+                            candidates,
+                            auditBatchIds,
+                            completionEntries,
+                            now,
+                            strategyCancellationToken)
+                        .ConfigureAwait(false);
+
+                    await transaction.CommitAsync(strategyCancellationToken).ConfigureAwait(false);
+                },
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task PersistCandidatesCoreAsync(
+        IReadOnlyCollection<ApplicationAuditReconciliationCandidate> candidates,
+        IReadOnlyCollection<string> auditBatchIds,
+        IReadOnlyCollection<ApplicationAuditCompletionOutboxEntry> completionEntries,
+        DateTime now,
+        CancellationToken cancellationToken)
+    {
         string[] keys = [.. candidates.Select(candidate => candidate.FindingKey)];
+        string[] scopeBatchIds = [.. auditBatchIds
+            .Concat(completionEntries.Select(entry => entry.MutationBatchId))
+            .Where(batchId => !string.IsNullOrWhiteSpace(batchId))
+            .Distinct(StringComparer.Ordinal)];
+
+        // Read the active and the resolvable findings in one round trip. Each row's stamp guards its update.
         List<ApplicationAuditReconciliationFinding> existing = await _dbContext
             .ApplicationAuditReconciliationFindings
             .AsNoTracking()
-            .Where(finding => keys.Contains(finding.FindingKey))
+            .Where(finding => keys.Contains(finding.FindingKey) ||
+                (scopeBatchIds.Contains(finding.MutationBatchId) &&
+                    finding.RemediationStatus != ApplicationAuditReconciliationRemediationStatuses.Resolved))
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
         var existingByKey = existing
             .ToDictionary(finding => finding.FindingKey, StringComparer.Ordinal);
+        var activeKeys = new HashSet<string>(keys, StringComparer.Ordinal);
+        var scopeBatchIdSet = new HashSet<string>(scopeBatchIds, StringComparer.Ordinal);
 
         foreach (ApplicationAuditReconciliationCandidate candidate in candidates)
         {
             if (existingByKey.TryGetValue(candidate.FindingKey, out ApplicationAuditReconciliationFinding? finding))
             {
-                await _dbContext.Database.ExecuteSqlInterpolatedAsync($$"""
+                int updatedCount = await _dbContext.Database.ExecuteSqlInterpolatedAsync($$"""
                     UPDATE [ApplicationAuditReconciliationFindings]
                     SET [Severity] = {{candidate.Severity}},
                         [Guidance] = {{candidate.Guidance}},
@@ -462,44 +514,55 @@ public sealed class ApplicationAuditReconciler(
                         [ResolvedUtc] = {{(DateTime?)null}},
                         [ConcurrencyStamp] = {{Guid.NewGuid().ToString("N")}}
                     WHERE [Id] = {{finding.Id}}
+                        AND [ConcurrencyStamp] = {{finding.ConcurrencyStamp}}
                     """, cancellationToken).ConfigureAwait(false);
+
+                EnsureSingleRowWritten(updatedCount, candidate.FindingKey);
             }
             else
             {
+                // Insert only when no row holds the key, so a run that interleaved and inserted the same finding
+                // surfaces as a concurrency conflict (and a rollback) rather than a unique index violation.
                 var id = Guid.NewGuid();
-                await _dbContext.Database.ExecuteSqlInterpolatedAsync($$"""
+                int insertedCount = await _dbContext.Database.ExecuteSqlInterpolatedAsync($$"""
                     INSERT INTO [ApplicationAuditReconciliationFindings]
                         ([Id], [SchemaVersion], [FindingKey], [ReasonCode], [Severity], [MutationBatchId], [Destination], [Guidance], [RemediationStatus], [FirstObservedUtc], [LastObservedUtc], [ResolvedUtc], [ConcurrencyStamp])
-                    VALUES
-                        ({{id}}, {{ApplicationAuditReconciliationFinding.CurrentSchemaVersion}}, {{candidate.FindingKey}}, {{candidate.ReasonCode}}, {{candidate.Severity}}, {{candidate.MutationBatchId}}, {{candidate.Destination}}, {{candidate.Guidance}}, {{ApplicationAuditReconciliationRemediationStatuses.Open}}, {{now}}, {{now}}, {{(DateTime?)null}}, {{Guid.NewGuid().ToString("N")}})
+                    SELECT
+                        {{id}}, {{ApplicationAuditReconciliationFinding.CurrentSchemaVersion}}, {{candidate.FindingKey}}, {{candidate.ReasonCode}}, {{candidate.Severity}}, {{candidate.MutationBatchId}}, {{candidate.Destination}}, {{candidate.Guidance}}, {{ApplicationAuditReconciliationRemediationStatuses.Open}}, {{now}}, {{now}}, {{(DateTime?)null}}, {{Guid.NewGuid().ToString("N")}}
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM [ApplicationAuditReconciliationFindings]
+                        WHERE [FindingKey] = {{candidate.FindingKey}})
                     """, cancellationToken).ConfigureAwait(false);
+
+                EnsureSingleRowWritten(insertedCount, candidate.FindingKey);
             }
         }
 
-        string[] scopeBatchIds = [.. auditBatchIds
-            .Concat(completionEntries.Select(entry => entry.MutationBatchId))
-            .Where(batchId => !string.IsNullOrWhiteSpace(batchId))
-            .Distinct(StringComparer.Ordinal)];
-        string[] activeKeys = keys;
-
-        List<ApplicationAuditReconciliationFinding> resolved = await _dbContext
-            .ApplicationAuditReconciliationFindings
-            .AsNoTracking()
-            .Where(finding => scopeBatchIds.Contains(finding.MutationBatchId) &&
-                finding.RemediationStatus != ApplicationAuditReconciliationRemediationStatuses.Resolved &&
-                !activeKeys.Contains(finding.FindingKey))
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        foreach (ApplicationAuditReconciliationFinding finding in resolved)
+        foreach (ApplicationAuditReconciliationFinding finding in existing.Where(finding =>
+                     !activeKeys.Contains(finding.FindingKey) &&
+                     scopeBatchIdSet.Contains(finding.MutationBatchId) &&
+                     finding.RemediationStatus != ApplicationAuditReconciliationRemediationStatuses.Resolved))
         {
-            await _dbContext.Database.ExecuteSqlInterpolatedAsync($$"""
+            int resolvedCount = await _dbContext.Database.ExecuteSqlInterpolatedAsync($$"""
                 UPDATE [ApplicationAuditReconciliationFindings]
                 SET [RemediationStatus] = {{ApplicationAuditReconciliationRemediationStatuses.Resolved}},
                     [ResolvedUtc] = {{now}},
                     [ConcurrencyStamp] = {{Guid.NewGuid().ToString("N")}}
                 WHERE [Id] = {{finding.Id}}
+                    AND [ConcurrencyStamp] = {{finding.ConcurrencyStamp}}
                 """, cancellationToken).ConfigureAwait(false);
+
+            EnsureSingleRowWritten(resolvedCount, finding.FindingKey);
+        }
+    }
+
+    private static void EnsureSingleRowWritten(int affectedCount, string findingKey)
+    {
+        if (affectedCount != 1)
+        {
+            throw new DbUpdateConcurrencyException(
+                $"Audit reconciliation finding '{findingKey}' was modified by another writer after it was read. " +
+                "No reconciliation changes were committed; the next reconciliation run re-evaluates the finding.");
         }
     }
 

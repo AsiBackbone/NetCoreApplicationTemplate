@@ -135,6 +135,114 @@ public sealed class ApplicationAuditReconciliationTests
     }
 
     [Fact]
+    public async Task ReconcileAsync_FindingChangedAfterRead_ThrowsConcurrencyExceptionAndRollsBackRun()
+    {
+        var interceptor = new NonQueryInterceptor();
+        await using TestDatabase database = await TestDatabase.CreateAsync(interceptor: interceptor);
+        ApplicationAuditReconciliationFinding finding = await CreateOpenFindingAsync(database, "reconcile-concurrency-batch");
+        database.Context.AuditRecords.Add(CreateAuditRecord("reconcile-concurrency-new-batch"));
+        _ = await database.Context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        bool simulatedConcurrentWrite = false;
+        interceptor.OnNonQueryExecuting = async (command, cancellationToken) =>
+        {
+            if (simulatedConcurrentWrite ||
+                !command.CommandText.Contains("UPDATE [ApplicationAuditReconciliationFindings]", StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            simulatedConcurrentWrite = true;
+
+            // Simulate another reconciler run or remediation changing the finding after this run read it.
+            await using DbCommand concurrentWrite = command.Connection!.CreateCommand();
+            concurrentWrite.Transaction = command.Transaction;
+            concurrentWrite.CommandText =
+                "UPDATE [ApplicationAuditReconciliationFindings] SET [ConcurrencyStamp] = 'concurrent-writer'";
+            _ = await concurrentWrite.ExecuteNonQueryAsync(cancellationToken);
+        };
+
+        _ = await Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => database.Reconciler
+            .ReconcileAsync(TestContext.Current.CancellationToken));
+
+        interceptor.OnNonQueryExecuting = null;
+
+        Assert.True(simulatedConcurrentWrite);
+        Assert.Null(database.Context.Database.CurrentTransaction);
+        ApplicationAuditReconciliationFinding current = Assert.Single(
+            await database.Context.ApplicationAuditReconciliationFindings
+                .AsNoTracking()
+                .ToListAsync(TestContext.Current.CancellationToken));
+        Assert.Equal(finding.Id, current.Id);
+        Assert.Equal(finding.ConcurrencyStamp, current.ConcurrencyStamp);
+    }
+
+    [Fact]
+    public async Task ReconcileAsync_ConcurrentRunInsertedSameFinding_ThrowsConcurrencyExceptionWithoutDuplicate()
+    {
+        var interceptor = new NonQueryInterceptor();
+        await using TestDatabase database = await TestDatabase.CreateAsync(interceptor: interceptor);
+        database.Context.AuditRecords.Add(CreateAuditRecord("reconcile-insert-race-batch"));
+        _ = await database.Context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        bool simulatedConcurrentInsert = false;
+        interceptor.OnNonQueryExecuting = async (command, cancellationToken) =>
+        {
+            if (simulatedConcurrentInsert ||
+                !command.CommandText.Contains("INSERT INTO [ApplicationAuditReconciliationFindings]", StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            simulatedConcurrentInsert = true;
+
+            // Simulate an interleaved run inserting the same finding key between this run's read and insert.
+            await using DbCommand concurrentInsert = command.Connection!.CreateCommand();
+            concurrentInsert.Transaction = command.Transaction;
+            concurrentInsert.CommandText = command.CommandText;
+            foreach (DbParameter parameter in command.Parameters)
+            {
+                _ = concurrentInsert.Parameters.Add(new SqliteParameter(parameter.ParameterName, parameter.Value));
+            }
+
+            concurrentInsert.Parameters[0].Value = Guid.NewGuid().ToString().ToUpperInvariant();
+            _ = await concurrentInsert.ExecuteNonQueryAsync(cancellationToken);
+        };
+
+        _ = await Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => database.Reconciler
+            .ReconcileAsync(TestContext.Current.CancellationToken));
+
+        interceptor.OnNonQueryExecuting = null;
+
+        Assert.True(simulatedConcurrentInsert);
+        Assert.Empty(await database.Context.ApplicationAuditReconciliationFindings
+            .AsNoTracking()
+            .ToListAsync(TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task ReconcileAsync_CallerOwnedTransaction_JoinsTransactionWithoutCommitting()
+    {
+        await using TestDatabase database = await TestDatabase.CreateAsync();
+        database.Context.AuditRecords.Add(CreateAuditRecord("reconcile-caller-transaction-batch"));
+        _ = await database.Context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await using (IDbContextTransaction transaction = await database.Context.Database
+            .BeginTransactionAsync(TestContext.Current.CancellationToken))
+        {
+            _ = await database.Reconciler.ReconcileAsync(TestContext.Current.CancellationToken);
+
+            Assert.Same(transaction, database.Context.Database.CurrentTransaction);
+
+            await transaction.RollbackAsync(TestContext.Current.CancellationToken);
+        }
+
+        Assert.Empty(await database.Context.ApplicationAuditReconciliationFindings
+            .AsNoTracking()
+            .ToListAsync(TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
     public async Task RecordRemediationAsync_AppendsEvidenceAndResolvesFinding()
     {
         await using TestDatabase database = await TestDatabase.CreateAsync();
