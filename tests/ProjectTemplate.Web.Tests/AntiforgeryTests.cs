@@ -9,21 +9,21 @@ namespace ProjectTemplate.Web.Tests;
 /// </summary>
 public sealed class AntiforgeryTests
 {
-    private const string _unannotatedPostPath = "/test/authentication/unannotated-post";
+    private const string _unannotatedUnsafePath = "/test/authentication/unannotated-unsafe";
 
     /// <summary>
-    /// Verifies that a POST to an action without an antiforgery attribute is rejected when the token is missing.
+    /// Verifies that an unsafe request to an action without an antiforgery attribute is rejected when the token is missing.
     /// </summary>
     /// <returns>A task that represents the asynchronous test operation.</returns>
     [Fact]
-    public async Task UnannotatedPost_WithoutAntiforgeryToken_IsRejected()
+    public async Task UnannotatedUnsafeRequest_WithoutAntiforgeryToken_IsRejected()
     {
         using ApplicationWebApplicationFactory factory = CreateFactory();
         using HttpClient client = factory.CreateHttpsClient();
         using FormUrlEncodedContent content = new(new Dictionary<string, string>());
 
-        using HttpResponseMessage response = await client.PostAsync(
-            _unannotatedPostPath,
+        using HttpResponseMessage response = await client.PutAsync(
+            _unannotatedUnsafePath,
             content,
             TestContext.Current.CancellationToken);
 
@@ -31,11 +31,11 @@ public sealed class AntiforgeryTests
     }
 
     /// <summary>
-    /// Verifies that a POST to an action without an antiforgery attribute succeeds with a valid token.
+    /// Verifies that an unsafe request to an action without an antiforgery attribute succeeds with a valid token.
     /// </summary>
     /// <returns>A task that represents the asynchronous test operation.</returns>
     [Fact]
-    public async Task UnannotatedPost_WithAntiforgeryToken_Succeeds()
+    public async Task UnannotatedUnsafeRequest_WithAntiforgeryToken_Succeeds()
     {
         using ApplicationWebApplicationFactory factory = CreateFactory();
         using HttpClient client = factory.CreateHttpsClient();
@@ -50,8 +50,8 @@ public sealed class AntiforgeryTests
             ["__RequestVerificationToken"] = token
         });
 
-        using HttpResponseMessage response = await client.PostAsync(
-            _unannotatedPostPath,
+        using HttpResponseMessage response = await client.PutAsync(
+            _unannotatedUnsafePath,
             content,
             TestContext.Current.CancellationToken);
 
