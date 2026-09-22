@@ -24,7 +24,7 @@ public sealed class HstsTests
     [Fact]
     public async Task ApplicationPipeline_NonDevelopmentHttpsRequest_EmitsStrictTransportSecurity()
     {
-        using ApplicationWebApplicationFactory factory =
+        using var factory =
             ApplicationWebApplicationFactory.CreateAllowingAnonymousAccess(new Dictionary<string, string?>());
         using HttpClient client = factory.CreateClient(new WebApplicationFactoryClientOptions
         {
