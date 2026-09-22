@@ -26,7 +26,7 @@ app.UseApplicationSecurityHeaders();
 
 ## v1.0 Security Header Contract
 
-This contract applies when `ProjectTemplate:SecurityHeaders:Enabled` is `true` and the request path does not match `ExcludedPathPrefixes`. Responses on excluded paths still receive `X-Content-Type-Options: nosniff`, and no other security header.
+This contract applies when `ProjectTemplate:SecurityHeaders:Enabled` is `true` and the request path does not match `ExcludedPathPrefixes`. Responses on excluded paths still receive `X-Content-Type-Options: nosniff` and no other header from this middleware. `Strict-Transport-Security` is registered separately (see [HSTS and Transport Security](#hsts-and-transport-security)) and also applies to excluded paths on HTTPS requests outside Development.
 
 | Header | Default | Contract | Configuration |
 |:---|:---|:---|:---|
