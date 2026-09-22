@@ -28,6 +28,9 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
   and a full rollback instead of a last-writer-wins or partially applied run.
 * `byte[]` audit values no longer canonicalize to the literal `System.Byte[]`,
   which made every binary value hash and truncate to the same constant.
+* Audit reconciliation no longer loads every audit record without a mutation
+  batch id on each pass. Those records are now read newest first and capped by
+  the new `MaximumMalformedRecordsPerRun` option (default 1000, range 1-10000).
 
 ## 2.10.0 - 2026-09-19
 

@@ -27,6 +27,8 @@ public static class ApplicationAuditReconciliationServiceExtensions
                 "The stale retry-ready threshold must be greater than zero.")
             .Validate(options => options.MaximumBatchesPerRun is > 0 and <= 10_000,
                 "Maximum batches per reconciliation run must be between 1 and 10000.")
+            .Validate(options => options.MaximumMalformedRecordsPerRun is > 0 and <= 10_000,
+                "Maximum malformed audit records per reconciliation run must be between 1 and 10000.")
             .Validate(options => options.HealthWarningFindingCount >= 0,
                 "The warning finding threshold must not be negative.")
             .Validate(options => options.HealthUnhealthyFindingCount >= options.HealthWarningFindingCount,
