@@ -85,8 +85,8 @@ internal static class ProblemDetailsExtensions
     /// environment.
     /// </summary>
     /// <remarks>In the development environment, this method enables the developer exception page. In other
-    /// environments, it configures a generic exception handler and enforces HTTP Strict Transport Security (HSTS). It
-    /// also sets up status code pages to return problem details responses when appropriate, or redirects to a custom
+    /// environments, it configures a generic exception handler. HSTS is registered separately by
+    /// <c>SecurityHeadersExtensions.UseApplicationHsts</c>. It also sets up status code pages to return problem details responses when appropriate, or redirects to a custom
     /// error page otherwise.</remarks>
     /// <param name="app">The <see cref="WebApplication"/> instance to configure. Cannot be null.</param>
     /// <returns>The configured <see cref="WebApplication"/> instance.</returns>
@@ -101,7 +101,6 @@ internal static class ProblemDetailsExtensions
         else
         {
             app.UseExceptionHandler("/Home/Error/500");
-            app.UseHsts();
         }
 
         app.UseWhen(

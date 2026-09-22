@@ -2,6 +2,7 @@ using System.Net;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using ProjectTemplate.Web.Accessors;
+using ProjectTemplate.Web.Authentication.Claims;
 
 namespace ProjectTemplate.Web.Tests;
 
@@ -16,6 +17,30 @@ public sealed class HttpContextCurrentActorAccessorTests
         HttpContextCurrentActorAccessor accessor = CreateAccessor(httpContext);
 
         Assert.Equal("Subject: user-123", accessor.CurrentActor);
+    }
+
+    [Fact]
+    public void CurrentActor_AuthenticatedUserWithOnlyNormalizedSubjectClaim_ReturnsSubject()
+    {
+        DefaultHttpContext httpContext = CreateHttpContext(
+            CreateAuthenticatedPrincipal(new Claim(ApplicationClaimTypes.Subject, "user-789")));
+
+        HttpContextCurrentActorAccessor accessor = CreateAccessor(httpContext);
+
+        Assert.Equal("Subject: user-789", accessor.CurrentActor);
+    }
+
+    [Fact]
+    public void CurrentActor_AuthenticatedUserWithNormalizedAndProviderSubjectClaims_PrefersNormalizedSubject()
+    {
+        DefaultHttpContext httpContext = CreateHttpContext(
+            CreateAuthenticatedPrincipal(
+                new Claim("sub", "provider-subject"),
+                new Claim(ApplicationClaimTypes.Subject, "user-789")));
+
+        HttpContextCurrentActorAccessor accessor = CreateAccessor(httpContext);
+
+        Assert.Equal("Subject: user-789", accessor.CurrentActor);
     }
 
     [Fact]

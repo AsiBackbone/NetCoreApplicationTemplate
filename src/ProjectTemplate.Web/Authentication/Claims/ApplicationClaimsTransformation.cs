@@ -28,8 +28,13 @@ public sealed class ApplicationClaimsTransformation(
             return Task.FromResult(principal);
         }
 
-        foreach (ClaimsIdentity identity in principal.Identities.OfType<ClaimsIdentity>())
+        // Transformation may run more than once per request, and the incoming principal can be shared with other
+        // components, so normalize copies instead of editing the caller's principal in place.
+        var transformed = new ClaimsPrincipal();
+
+        foreach (ClaimsIdentity source in principal.Identities)
         {
+            ClaimsIdentity identity = source.Clone();
             ApplicationClaimMappingOptions mappings = ResolveMappings(options, identity.AuthenticationType);
 
             NormalizeClaim(identity, ApplicationClaimTypes.Subject, mappings.Subject, options.RemoveOriginalClaims);
@@ -38,9 +43,41 @@ public sealed class ApplicationClaimsTransformation(
             NormalizeClaim(identity, ApplicationClaimTypes.Role, mappings.Role, options.RemoveOriginalClaims);
             NormalizeClaim(identity, ApplicationClaimTypes.Group, mappings.Group, options.RemoveOriginalClaims);
             NormalizeClaim(identity, ApplicationClaimTypes.Permission, mappings.Permission, options.RemoveOriginalClaims);
+
+            transformed.AddIdentity(WithNormalizedNameAndRoleClaimTypes(identity));
         }
 
-        return Task.FromResult(principal);
+        return Task.FromResult(transformed);
+    }
+
+    // Points Identity.Name, User.IsInRole, and [Authorize(Roles = "...")] at application:name and
+    // application:role, so they keep working once RemoveOriginalClaims strips the provider claims. The original
+    // claim type is kept only when the identity still carries it and has no normalized equivalent (for example,
+    // when the provider's type is not in the configured mappings).
+    private static ClaimsIdentity WithNormalizedNameAndRoleClaimTypes(ClaimsIdentity identity)
+    {
+        string nameClaimType = ResolveClaimType(identity, ApplicationClaimTypes.Name, identity.NameClaimType);
+        string roleClaimType = ResolveClaimType(identity, ApplicationClaimTypes.Role, identity.RoleClaimType);
+
+        return string.Equals(nameClaimType, identity.NameClaimType, StringComparison.Ordinal)
+            && string.Equals(roleClaimType, identity.RoleClaimType, StringComparison.Ordinal)
+            ? identity
+            : new ClaimsIdentity(identity.Claims, identity.AuthenticationType, nameClaimType, roleClaimType)
+            {
+                Actor = identity.Actor,
+                BootstrapContext = identity.BootstrapContext,
+                Label = identity.Label
+            };
+    }
+
+    private static string ResolveClaimType(ClaimsIdentity identity, string normalizedClaimType, string currentClaimType)
+    {
+        bool hasNormalized = identity.HasClaim(claim =>
+            string.Equals(claim.Type, normalizedClaimType, StringComparison.OrdinalIgnoreCase));
+        bool hasCurrent = identity.HasClaim(claim =>
+            string.Equals(claim.Type, currentClaimType, StringComparison.OrdinalIgnoreCase));
+
+        return hasNormalized || !hasCurrent ? normalizedClaimType : currentClaimType;
     }
 
     private static ApplicationClaimMappingOptions ResolveMappings(

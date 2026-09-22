@@ -180,7 +180,7 @@ public sealed class SecurityHeadersTests
     }
 
     /// <summary>
-    /// Verifies that configured excluded path prefixes do not receive security headers.
+    /// Verifies that configured excluded path prefixes receive only the X-Content-Type-Options header.
     /// </summary>
     /// <param name="path">The excluded request path to verify.</param>
     /// <returns>A task that represents the asynchronous test operation.</returns>
@@ -189,7 +189,7 @@ public sealed class SecurityHeadersTests
     [InlineData("/health/ready")]
     [InlineData("/health/live")]
     [InlineData("/metrics")]
-    public async Task ExcludedPathPrefixes_DoNotApplySecurityHeaders(string path)
+    public async Task ExcludedPathPrefixes_ApplyOnlyNoSniffSecurityHeader(string path)
     {
         using ApplicationWebApplicationFactory factory = CreateFactory(new Dictionary<string, string?>
         {
@@ -204,7 +204,14 @@ public sealed class SecurityHeadersTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        AssertSecurityHeadersMissing(response);
+        AssertHeader(response, "X-Content-Type-Options", "nosniff");
+        AssertHeaderMissing(response, "X-Frame-Options");
+        AssertHeaderMissing(response, "Referrer-Policy");
+        AssertHeaderMissing(response, "X-Permitted-Cross-Domain-Policies");
+        AssertHeaderMissing(response, "Cross-Origin-Opener-Policy");
+        AssertHeaderMissing(response, "Cross-Origin-Resource-Policy");
+        AssertHeaderMissing(response, "Permissions-Policy");
+        AssertHeaderMissing(response, "Content-Security-Policy");
     }
 
     /// <summary>

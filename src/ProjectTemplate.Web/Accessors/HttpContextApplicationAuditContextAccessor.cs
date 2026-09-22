@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Security.Claims;
 using ProjectTemplate.Infrastructure.Data.Auditing;
+using ProjectTemplate.Web.Authentication.Claims;
 
 namespace ProjectTemplate.Web.Accessors;
 
@@ -20,7 +21,9 @@ public sealed class HttpContextApplicationAuditContextAccessor(
             HttpContext? httpContext = httpContextAccessor.HttpContext;
             ClaimsPrincipal? user = httpContext?.User;
 
-            string? subject = GetAuthenticatedClaim(user, _subjectClaimType)
+            // Prefer the normalized application claim: claims transformation may remove the provider claims.
+            string? subject = GetAuthenticatedClaim(user, ApplicationClaimTypes.Subject)
+                ?? GetAuthenticatedClaim(user, _subjectClaimType)
                 ?? GetAuthenticatedClaim(user, ClaimTypes.NameIdentifier);
 
             if (!string.IsNullOrWhiteSpace(subject))

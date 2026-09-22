@@ -66,6 +66,17 @@ public sealed class AuthenticationTestController : ControllerBase
     }
 
     /// <summary>
+    /// Accepts a POST that carries no antiforgery attribute, so only the global filter protects it.
+    /// </summary>
+    /// <returns>An OK response when the request passes antiforgery validation.</returns>
+    [HttpPost("unannotated-post")]
+    [AllowAnonymous]
+    public IActionResult UnannotatedPost()
+    {
+        return Ok(new { result = "posted" });
+    }
+
+    /// <summary>
     /// Returns an unannotated response governed by the fallback authorization policy.
     /// </summary>
     /// <returns>An <see cref="IActionResult"/> containing a fallback-policy result.</returns>

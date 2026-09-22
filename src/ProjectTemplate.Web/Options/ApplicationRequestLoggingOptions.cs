@@ -8,7 +8,7 @@ public sealed class ApplicationRequestLoggingOptions
     /// <summary>
     /// Gets the configuration section name used to bind request logging settings.
     /// </summary>
-    public static string SectionName { get; internal set; } = "ProjectTemplate:RequestLogging";
+    public const string SectionName = "ProjectTemplate:RequestLogging";
 
     /// <summary>
     /// Gets or sets a value indicating whether structured request logging is enabled.

@@ -68,7 +68,7 @@ public sealed class HealthCheckTests
     }
 
     /// <summary>
-    /// Verifies that health endpoints do not receive configured security headers.
+    /// Verifies that health endpoints receive only the X-Content-Type-Options security header.
     /// </summary>
     /// <param name="path">The health check path to test.</param>
     /// <returns>A task that represents the asynchronous test operation.</returns>
@@ -76,7 +76,7 @@ public sealed class HealthCheckTests
     [InlineData("/health")]
     [InlineData("/health/ready")]
     [InlineData("/health/live")]
-    public async Task HealthEndpoints_DoNotApplySecurityHeaders(string path)
+    public async Task HealthEndpoints_ApplyOnlyNoSniffSecurityHeader(string path)
     {
         using ApplicationWebApplicationFactory factory = CreateFactory();
         using HttpClient client = factory.CreateHttpsClient();
@@ -85,7 +85,7 @@ public sealed class HealthCheckTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        Assert.False(response.Headers.Contains("X-Content-Type-Options"));
+        Assert.Equal("nosniff", Assert.Single(response.Headers.GetValues("X-Content-Type-Options")));
         Assert.False(response.Headers.Contains("X-Frame-Options"));
         Assert.False(response.Headers.Contains("Referrer-Policy"));
         Assert.False(response.Headers.Contains("X-Permitted-Cross-Domain-Policies"));

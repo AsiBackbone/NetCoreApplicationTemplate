@@ -122,7 +122,7 @@ The default security header configuration excludes `/health`:
 ]
 ```
 
-Because the exclusion is prefix-based, `/health`, `/health/ready`, and `/health/live` are all excluded from security header application. This keeps health probe responses small and infrastructure-friendly.
+Because the exclusion is prefix-based, `/health`, `/health/ready`, and `/health/live` are all excluded from security header application, except `X-Content-Type-Options: nosniff`. This keeps health probe responses small and infrastructure-friendly.
 
 ## Contract References
 

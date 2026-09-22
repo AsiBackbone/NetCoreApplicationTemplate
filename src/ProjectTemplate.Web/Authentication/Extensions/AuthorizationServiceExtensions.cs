@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
-using ProjectTemplate.Web.Authentication.Claims;
 using ProjectTemplate.Web.Authentication.Options;
 
 namespace ProjectTemplate.Web.Authentication.Extensions;
@@ -22,18 +21,6 @@ public static class AuthorizationServiceExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
-
-        ApplicationAuthorizationOptions options = configuration
-            .GetSection(ApplicationAuthorizationOptions.SectionName)
-            .Get<ApplicationAuthorizationOptions>() ?? new ApplicationAuthorizationOptions();
-
-        string roleClaimType = string.IsNullOrWhiteSpace(options.RoleClaimType)
-            ? ApplicationClaimTypes.Role
-            : options.RoleClaimType;
-
-        string permissionClaimType = string.IsNullOrWhiteSpace(options.PermissionClaimType)
-            ? ApplicationClaimTypes.Permission
-            : options.PermissionClaimType;
 
         services
             .AddOptions<ApplicationAuthorizationOptions>()
@@ -57,30 +44,42 @@ public static class AuthorizationServiceExtensions
                 "ProjectTemplate:Authorization:ManageApplicationPermissions must contain at least one non-empty value.")
             .ValidateOnStart();
 
-        services.AddAuthorizationBuilder()
-            .AddPolicy(
-                ApplicationAuthorizationPolicyNames.AuthenticatedUser,
-                policy => policy.RequireAuthenticatedUser())
-            .AddPolicy(
-                ApplicationAuthorizationPolicyNames.AdministratorRole,
-                policy =>
-                {
-                    policy.RequireAuthenticatedUser();
-                    policy.RequireClaim(roleClaimType, options.AdministratorRoles);
-                })
-            .AddPolicy(
-                ApplicationAuthorizationPolicyNames.ManageApplicationPermission,
-                policy =>
-                {
-                    policy.RequireAuthenticatedUser();
-                    policy.RequireClaim(permissionClaimType, options.ManageApplicationPermissions);
-                });
+        _ = services.AddAuthorization();
 
+        // Build every policy from the bound and validated ApplicationAuthorizationOptions instance, so the
+        // policies and the validators above always see the same values.
         services
             .AddOptions<AuthorizationOptions>()
-            .Configure<IOptions<ApplicationAuthorizationOptions>>((authorizationOptions, applicationAuthorizationOptions) => authorizationOptions.FallbackPolicy = applicationAuthorizationOptions.Value.RequireAuthenticatedUserByDefault
+            .Configure<IOptions<ApplicationAuthorizationOptions>>((authorizationOptions, applicationAuthorizationOptionsAccessor) =>
+            {
+                ApplicationAuthorizationOptions applicationAuthorizationOptions = applicationAuthorizationOptionsAccessor.Value;
+
+                authorizationOptions.AddPolicy(
+                    ApplicationAuthorizationPolicyNames.AuthenticatedUser,
+                    policy => policy.RequireAuthenticatedUser());
+                authorizationOptions.AddPolicy(
+                    ApplicationAuthorizationPolicyNames.AdministratorRole,
+                    policy =>
+                    {
+                        policy.RequireAuthenticatedUser();
+                        policy.RequireClaim(
+                            applicationAuthorizationOptions.RoleClaimType,
+                            applicationAuthorizationOptions.AdministratorRoles);
+                    });
+                authorizationOptions.AddPolicy(
+                    ApplicationAuthorizationPolicyNames.ManageApplicationPermission,
+                    policy =>
+                    {
+                        policy.RequireAuthenticatedUser();
+                        policy.RequireClaim(
+                            applicationAuthorizationOptions.PermissionClaimType,
+                            applicationAuthorizationOptions.ManageApplicationPermissions);
+                    });
+
+                authorizationOptions.FallbackPolicy = applicationAuthorizationOptions.RequireAuthenticatedUserByDefault
                     ? new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()
-                    : null);
+                    : null;
+            });
 
         return services;
     }
