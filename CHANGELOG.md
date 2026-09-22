@@ -30,8 +30,8 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
   working when `RemoveOriginalClaims` is enabled.
 * Paths in `SecurityHeaders:ExcludedPathPrefixes` (`/health`, `/metrics`) now
   still receive `X-Content-Type-Options: nosniff`.
-* HSTS is registered by `UseApplicationHsts()` in `SecurityHeadersExtensions`
-  instead of inside the error-handling extension; the pipeline order is
+* HSTS is implemented by `UseApplicationHsts()` in `SecurityHeadersExtensions`
+  and invoked from the same slot in `UseProblemDetails()`; the pipeline order is
   unchanged.
 * Authorization policies are built from the bound and validated
   `ApplicationAuthorizationOptions` instead of a separate configuration snapshot

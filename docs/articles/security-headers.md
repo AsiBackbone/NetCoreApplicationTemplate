@@ -63,7 +63,8 @@ values to an explicit deployment decision.
 
 ASP.NET Core provides `UseHsts()` and `AddHsts(...)` for application-emitted HSTS.
 The generated pipeline calls `UseHsts()` outside Development through
-`UseApplicationHsts()` in `SecurityHeadersExtensions`, with the ASP.NET Core
+`UseApplicationHsts()` (defined in `SecurityHeadersExtensions`, registered by
+`UseProblemDetails()` between the exception handler and status-code pages), with the ASP.NET Core
 defaults. A consuming application that leaves HSTS to the edge may remove that
 call. Emitting it from both layers is not an error, but only one layer should
 own the values.

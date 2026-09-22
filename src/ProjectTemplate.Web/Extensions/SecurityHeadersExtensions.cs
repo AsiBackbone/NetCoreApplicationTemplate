@@ -57,8 +57,8 @@ public static class SecurityHeadersExtensions
     /// Adds HTTP Strict Transport Security (HSTS) outside the development environment.
     /// </summary>
     /// <remarks>
-    /// HSTS is skipped in development so browsers do not pin localhost to HTTPS. Register it after exception
-    /// handling, so re-executed error responses also carry the header, and before HTTPS redirection.
+    /// HSTS is skipped in development so browsers do not pin localhost to HTTPS. <c>UseProblemDetails</c> registers
+    /// it between the exception handler and the status-code page branches, ahead of HTTPS redirection.
     /// </remarks>
     /// <param name="app">The <see cref="WebApplication"/> used to configure the request pipeline.</param>
     /// <returns>The same <see cref="WebApplication"/> instance for chaining.</returns>

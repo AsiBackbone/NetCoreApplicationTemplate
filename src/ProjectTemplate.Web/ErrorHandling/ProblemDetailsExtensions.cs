@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using ProjectTemplate.Web.Extensions;
 using ProjectTemplate.Web.Options;
 
 namespace ProjectTemplate.Web.ErrorHandling;
@@ -85,8 +86,9 @@ internal static class ProblemDetailsExtensions
     /// environment.
     /// </summary>
     /// <remarks>In the development environment, this method enables the developer exception page. In other
-    /// environments, it configures a generic exception handler. HSTS is registered separately by
-    /// <c>SecurityHeadersExtensions.UseApplicationHsts</c>. It also sets up status code pages to return problem details responses when appropriate, or redirects to a custom
+    /// environments, it configures a generic exception handler, followed by HSTS through
+    /// <c>SecurityHeadersExtensions.UseApplicationHsts</c> (defined with the security headers, registered here to keep
+    /// it ahead of the status-code branches). It also sets up status code pages to return problem details responses when appropriate, or redirects to a custom
     /// error page otherwise.</remarks>
     /// <param name="app">The <see cref="WebApplication"/> instance to configure. Cannot be null.</param>
     /// <returns>The configured <see cref="WebApplication"/> instance.</returns>
@@ -102,6 +104,11 @@ internal static class ProblemDetailsExtensions
         {
             app.UseExceptionHandler("/Home/Error/500");
         }
+
+        // HSTS belongs between the exception handler and the status-code branches below, so it runs once per
+        // request and is not re-invoked by status-code re-execution. The implementation lives with the other
+        // security headers; only the registration point is here. It is a no-op in development.
+        app.UseApplicationHsts();
 
         app.UseWhen(
             ProblemDetailsRequestClassifier.ShouldWriteProblemDetails,

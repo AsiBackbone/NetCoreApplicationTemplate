@@ -30,7 +30,7 @@ The pipeline order is:
 11. Authorization
 12. Controller and Razor Page endpoint mapping
 
-Error handling is one step, not two. `UseProblemDetails()` adds the developer exception page in Development, or the production exception handler outside it, and then branches status-code handling between Problem Details responses and the re-executed browser error page. Registering a second environment-aware error-handling extension alongside it would add a duplicate exception handler and an unconditional status-code re-execute wrapping the classified one.
+Error handling is one step, not two. `UseProblemDetails()` adds the developer exception page in Development, or the production exception handler and HSTS (`UseApplicationHsts()`) outside it, and then branches status-code handling between Problem Details responses and the re-executed browser error page. Registering a second environment-aware error-handling extension alongside it would add a duplicate exception handler, a duplicate HSTS middleware, and an unconditional status-code re-execute wrapping the classified one.
 
 This order keeps proxy correction early, request logging close to the beginning of the request, error handling ahead of most application behavior, and endpoint-specific features such as CORS and rate limiting after routing.
 
