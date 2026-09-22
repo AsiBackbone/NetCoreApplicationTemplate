@@ -1,6 +1,9 @@
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Options;
 using ProjectTemplate.Infrastructure.Data.Entities;
@@ -240,14 +243,15 @@ public sealed class ApplicationAuditReconciler(
 
         // Update the finding first, guarded by the stamp that was read. If a reconciliation run or another
         // remediation changed the finding in the meantime, no row matches and nothing is written.
-        int updatedFindingCount = await _dbContext.Database.ExecuteSqlInterpolatedAsync($$"""
-            UPDATE [ApplicationAuditReconciliationFindings]
-            SET [RemediationStatus] = {{remediationStatus}},
-                [ResolvedUtc] = {{resolvedUtc}},
-                [ConcurrencyStamp] = {{nextFindingConcurrencyStamp}}
-            WHERE [Id] = {{findingId}}
-                AND [ConcurrencyStamp] = {{expectedFindingConcurrencyStamp}}
-            """, cancellationToken).ConfigureAwait(false);
+        int updatedFindingCount = await _dbContext.ApplicationAuditReconciliationFindings
+            .Where(item => item.Id == findingId && item.ConcurrencyStamp == expectedFindingConcurrencyStamp)
+            .ExecuteUpdateAsync(
+                setters => setters
+                    .SetProperty(item => item.RemediationStatus, remediationStatus)
+                    .SetProperty(item => item.ResolvedUtc, resolvedUtc)
+                    .SetProperty(item => item.ConcurrencyStamp, nextFindingConcurrencyStamp),
+                cancellationToken)
+            .ConfigureAwait(false);
 
         if (updatedFindingCount != 1)
         {
@@ -259,12 +263,20 @@ public sealed class ApplicationAuditReconciler(
         var remediationId = Guid.NewGuid();
         string remediationConcurrencyStamp = Guid.NewGuid().ToString("N");
 
-        await _dbContext.Database.ExecuteSqlInterpolatedAsync($$"""
-            INSERT INTO [ApplicationAuditReconciliationRemediations]
-                ([Id], [FindingId], [MutationBatchId], [ActionCode], [ActorId], [EvidenceReference], [RecordedUtc], [ConcurrencyStamp])
-            VALUES
-                ({{remediationId}}, {{findingId}}, {{finding.MutationBatchId}}, {{actionCode}}, {{actorId}}, {{evidenceReference}}, {{now}}, {{remediationConcurrencyStamp}})
-            """, cancellationToken).ConfigureAwait(false);
+        _ = await InsertAsync<ApplicationAuditReconciliationRemediation>(
+                [
+                    (nameof(ApplicationAuditReconciliationRemediation.Id), remediationId),
+                    (nameof(ApplicationAuditReconciliationRemediation.FindingId), findingId),
+                    (nameof(ApplicationAuditReconciliationRemediation.MutationBatchId), finding.MutationBatchId),
+                    (nameof(ApplicationAuditReconciliationRemediation.ActionCode), actionCode),
+                    (nameof(ApplicationAuditReconciliationRemediation.ActorId), actorId),
+                    (nameof(ApplicationAuditReconciliationRemediation.EvidenceReference), evidenceReference),
+                    (nameof(ApplicationAuditReconciliationRemediation.RecordedUtc), now),
+                    (nameof(ApplicationAuditReconciliationRemediation.ConcurrencyStamp), remediationConcurrencyStamp)
+                ],
+                uniqueProperty: null,
+                cancellationToken)
+            .ConfigureAwait(false);
 
         return new(
             remediationId,
@@ -517,17 +529,21 @@ public sealed class ApplicationAuditReconciler(
         {
             if (existingByKey.TryGetValue(candidate.FindingKey, out ApplicationAuditReconciliationFinding? finding))
             {
-                int updatedCount = await _dbContext.Database.ExecuteSqlInterpolatedAsync($$"""
-                    UPDATE [ApplicationAuditReconciliationFindings]
-                    SET [Severity] = {{candidate.Severity}},
-                        [Guidance] = {{candidate.Guidance}},
-                        [LastObservedUtc] = {{now}},
-                        [RemediationStatus] = {{ApplicationAuditReconciliationRemediationStatuses.Open}},
-                        [ResolvedUtc] = {{(DateTime?)null}},
-                        [ConcurrencyStamp] = {{Guid.NewGuid().ToString("N")}}
-                    WHERE [Id] = {{finding.Id}}
-                        AND [ConcurrencyStamp] = {{finding.ConcurrencyStamp}}
-                    """, cancellationToken).ConfigureAwait(false);
+                Guid findingId = finding.Id;
+                string expectedConcurrencyStamp = finding.ConcurrencyStamp;
+                string nextConcurrencyStamp = Guid.NewGuid().ToString("N");
+                int updatedCount = await _dbContext.ApplicationAuditReconciliationFindings
+                    .Where(item => item.Id == findingId && item.ConcurrencyStamp == expectedConcurrencyStamp)
+                    .ExecuteUpdateAsync(
+                        setters => setters
+                            .SetProperty(item => item.Severity, candidate.Severity)
+                            .SetProperty(item => item.Guidance, candidate.Guidance)
+                            .SetProperty(item => item.LastObservedUtc, now)
+                            .SetProperty(item => item.RemediationStatus, ApplicationAuditReconciliationRemediationStatuses.Open)
+                            .SetProperty(item => item.ResolvedUtc, (DateTime?)null)
+                            .SetProperty(item => item.ConcurrencyStamp, nextConcurrencyStamp),
+                        cancellationToken)
+                    .ConfigureAwait(false);
 
                 EnsureSingleRowWritten(updatedCount, candidate.FindingKey);
             }
@@ -535,16 +551,25 @@ public sealed class ApplicationAuditReconciler(
             {
                 // Insert only when no row holds the key, so a run that interleaved and inserted the same finding
                 // surfaces as a concurrency conflict (and a rollback) rather than a unique index violation.
-                var id = Guid.NewGuid();
-                int insertedCount = await _dbContext.Database.ExecuteSqlInterpolatedAsync($$"""
-                    INSERT INTO [ApplicationAuditReconciliationFindings]
-                        ([Id], [SchemaVersion], [FindingKey], [ReasonCode], [Severity], [MutationBatchId], [Destination], [Guidance], [RemediationStatus], [FirstObservedUtc], [LastObservedUtc], [ResolvedUtc], [ConcurrencyStamp])
-                    SELECT
-                        {{id}}, {{ApplicationAuditReconciliationFinding.CurrentSchemaVersion}}, {{candidate.FindingKey}}, {{candidate.ReasonCode}}, {{candidate.Severity}}, {{candidate.MutationBatchId}}, {{candidate.Destination}}, {{candidate.Guidance}}, {{ApplicationAuditReconciliationRemediationStatuses.Open}}, {{now}}, {{now}}, {{(DateTime?)null}}, {{Guid.NewGuid().ToString("N")}}
-                    WHERE NOT EXISTS (
-                        SELECT 1 FROM [ApplicationAuditReconciliationFindings]
-                        WHERE [FindingKey] = {{candidate.FindingKey}})
-                    """, cancellationToken).ConfigureAwait(false);
+                int insertedCount = await InsertAsync<ApplicationAuditReconciliationFinding>(
+                        [
+                            (nameof(ApplicationAuditReconciliationFinding.Id), Guid.NewGuid()),
+                            (nameof(ApplicationAuditReconciliationFinding.SchemaVersion), ApplicationAuditReconciliationFinding.CurrentSchemaVersion),
+                            (nameof(ApplicationAuditReconciliationFinding.FindingKey), candidate.FindingKey),
+                            (nameof(ApplicationAuditReconciliationFinding.ReasonCode), candidate.ReasonCode),
+                            (nameof(ApplicationAuditReconciliationFinding.Severity), candidate.Severity),
+                            (nameof(ApplicationAuditReconciliationFinding.MutationBatchId), candidate.MutationBatchId),
+                            (nameof(ApplicationAuditReconciliationFinding.Destination), candidate.Destination),
+                            (nameof(ApplicationAuditReconciliationFinding.Guidance), candidate.Guidance),
+                            (nameof(ApplicationAuditReconciliationFinding.RemediationStatus), ApplicationAuditReconciliationRemediationStatuses.Open),
+                            (nameof(ApplicationAuditReconciliationFinding.FirstObservedUtc), now),
+                            (nameof(ApplicationAuditReconciliationFinding.LastObservedUtc), now),
+                            (nameof(ApplicationAuditReconciliationFinding.ResolvedUtc), null),
+                            (nameof(ApplicationAuditReconciliationFinding.ConcurrencyStamp), Guid.NewGuid().ToString("N"))
+                        ],
+                        uniqueProperty: nameof(ApplicationAuditReconciliationFinding.FindingKey),
+                        cancellationToken)
+                    .ConfigureAwait(false);
 
                 EnsureSingleRowWritten(insertedCount, candidate.FindingKey);
             }
@@ -555,17 +580,74 @@ public sealed class ApplicationAuditReconciler(
                      scopeBatchIdSet.Contains(finding.MutationBatchId) &&
                      finding.RemediationStatus != ApplicationAuditReconciliationRemediationStatuses.Resolved))
         {
-            int resolvedCount = await _dbContext.Database.ExecuteSqlInterpolatedAsync($$"""
-                UPDATE [ApplicationAuditReconciliationFindings]
-                SET [RemediationStatus] = {{ApplicationAuditReconciliationRemediationStatuses.Resolved}},
-                    [ResolvedUtc] = {{now}},
-                    [ConcurrencyStamp] = {{Guid.NewGuid().ToString("N")}}
-                WHERE [Id] = {{finding.Id}}
-                    AND [ConcurrencyStamp] = {{finding.ConcurrencyStamp}}
-                """, cancellationToken).ConfigureAwait(false);
+            Guid findingId = finding.Id;
+            string expectedConcurrencyStamp = finding.ConcurrencyStamp;
+            string nextConcurrencyStamp = Guid.NewGuid().ToString("N");
+            int resolvedCount = await _dbContext.ApplicationAuditReconciliationFindings
+                .Where(item => item.Id == findingId && item.ConcurrencyStamp == expectedConcurrencyStamp)
+                .ExecuteUpdateAsync(
+                    setters => setters
+                        .SetProperty(item => item.RemediationStatus, ApplicationAuditReconciliationRemediationStatuses.Resolved)
+                        .SetProperty(item => item.ResolvedUtc, (DateTime?)now)
+                        .SetProperty(item => item.ConcurrencyStamp, nextConcurrencyStamp),
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             EnsureSingleRowWritten(resolvedCount, finding.FindingKey);
         }
+    }
+
+    // Inserts one row without going through SaveChanges (so the save pipeline does not audit reconciliation
+    // bookkeeping). Table and column names come from the EF Core model and are quoted by the provider's
+    // ISqlGenerationHelper, so the statement follows entity configuration and works on any relational provider
+    // that accepts INSERT ... SELECT without FROM (SQL Server, SQLite, PostgreSQL). Values are always parameters.
+    // When uniqueProperty is set, the row is written only if no row already holds that property's value.
+    private Task<int> InsertAsync<TEntity>(
+        IReadOnlyList<(string Property, object? Value)> values,
+        string? uniqueProperty,
+        CancellationToken cancellationToken)
+        where TEntity : class
+    {
+        IEntityType entityType = _dbContext.Model.FindEntityType(typeof(TEntity))
+            ?? throw new InvalidOperationException($"'{typeof(TEntity).Name}' is not part of the EF Core model.");
+        string tableName = entityType.GetTableName()
+            ?? throw new InvalidOperationException($"'{typeof(TEntity).Name}' is not mapped to a table.");
+        var table = StoreObjectIdentifier.Table(tableName, entityType.GetSchema());
+        ISqlGenerationHelper sqlGenerationHelper = _dbContext.GetService<ISqlGenerationHelper>();
+
+        string Column(string propertyName)
+        {
+            IProperty property = entityType.FindProperty(propertyName)
+                ?? throw new InvalidOperationException($"'{typeof(TEntity).Name}.{propertyName}' is not mapped.");
+            return EscapeFormatBraces(sqlGenerationHelper.DelimitIdentifier(property.GetColumnName(table)
+                ?? throw new InvalidOperationException($"'{typeof(TEntity).Name}.{propertyName}' has no column.")));
+        }
+
+        string delimitedTable = EscapeFormatBraces(sqlGenerationHelper.DelimitIdentifier(table.Name, table.Schema));
+        var parameters = values.Select(value => value.Value).ToList();
+        StringBuilder sql = new StringBuilder()
+            .Append("INSERT INTO ").Append(delimitedTable)
+            .Append(" (").AppendJoin(", ", values.Select(value => Column(value.Property))).Append(") SELECT ")
+            .AppendJoin(", ", values.Select((_, index) => $"{{{index}}}"));
+
+        if (uniqueProperty is not null)
+        {
+            object? uniqueValue = values.Single(value => value.Property == uniqueProperty).Value;
+            _ = sql.Append(" WHERE NOT EXISTS (SELECT 1 FROM ").Append(delimitedTable)
+                .Append(" WHERE ").Append(Column(uniqueProperty)).Append(" = {").Append(parameters.Count).Append("})");
+            parameters.Add(uniqueValue);
+        }
+
+        // Only model-derived identifiers are part of the format string; every value is a format argument, which
+        // ExecuteSqlAsync binds as a DbParameter.
+        return _dbContext.Database.ExecuteSqlAsync(
+            FormattableStringFactory.Create(sql.ToString(), [.. parameters]),
+            cancellationToken);
+    }
+
+    private static string EscapeFormatBraces(string identifier)
+    {
+        return identifier.Replace("{", "{{", StringComparison.Ordinal).Replace("}", "}}", StringComparison.Ordinal);
     }
 
     private static void EnsureSingleRowWritten(int affectedCount, string findingKey)
