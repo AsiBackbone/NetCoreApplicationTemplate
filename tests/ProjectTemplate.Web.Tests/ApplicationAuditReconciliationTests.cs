@@ -147,7 +147,7 @@ public sealed class ApplicationAuditReconciliationTests
         interceptor.OnNonQueryExecuting = async (command, cancellationToken) =>
         {
             if (simulatedConcurrentWrite ||
-                !command.CommandText.Contains("UPDATE [ApplicationAuditReconciliationFindings]", StringComparison.Ordinal))
+                !IsWriteTo(command, "UPDATE", "ApplicationAuditReconciliationFindings"))
             {
                 return;
             }
@@ -189,7 +189,7 @@ public sealed class ApplicationAuditReconciliationTests
         interceptor.OnNonQueryExecuting = async (command, cancellationToken) =>
         {
             if (simulatedConcurrentInsert ||
-                !command.CommandText.Contains("INSERT INTO [ApplicationAuditReconciliationFindings]", StringComparison.Ordinal))
+                !IsWriteTo(command, "INSERT INTO", "ApplicationAuditReconciliationFindings"))
             {
                 return;
             }
@@ -280,7 +280,7 @@ public sealed class ApplicationAuditReconciliationTests
         ApplicationAuditReconciliationFinding finding = await CreateOpenFindingAsync(database, "rollback-batch");
 
         interceptor.OnNonQueryExecuting = (command, _) =>
-            command.CommandText.Contains("INSERT INTO [ApplicationAuditReconciliationRemediations]", StringComparison.Ordinal)
+            IsWriteTo(command, "INSERT INTO", "ApplicationAuditReconciliationRemediations")
                 ? throw new InvalidOperationException("Simulated remediation insert failure.")
                 : Task.CompletedTask;
 
@@ -306,7 +306,7 @@ public sealed class ApplicationAuditReconciliationTests
         interceptor.OnNonQueryExecuting = async (command, cancellationToken) =>
         {
             if (simulatedConcurrentWrite ||
-                !command.CommandText.Contains("UPDATE [ApplicationAuditReconciliationFindings]", StringComparison.Ordinal))
+                !IsWriteTo(command, "UPDATE", "ApplicationAuditReconciliationFindings"))
             {
                 return;
             }
@@ -575,6 +575,13 @@ public sealed class ApplicationAuditReconciliationTests
             await Context.DisposeAsync();
             await Connection.DisposeAsync();
         }
+    }
+
+    // Matches the provider-generated statement regardless of identifier quoting ([x], "x", or `x`).
+    private static bool IsWriteTo(DbCommand command, string statement, string tableName)
+    {
+        return command.CommandText.TrimStart().StartsWith(statement, StringComparison.OrdinalIgnoreCase) &&
+            command.CommandText.Contains(tableName, StringComparison.Ordinal);
     }
 
     private sealed class NonQueryInterceptor : DbCommandInterceptor
