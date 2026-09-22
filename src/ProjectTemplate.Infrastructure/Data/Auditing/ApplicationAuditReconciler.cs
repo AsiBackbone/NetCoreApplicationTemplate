@@ -625,7 +625,7 @@ public sealed class ApplicationAuditReconciler(
 
         string delimitedTable = EscapeFormatBraces(sqlGenerationHelper.DelimitIdentifier(table.Name, table.Schema));
         var parameters = values.Select(value => value.Value).ToList();
-        var sql = new StringBuilder()
+        StringBuilder sql = new StringBuilder()
             .Append("INSERT INTO ").Append(delimitedTable)
             .Append(" (").AppendJoin(", ", values.Select(value => Column(value.Property))).Append(") SELECT ")
             .AppendJoin(", ", values.Select((_, index) => $"{{{index}}}"));
