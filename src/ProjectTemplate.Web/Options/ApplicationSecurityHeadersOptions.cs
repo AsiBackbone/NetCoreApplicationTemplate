@@ -8,7 +8,7 @@ public sealed class ApplicationSecurityHeadersOptions
     /// <summary>
     /// Gets the configuration section name used to bind security header settings.
     /// </summary>
-    public static string SectionName { get; internal set; } = "ProjectTemplate:SecurityHeaders";
+    public const string SectionName = "ProjectTemplate:SecurityHeaders";
 
     /// <summary>
     /// Gets or sets a value indicating whether security headers are enabled.

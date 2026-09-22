@@ -29,8 +29,9 @@ public static class PipelineExtensions
         app.UseApplicationRequestLogging();
 
         // 3. Centralized exception and status-code handling. This is the single registration: it adds the
-        //    developer exception page or the production exception handler and HSTS, then branches status-code
-        //    handling between Problem Details responses and the re-executed browser error page.
+        //    developer exception page or the production exception handler and HSTS (UseApplicationHsts, outside
+        //    development), then branches status-code handling between Problem Details responses and the
+        //    re-executed browser error page.
         app.UseProblemDetails();
 
         // 4. Optional security response headers.

@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using ProjectTemplate.Infrastructure.Data;
+using ProjectTemplate.Web.Authentication.Claims;
 
 namespace ProjectTemplate.Web.Accessors;
 
@@ -16,7 +17,7 @@ public sealed class HttpContextCurrentActorAccessor(
 
     /// <summary>
     /// Accesses the current actor information from the HTTP context. It first attempts to retrieve the authenticated
-    /// subject claim from the user's claims, then falls back to the authenticated name identifier claim, then the remote
+    /// normalized application subject claim, then the provider subject claim, then falls back to the authenticated name identifier claim, then the remote
     /// IP address. If none are available, it returns "Unknown".
     /// </summary>
     public string CurrentActor
@@ -47,7 +48,10 @@ public sealed class HttpContextCurrentActorAccessor(
             return null;
         }
 
-        string? subject = GetClaimValue(user, _subjectClaimType);
+        // Prefer the normalized application claim: when claims transformation removes the original claims,
+        // the provider "sub" and name identifier claims are no longer present.
+        string? subject = GetClaimValue(user, ApplicationClaimTypes.Subject)
+            ?? GetClaimValue(user, _subjectClaimType);
 
         if (!string.IsNullOrWhiteSpace(subject))
         {

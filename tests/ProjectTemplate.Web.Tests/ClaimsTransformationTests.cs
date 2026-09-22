@@ -275,6 +275,60 @@ public sealed class ClaimsTransformationTests
         Assert.Equal(1, normalizedSubjectClaimCount);
     }
 
+    /// <summary>
+    /// Verifies that transformation returns a new principal and leaves the incoming principal unchanged.
+    /// </summary>
+    [Fact]
+    public async Task ClaimsTransformation_RemoveOriginalClaims_DoesNotMutateIncomingPrincipal()
+    {
+        ApplicationClaimsTransformation transformation = CreateTransformation(
+            new ApplicationClaimsTransformationOptions { RemoveOriginalClaims = true });
+
+        ClaimsPrincipal principal = CreatePrincipal(
+            authenticationType: "OpenIdConnect",
+            claims:
+            [
+                new Claim("sub", "user-123"),
+                new Claim("roles", "Administrator")
+            ]);
+
+        ClaimsPrincipal transformed = await transformation.TransformAsync(principal);
+
+        Assert.NotSame(principal, transformed);
+        Assert.Equal(["sub", "roles"], principal.Claims.Select(claim => claim.Type));
+        Assert.DoesNotContain(transformed.Claims, claim => claim.Type == "sub");
+        Assert.Contains(transformed.Claims, claim =>
+            claim.Type == ApplicationClaimTypes.Subject &&
+            claim.Value == "user-123");
+    }
+
+    /// <summary>
+    /// Verifies that role and name checks resolve against normalized claims after original claims are removed.
+    /// </summary>
+    [Fact]
+    public async Task ClaimsTransformation_RemoveOriginalClaims_KeepsIsInRoleAndNameWorking()
+    {
+        ApplicationClaimsTransformation transformation = CreateTransformation(
+            new ApplicationClaimsTransformationOptions { RemoveOriginalClaims = true });
+
+        ClaimsPrincipal principal = CreatePrincipal(
+            authenticationType: "OpenIdConnect",
+            claims:
+            [
+                new Claim(ClaimTypes.Name, "Test User"),
+                new Claim(ClaimTypes.Role, "Administrator")
+            ]);
+
+        ClaimsPrincipal transformed = await transformation.TransformAsync(principal);
+
+        ClaimsIdentity identity = Assert.IsType<ClaimsIdentity>(transformed.Identity);
+        Assert.Equal(ApplicationClaimTypes.Role, identity.RoleClaimType);
+        Assert.Equal(ApplicationClaimTypes.Name, identity.NameClaimType);
+        Assert.True(identity.IsAuthenticated);
+        Assert.True(transformed.IsInRole("Administrator"));
+        Assert.Equal("Test User", transformed.Identity?.Name);
+    }
+
     private static ApplicationClaimsTransformation CreateTransformation(
         ApplicationClaimsTransformationOptions? claimsTransformationOptions = null)
     {

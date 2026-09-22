@@ -23,8 +23,22 @@ public sealed class SecurityHeadersMiddleware(RequestDelegate next, IOptions<App
     /// <returns>A <see cref="Task"/> that completes when the middleware and the next delegate finish processing.</returns>
     public async Task InvokeAsync(HttpContext context)
     {
-        if (!_options.Enabled || IsExcludedPath(context.Request.Path))
+        if (!_options.Enabled)
         {
+            await _next(context);
+            return;
+        }
+
+        if (IsExcludedPath(context.Request.Path))
+        {
+            // Excluded endpoints (health, metrics) skip the document-oriented headers, but MIME sniffing
+            // protection costs nothing and applies to every response.
+            context.Response.OnStarting(() =>
+            {
+                AddHeaderIfMissing(context.Response.Headers, "X-Content-Type-Options", "nosniff");
+                return Task.CompletedTask;
+            });
+
             await _next(context);
             return;
         }

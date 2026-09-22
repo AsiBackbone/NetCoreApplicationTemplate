@@ -18,8 +18,33 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
   differ from earlier releases; string and numeric digests are unchanged.
 * Clarified that the `Hash` disposition is an unkeyed integrity digest with no
   confidentiality for low-entropy values; use `HmacSha256` instead.
+* **Behavior change for adopters:** MVC now validates antiforgery tokens on
+  every unsafe request (`POST`, `PUT`, `PATCH`, `DELETE`) through a global
+  `AutoValidateAntiforgeryTokenAttribute`. Actions that must accept requests
+  without a token, such as token-authenticated APIs that do not use cookies,
+  need `[IgnoreAntiforgeryToken]`.
+* **Behavior change:** claims transformation now returns a new principal
+  instead of editing the incoming one, and sets each identity's `NameClaimType`
+  and `RoleClaimType` to `application:name` and `application:role`, so
+  `User.Identity.Name`, `User.IsInRole`, and `[Authorize(Roles = "...")]` keep
+  working when `RemoveOriginalClaims` is enabled.
+* Paths in `SecurityHeaders:ExcludedPathPrefixes` (`/health`, `/metrics`) now
+  still receive `X-Content-Type-Options: nosniff`.
+* HSTS is implemented by `UseApplicationHsts()` in `SecurityHeadersExtensions`
+  and invoked from the same slot in `UseProblemDetails()`; the pipeline order is
+  unchanged.
+* Authorization policies are built from the bound and validated
+  `ApplicationAuthorizationOptions` instead of a separate configuration snapshot
+  read at registration.
+* `ApplicationSecurityHeadersOptions.SectionName` and
+  `ApplicationRequestLoggingOptions.SectionName` are now `const`.
 
 ### Fixed
+
+* Audit actor attribution (`HttpContextCurrentActorAccessor` and
+  `HttpContextApplicationAuditContextAccessor`) now reads the normalized
+  `application:subject` claim first. With `RemoveOriginalClaims` enabled,
+  authenticated users were previously recorded as `Remote IP: ...`.
 
 * Audit reconciliation runs now persist findings in a single transaction inside
   the execution strategy (or join a caller-owned transaction), guard every

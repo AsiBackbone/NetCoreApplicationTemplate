@@ -66,6 +66,22 @@ public sealed class AuthenticationTestController : ControllerBase
     }
 
     /// <summary>
+    /// Accepts an unsafe (PUT) request that carries no antiforgery attribute, so only the global
+    /// AutoValidateAntiforgeryTokenAttribute filter protects it.
+    /// </summary>
+    /// <remarks>
+    /// PUT rather than POST: static analysis (CodeQL cs/web/missing-token-validation) cannot see globally
+    /// registered MVC filters and would flag an unannotated POST, while the global filter covers every unsafe verb.
+    /// </remarks>
+    /// <returns>An OK response when the request passes antiforgery validation.</returns>
+    [HttpPut("unannotated-unsafe")]
+    [AllowAnonymous]
+    public IActionResult UnannotatedUnsafe()
+    {
+        return Ok(new { result = "accepted" });
+    }
+
+    /// <summary>
     /// Returns an unannotated response governed by the fallback authorization policy.
     /// </summary>
     /// <returns>An <see cref="IActionResult"/> containing a fallback-policy result.</returns>

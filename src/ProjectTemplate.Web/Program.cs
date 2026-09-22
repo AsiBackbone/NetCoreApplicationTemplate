@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Globalization;
+using Microsoft.AspNetCore.Mvc;
 using ProjectTemplate.Web.Authentication.Extensions;
 using ProjectTemplate.Web.ErrorHandling;
 using ProjectTemplate.Web.Extensions;
@@ -24,7 +25,10 @@ try
 
     builder.AddApplicationSerilog();
     Log.Information("Bootstrapping ProjectTemplate.Web application");
-    builder.Services.AddControllersWithViews();
+    // Validate antiforgery tokens on every unsafe (POST, PUT, PATCH, DELETE) MVC request by default, so consumer
+    // actions are protected without opting in. Use [IgnoreAntiforgeryToken] only for endpoints that do not rely
+    // on ambient (cookie) credentials.
+    builder.Services.AddControllersWithViews(options => options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()));
     builder.Services.AddApplicationApiVersioning(builder.Configuration);
     builder.Services.AddRazorPages();
     builder.Services.AddApplicationHealthChecks();

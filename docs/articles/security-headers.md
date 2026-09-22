@@ -26,7 +26,7 @@ app.UseApplicationSecurityHeaders();
 
 ## v1.0 Security Header Contract
 
-This contract applies when `ProjectTemplate:SecurityHeaders:Enabled` is `true` and the request path does not match `ExcludedPathPrefixes`.
+This contract applies when `ProjectTemplate:SecurityHeaders:Enabled` is `true` and the request path does not match `ExcludedPathPrefixes`. Responses on excluded paths still receive `X-Content-Type-Options: nosniff` and no other header from this middleware. `Strict-Transport-Security` is registered separately (see [HSTS and Transport Security](#hsts-and-transport-security)) and also applies to excluded paths on HTTPS requests outside Development.
 
 | Header | Default | Contract | Configuration |
 |:---|:---|:---|:---|
@@ -39,7 +39,7 @@ This contract applies when `ProjectTemplate:SecurityHeaders:Enabled` is `true` a
 | `Permissions-Policy` | `camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)` | Configurable | Controlled by `EnablePermissionsPolicy` and `PermissionsPolicy` |
 | `Content-Security-Policy` | `default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; script-src 'self'; style-src 'self';` | Configurable | Controlled by `EnableContentSecurityPolicy` and `ContentSecurityPolicy` |
 | `X-XSS-Protection` | Not emitted | Intentionally omitted | Not supported |
-| `Strict-Transport-Security` | Not emitted  | Intentionally omitted  | See [HSTS and Transport Security](#hsts-and-transport-security)         |
+| `Strict-Transport-Security` | Not emitted by this middleware | Emitted by `UseApplicationHsts()` outside Development | See [HSTS and Transport Security](#hsts-and-transport-security)         |
 
 The middleware intentionally does not add `X-XSS-Protection` because that header is obsolete and can create inconsistent behavior in modern browsers.
 
@@ -55,15 +55,19 @@ whoever owns the certificate, the origin, and the rollback path, which in most
 deployments is the reverse proxy, ingress controller, CDN, or host platform
 rather than the application process.
 
-NCAT therefore emits headers that are safe to apply per-response and defers HSTS
-to an explicit deployment decision.
+NCAT therefore emits headers that are safe to apply per-response from this
+middleware, registers HSTS separately with framework defaults, and leaves HSTS
+values to an explicit deployment decision.
 
 ### Where HSTS belongs
 
 ASP.NET Core provides `UseHsts()` and `AddHsts(...)` for application-emitted HSTS.
-The generated pipeline does not call `UseHsts()`. A consuming application may add
-it, or may leave HSTS to the edge. Emitting it from both layers is not an error,
-but only one layer should own the values.
+The generated pipeline calls `UseHsts()` outside Development through
+`UseApplicationHsts()` (defined in `SecurityHeadersExtensions`, registered by
+`UseProblemDetails()` between the exception handler and status-code pages), with the ASP.NET Core
+defaults. A consuming application that leaves HSTS to the edge may remove that
+call. Emitting it from both layers is not an error, but only one layer should
+own the values.
 
 | Layer                                | When it is the right owner                                                                                      |
 | ------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
@@ -96,8 +100,9 @@ Whichever layer owns HSTS, the following are explicit choices, not defaults:
   default. Do not add development hosts to an HSTS policy; a cached directive on
   a developer machine outlives the branch that caused it.
 
-NCAT does not validate, emit, or test HSTS behavior. An application that adopts
-HSTS owns its values, its rollout, and its rollback.
+Apart from registering `UseHsts()` with framework defaults, NCAT does not
+configure, validate, or test HSTS values. An application that adopts HSTS owns
+its values, its rollout, and its rollback.
 
 ## Intentional Opt-Outs
 
@@ -109,7 +114,7 @@ The following settings reduce or remove default browser hardening and should be 
 | `EnableContentSecurityPolicy = false` | Removes CSP | Temporary troubleshooting or applications that must define CSP elsewhere |
 | `EnablePermissionsPolicy = false` | Removes Permissions-Policy | Only when browser feature policy is managed elsewhere |
 | `EnableCrossOriginHeaders = false` | Removes COOP and CORP | Applications that intentionally integrate cross-origin windows or resources |
-| `ExcludedPathPrefixes` | Skips all security headers for matching paths | Infrastructure endpoints such as `/health` and `/metrics` |
+| `ExcludedPathPrefixes` | Skips every security header except `X-Content-Type-Options` for matching paths | Infrastructure endpoints such as `/health` and `/metrics` |
 
 ## Configuration
 
@@ -141,7 +146,7 @@ Security headers can be configured from `appsettings.json`:
 |`EnableCrossOriginHeaders`|Controls whether `Cross-Origin-Opener-Policy` and `Cross-Origin-Resource-Policy` are applied.|
 |`ContentSecurityPolicy`|Defines the application Content Security Policy value.|
 |`PermissionsPolicy`|Defines the Permissions Policy value.|
-|`ExcludedPathPrefixes`|Skips security header application for matching request path prefixes.|
+|`ExcludedPathPrefixes`|Skips security header application, except `X-Content-Type-Options: nosniff`, for matching request path prefixes.|
 
 ## Environment-Specific Behavior
 

@@ -10,7 +10,7 @@ Error handling is configured through the application pipeline using:
 app.UseProblemDetails();
 ```
 
-This is the single error-handling registration. It adds the developer exception page in Development, or the production exception handler and HSTS outside it, and then branches status-code handling between Problem Details responses and the re-executed browser error page.
+This is the single error-handling registration. It adds the developer exception page in Development, or the production exception handler and HSTS (`UseApplicationHsts()`) outside it, and then branches status-code handling between Problem Details responses and the re-executed browser error page.
 
 The error handling behavior is environment-aware:
 
