@@ -16,7 +16,9 @@ public sealed class ApplicationHealthCheckOptions
     /// </summary>
     /// <remarks>
     /// Defaults to <see langword="true"/> so readiness reflects whether the instance can reach the database it needs to
-    /// serve traffic. The check is not registered when the data access provider is <c>None</c>.
+    /// serve traffic. The check is not registered when the data access provider is <c>None</c>. The value is read each
+    /// time the check runs; when it is <see langword="false"/>, the registered check reports healthy without
+    /// contacting the database.
     /// </remarks>
     public bool DatabaseReadinessCheckEnabled { get; set; } = true;
 }

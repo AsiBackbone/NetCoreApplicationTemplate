@@ -133,7 +133,7 @@ public sealed class ApplicationAuditIntegrityHealthCheck(
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        return options.HealthStaleRunThreshold ?? options.Interval * _defaultStaleRunIntervalMultiplier;
+        return options.HealthStaleRunThreshold ?? (options.Interval * _defaultStaleRunIntervalMultiplier);
     }
 
     private string? EvaluateRunFreshness(DateTime? lastRunUtc, Dictionary<string, object> data)

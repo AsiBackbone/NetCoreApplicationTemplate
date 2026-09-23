@@ -35,7 +35,7 @@ app.MapApplicationHealthChecks();
 
 When EF Core data access is enabled, readiness includes the `application-database` check, which reports whether the application database accepts connections. The check is tagged `ready` and `database` and is registered only when the data access provider is not `None`. For SQLite, a database file that has not been created yet is reported as unreachable, so apply migrations before expecting a local instance to report ready.
 
-The database readiness check can be turned off when another component already owns database readiness:
+The database readiness check can be turned off when another component already owns database readiness. The setting is read each time the check runs; when it is `false`, the registered check reports `Healthy` without contacting the database:
 
 ```json
 "ProjectTemplate": {

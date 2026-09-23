@@ -39,14 +39,16 @@ public static class DataAccessServiceExtensions
         IServiceCollection services,
         IConfiguration configuration)
     {
-        ApplicationHealthCheckOptions healthCheckOptions = configuration
-            .GetSection(ApplicationHealthCheckOptions.SectionName)
-            .Get<ApplicationHealthCheckOptions>() ?? new ApplicationHealthCheckOptions();
+        // Bound lazily and read by the check on every run, so the setting follows the final configuration, including
+        // sources added after service registration such as test or orchestrator overrides.
+        services
+            .AddOptions<ApplicationHealthCheckOptions>()
+            .Bind(configuration.GetSection(ApplicationHealthCheckOptions.SectionName));
 
         // Infrastructure registers ApplicationDbContext only when a data access provider is enabled.
         bool dataAccessEnabled = services.Any(descriptor => descriptor.ServiceType == typeof(ApplicationDbContext));
 
-        if (!healthCheckOptions.DatabaseReadinessCheckEnabled || !dataAccessEnabled)
+        if (!dataAccessEnabled)
         {
             return;
         }

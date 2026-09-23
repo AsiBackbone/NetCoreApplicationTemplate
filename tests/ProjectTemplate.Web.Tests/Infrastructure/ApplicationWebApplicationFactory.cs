@@ -69,7 +69,9 @@ internal sealed class ApplicationWebApplicationFactory(IReadOnlyDictionary<strin
         // CreateAllowingAnonymousAccess, which sets false and is valid under either configuration.
         // The database readiness check is off by default here because the shipped SQLite connection string points
         // at a database file that tests do not create, which the check correctly reports as not reachable.
-        // HealthCheckTests enables it explicitly to cover both outcomes.
+        // ApplicationDatabaseHealthCheckTests covers the check against real SQLite databases outside the web host,
+        // because the data access connection string is resolved at service registration, before test configuration
+        // sources are applied.
         Dictionary<string, string?> testConfiguration = new()
         {
             ["ProjectTemplate:ForwardedHeaders:KnownProxies:0"] = "::1",

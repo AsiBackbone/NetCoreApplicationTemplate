@@ -510,7 +510,6 @@ public sealed class RateLimitingTests
     /// <summary>
     /// Creates a test application factory with the supplied in-memory configuration overrides.
     /// </summary>
-    /// <param name="configurationValues">The configuration key/value pairs used to override application settings for a test.</param>
     /// <returns>A configured <see cref="ApplicationWebApplicationFactory"/> instance.</returns>
     /// <summary>
     /// Verifies that IPv6 clients within one /64 share a partition so rotating addresses cannot bypass the limiter.
