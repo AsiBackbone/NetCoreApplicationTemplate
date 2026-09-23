@@ -146,7 +146,22 @@ Security headers can be configured from `appsettings.json`:
 |`EnableCrossOriginHeaders`|Controls whether `Cross-Origin-Opener-Policy` and `Cross-Origin-Resource-Policy` are applied.|
 |`ContentSecurityPolicy`|Defines the application Content Security Policy value.|
 |`PermissionsPolicy`|Defines the Permissions Policy value.|
-|`ExcludedPathPrefixes`|Skips security header application, except `X-Content-Type-Options: nosniff`, for matching request path prefixes.|
+|`ExcludedPathPrefixes`|Skips security header application, except `X-Content-Type-Options: nosniff`, for matching request path prefixes. A configured list replaces the code defaults; see the note below.|
+
+A configured `ExcludedPathPrefixes` list replaces the built-in defaults instead of being appended to them, so configuration can both add and remove exclusions. Configuration sources merge arrays by index, so a later source can remove an inherited entry by setting that index to an empty string. Blank entries are ignored. For example, this `appsettings.Production.json` fragment keeps `/health` excluded and applies the full security header set to `/metrics` again:
+
+```json
+"ProjectTemplate": {
+  "SecurityHeaders": {
+    "ExcludedPathPrefixes": [
+      "/health",
+      ""
+    ]
+  }
+}
+```
+
+The same rules apply to `ProjectTemplate:RequestLogging:ExcludedPathPrefixes`.
 
 ## Environment-Specific Behavior
 

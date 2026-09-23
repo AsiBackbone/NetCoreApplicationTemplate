@@ -23,9 +23,14 @@ public static class RequestLoggingExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        IConfigurationSection section = configuration.GetSection(ApplicationRequestLoggingOptions.SectionName);
+
         services
             .AddOptions<ApplicationRequestLoggingOptions>()
-            .Bind(configuration.GetSection(ApplicationRequestLoggingOptions.SectionName))
+            .Bind(section)
+            .Configure(options => ConfigurationListBinding.ReplaceWithConfiguredValues(
+                options.ExcludedPathPrefixes,
+                section.GetSection(nameof(ApplicationRequestLoggingOptions.ExcludedPathPrefixes))))
             .Validate(
                 options => !string.IsNullOrWhiteSpace(options.CorrelationHeaderName),
                 "ProjectTemplate:RequestLogging:CorrelationHeaderName is required.")

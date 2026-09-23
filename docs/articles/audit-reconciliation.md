@@ -63,13 +63,15 @@ Finding keys are deterministic for a reason, mutation batch, and destination. Re
 
 ## Health checks
 
-Registration adds `application-audit-integrity` with the tags `ready`, `audit`, and `integrity`. The existing `/health/ready` endpoint includes the check.
+Registration adds `application-audit-integrity` with the tags `audit` and `integrity`. The `/health/audit` endpoint runs the check, and `/health` includes it with every other registered check. It is deliberately not tagged `ready`: an integrity finding needs operator review, and a readiness failure would take every replica out of load balancing at the same time. Alert on `/health/audit` rather than routing traffic on it.
 
 The check returns:
 
-- **Healthy** when no open finding crosses configured thresholds.
-- **Degraded** when warning-level findings, stale delivery, or dead letters require attention.
-- **Unhealthy** when a critical finding or manifest verification failure exists, or the open-finding threshold is reached.
+- **Healthy** when no open finding crosses configured thresholds and reconciliation has run recently.
+- **Degraded** when warning-level findings, stale delivery, or dead letters require attention, or when reconciliation has not completed a run in this process or its last successful run is older than `HealthStaleRunThreshold`.
+- **Unhealthy** when a critical finding or manifest verification failure exists, or the open-finding threshold is reached. This takes precedence over staleness.
+
+`HealthStaleRunThreshold` defaults to three times `Interval` (15 minutes with the default 5-minute interval) and must be greater than `Interval`. The last successful run time is tracked in the process that runs the scheduled loop, so freshness is evaluated only when `RunWorker` is `true`. With `RunWorker` set to `false`, the check reports `reconciliationFreshnessTracked: false` and relies on the external scheduler's own monitoring. Because the worker runs immediately at startup, a freshly started instance reports Degraded only until its first successful run.
 
 Health data is minimized to counts, ages, and timestamps. It never exposes audited values or unrestricted exception text.
 

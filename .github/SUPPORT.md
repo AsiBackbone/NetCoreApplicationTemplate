@@ -4,7 +4,7 @@ This project provides a reusable ASP.NET Core application template. Support is f
 
 ## Maintenance Posture
 
-The `2.x` line reached feature completion at release `2.10.0`.
+The `2.x` line becomes feature-complete with the upcoming `2.10.0` release. The latest published release is `2.9.0`. From `2.10.0` onward, the `2.x` line accepts only the changes listed as in scope below.
 
 **In scope for future releases**
 
@@ -61,13 +61,13 @@ Users should not expect:
 - Backports to every historical release line.
 - Support for heavily modified downstream applications unless the issue reproduces from the template baseline.
 - Support for unsupported .NET SDK versions or package versions outside the documented release line.
-- New features, options, or configuration surfaces in the `2.x` line.
-- 
+- New features, options, or configuration surfaces in the `2.x` line after `2.10.0`.
+
 ## Version Support Lifecycle
 
 | Version line | Support expectation |
 |:---|:---|
-| `2.x` | Current stable line, feature-complete as of `2.10.0`. Supported for security fixes, dependency servicing, reproducible defects, and documentation fixes. |
+| `2.x` | Current stable line; latest release `2.9.0`. Feature-complete from the upcoming `2.10.0` release onward. Supported for security fixes, dependency servicing, reproducible defects, and documentation fixes. |
 | `1.0.x` | Legacy stable line under the previous NuGet package identity. Best effort unless a release note states otherwise. |
 | Pre-1.0 releases | Best effort only. Consumers should upgrade to the current stable release when practical. |
 | Older stable releases after a newer minor or major release | Best effort unless a release note states otherwise. |

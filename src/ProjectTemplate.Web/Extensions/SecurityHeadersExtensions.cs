@@ -18,9 +18,14 @@ public static class SecurityHeadersExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        IConfigurationSection section = configuration.GetSection(ApplicationSecurityHeadersOptions.SectionName);
+
         services
             .AddOptions<ApplicationSecurityHeadersOptions>()
-            .Bind(configuration.GetSection(ApplicationSecurityHeadersOptions.SectionName))
+            .Bind(section)
+            .Configure(options => ConfigurationListBinding.ReplaceWithConfiguredValues(
+                options.ExcludedPathPrefixes,
+                section.GetSection(nameof(ApplicationSecurityHeadersOptions.ExcludedPathPrefixes))))
             .Validate(
                 options =>
                     !options.EnableContentSecurityPolicy ||

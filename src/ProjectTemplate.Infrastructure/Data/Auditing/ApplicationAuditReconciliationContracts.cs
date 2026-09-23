@@ -57,6 +57,18 @@ public sealed class ApplicationAuditReconciliationOptions
     public int HealthWarningFindingCount { get; set; } = 1;
 
     public int HealthUnhealthyFindingCount { get; set; } = 10;
+
+    /// <summary>
+    /// Gets or sets how long after the last successful reconciliation run the audit integrity health check reports
+    /// <c>Degraded</c>. When <see langword="null"/>, three times <see cref="Interval"/> is used.
+    /// </summary>
+    /// <remarks>
+    /// Freshness is only evaluated when <see cref="RunWorker"/> is <see langword="true"/>, because the last run time is
+    /// tracked by the process that runs the scheduled reconciliation loop. A process that never completed a run, or
+    /// whose worker stopped or keeps failing, therefore reports <c>Degraded</c> instead of a green check that reads
+    /// zero findings indefinitely.
+    /// </remarks>
+    public TimeSpan? HealthStaleRunThreshold { get; set; }
 }
 
 public interface IApplicationAuditReconciler

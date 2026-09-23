@@ -3,6 +3,8 @@ using ProjectTemplate.Infrastructure.Data.Auditing;
 using ProjectTemplate.Infrastructure.Data.Extensions;
 using ProjectTemplate.Infrastructure.Data.Services;
 using ProjectTemplate.Web.Accessors;
+using ProjectTemplate.Web.HealthChecks;
+using ProjectTemplate.Web.Options;
 
 namespace ProjectTemplate.Web.Extensions;
 
@@ -26,9 +28,32 @@ public static class DataAccessServiceExtensions
         services.AddScoped<IApplicationAuditContextAccessor, HttpContextApplicationAuditContextAccessor>();
 
         services.AddApplicationInfrastructureDataAccess(configuration);
+        AddApplicationDatabaseReadinessCheck(services, configuration);
 
         services.AddHostedService<DataAccessStartupLogger>();
 
         return services;
+    }
+
+    private static void AddApplicationDatabaseReadinessCheck(
+        IServiceCollection services,
+        IConfiguration configuration)
+    {
+        ApplicationHealthCheckOptions healthCheckOptions = configuration
+            .GetSection(ApplicationHealthCheckOptions.SectionName)
+            .Get<ApplicationHealthCheckOptions>() ?? new ApplicationHealthCheckOptions();
+
+        // Infrastructure registers ApplicationDbContext only when a data access provider is enabled.
+        bool dataAccessEnabled = services.Any(descriptor => descriptor.ServiceType == typeof(ApplicationDbContext));
+
+        if (!healthCheckOptions.DatabaseReadinessCheckEnabled || !dataAccessEnabled)
+        {
+            return;
+        }
+
+        services.AddHealthChecks()
+            .AddCheck<ApplicationDatabaseHealthCheck>(
+                "application-database",
+                tags: [ApplicationHealthCheckTags.Ready, ApplicationHealthCheckTags.Database]);
     }
 }

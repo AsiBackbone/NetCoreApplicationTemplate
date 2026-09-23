@@ -12,7 +12,7 @@ public static class StartupSecurityPostureExtensions
         ApplicationAuthenticationOptions.SectionName + ":Enabled";
 
     private const string _anonymousHealthEndpoints =
-        "/health, /health/ready, /health/live";
+        "/health, /health/ready, /health/live, /health/audit";
 
     private const string _dataProtectionKeyRingPathConfigurationKey =
         ApplicationDataProtectionOptions.SectionName + ":" + nameof(ApplicationDataProtectionOptions.KeyRingPath);

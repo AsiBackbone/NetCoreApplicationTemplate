@@ -20,6 +20,7 @@ By default:
 - `ProjectTemplate:Authentication:Enabled` is `true`.
 - The default authenticate, challenge, and sign-in schemes use `Cookies`.
 - Cookie authentication is enabled to store an authenticated session after a configured sign-in flow succeeds.
+- The session cookie is named `__Host-ProjectTemplate.Web.Authentication`, with `HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`, and no `Domain`. Browsers accept a `__Host-` cookie only under those conditions, which binds the session to the exact host that issued it. When the Development-only `ProjectTemplate:Authentication:Cookie:AllowInsecureHttp` override is active, the cookie can be sent over HTTP, so it is named `.ProjectTemplate.Web.Authentication` without the prefix.
 - External providers such as OpenID Connect, SAML2, Microsoft, Google, and GitHub are disabled.
 
 The default scaffold does not include ASP.NET Core Identity, local user accounts, a credential form, a seeded user, or an enabled external provider. Cookie authentication does not authenticate credentials by itself. Consequently, the default `/Account/Login` page has no sign-in action and protected routes remain unavailable to anonymous users until the consuming application enables an external provider or supplies its own identity flow. The login page states this condition explicitly instead of presenting the cookie session handler as a local login provider.

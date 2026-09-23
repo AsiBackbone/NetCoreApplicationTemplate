@@ -74,6 +74,7 @@ Rate limiting values can be configured from `appsettings.json`:
     "UseGlobalLimiter": true,
     "UseSharedUnknownClientPartition": true,
     "UnknownClientPartitionKey": "unknown-client",
+    "IPv6PartitionPrefixLength": 64,
     "GlobalFixedWindow": {
       "PermitLimit": 60,
       "WindowSeconds": 60,
@@ -86,7 +87,8 @@ Rate limiting values can be configured from `appsettings.json`:
     },
     "ConcurrencyPolicy": {
       "PermitLimit": 10,
-      "QueueLimit": 0
+      "QueueLimit": 0,
+      "PartitionByClient": true
     }
   }
 }
@@ -96,7 +98,7 @@ These defaults are intentionally conservative and should be reviewed before prod
 
 ## Client Partitioning and Unknown-Client Fallback
 
-The fixed-window limiters partition clients by `HttpContext.Connection.RemoteIpAddress`. The template intentionally relies on ASP.NET Core Forwarded Headers Middleware to correct that value when the application runs behind a trusted reverse proxy, load balancer, ingress controller, CDN, or gateway.
+The fixed-window limiters partition clients by `HttpContext.Connection.RemoteIpAddress`. IPv4 addresses, including IPv4-mapped IPv6 addresses reported by dual-stack listeners, are partitioned by the IPv4 address. Other IPv6 addresses are reduced to their network prefix, set by `IPv6PartitionPrefixLength` (default `64`), because a single IPv6 subscriber commonly controls a whole /64 and could otherwise rotate addresses to bypass per-client limits. Set it to `128` to partition by full IPv6 address, or lower it when your clients are allocated larger prefixes. Grouping by prefix also means clients that share a /64 share one budget. The template intentionally relies on ASP.NET Core Forwarded Headers Middleware to correct that value when the application runs behind a trusted reverse proxy, load balancer, ingress controller, CDN, or gateway.
 
 The rate limiter does **not** parse or trust raw `X-Forwarded-For` values directly. Raw forwarded headers are client-controllable unless ASP.NET Core has first validated them through trusted `KnownProxies` or `KnownNetworks` configuration.
 
@@ -141,6 +143,8 @@ Concurrency-sensitive endpoint example:
 app.MapPost("/admin/export", () => "Export started")
     .RequireRateLimiting("concurrency");
 ```
+
+The concurrency policy partitions by endpoint and client by default (`ConcurrencyPolicy:PartitionByClient` is `true`), so each client receives its own `PermitLimit` concurrent requests per endpoint and one client holding slow requests cannot exhaust an endpoint for everyone else. Set `PartitionByClient` to `false` to share one permit pool per endpoint across all clients. That caps total endpoint concurrency, but a single client can then consume every permit. When client addresses cannot be resolved, the unknown-client fallback described above applies to this policy as well.
 
 Controller or Razor Page handlers can also use rate limiting attributes:
 

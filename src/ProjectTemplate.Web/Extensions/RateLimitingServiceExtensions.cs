@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -18,6 +20,8 @@ public static partial class RateLimitingServiceExtensions
     internal const string RejectionTitle = "Too Many Requests";
     internal const string RejectionDetail = "Too many requests were received. Please try again later.";
     internal const string RejectionProblemType = "https://www.rfc-editor.org/rfc/rfc6585#section-4";
+
+    private const int _ipv6AddressBitCount = 128;
 
     /// <summary>
     /// Adds the application's predefined rate limiting policies to the service collection.
@@ -61,6 +65,8 @@ public static partial class RateLimitingServiceExtensions
             .Bind(configuration.GetSection(ApplicationRateLimitingOptions.SectionName))
             .Validate(options => !string.IsNullOrWhiteSpace(options.UnknownClientPartitionKey),
                 "ProjectTemplate:RateLimiting:UnknownClientPartitionKey must not be empty.")
+            .Validate(options => options.IPv6PartitionPrefixLength is >= 1 and <= _ipv6AddressBitCount,
+                "ProjectTemplate:RateLimiting:IPv6PartitionPrefixLength must be between 1 and 128.")
             .Validate(options => options.GlobalFixedWindow.PermitLimit > 0,
                 "ProjectTemplate:RateLimiting:GlobalFixedWindow:PermitLimit must be greater than zero.")
             .Validate(options => options.GlobalFixedWindow.WindowSeconds > 0,
@@ -126,7 +132,11 @@ public static partial class RateLimitingServiceExtensions
 
                 options.AddPolicy(ApplicationRateLimitingPolicyNames.Concurrency, httpContext =>
                     RateLimitPartition.GetConcurrencyLimiter(
-                        partitionKey: GetEndpointPartitionKey(httpContext),
+                        partitionKey: GetConcurrencyPartitionKey(
+                            httpContext,
+                            rateLimitingOptions,
+                            CreateRateLimitingLogger(httpContext),
+                            fallbackWarningThrottle),
                         factory: _ => CreateConcurrencyLimiterOptions(rateLimitingOptions.ConcurrencyPolicy)));
             });
 
@@ -268,11 +278,18 @@ public static partial class RateLimitingServiceExtensions
         ApplicationRateLimitingOptions options,
         RateLimitingFallbackWarningThrottle fallbackWarningThrottle)
     {
-        ILogger logger = httpContext.RequestServices
+        return GetClientPartitionKey(
+            httpContext,
+            options,
+            CreateRateLimitingLogger(httpContext),
+            fallbackWarningThrottle);
+    }
+
+    private static ILogger CreateRateLimitingLogger(HttpContext httpContext)
+    {
+        return httpContext.RequestServices
             .GetRequiredService<ILoggerFactory>()
             .CreateLogger("Template.Web.RateLimiting");
-
-        return GetClientPartitionKey(httpContext, options, logger, fallbackWarningThrottle);
     }
 
     internal static string GetClientPartitionKey(
@@ -281,11 +298,11 @@ public static partial class RateLimitingServiceExtensions
         ILogger logger,
         RateLimitingFallbackWarningThrottle? fallbackWarningThrottle = null)
     {
-        string? remoteIpAddress = httpContext.Connection.RemoteIpAddress?.ToString();
+        IPAddress? remoteIpAddress = httpContext.Connection.RemoteIpAddress;
 
-        if (!string.IsNullOrWhiteSpace(remoteIpAddress))
+        if (remoteIpAddress is not null)
         {
-            return remoteIpAddress;
+            return GetAddressPartitionKey(remoteIpAddress, options.IPv6PartitionPrefixLength);
         }
 
         string fallbackPartitionKey = string.IsNullOrWhiteSpace(options.UnknownClientPartitionKey)
@@ -315,6 +332,63 @@ public static partial class RateLimitingServiceExtensions
         }
 
         return fallbackPartitionKey;
+    }
+
+    /// <summary>
+    /// Returns the rate limiting partition key for a client address.
+    /// </summary>
+    /// <remarks>
+    /// IPv4-mapped IPv6 addresses are converted to IPv4 first, because a dual-stack listener reports IPv4 clients in
+    /// that form and masking them as IPv6 would place every IPv4 client in one partition. Other IPv6 addresses are
+    /// reduced to their network prefix so a client cannot bypass the limiter by rotating addresses inside it.
+    /// </remarks>
+    /// <param name="address">The client address.</param>
+    /// <param name="ipv6PrefixLength">The IPv6 prefix length that identifies one client.</param>
+    /// <returns>The partition key.</returns>
+    internal static string GetAddressPartitionKey(IPAddress address, int ipv6PrefixLength)
+    {
+        ArgumentNullException.ThrowIfNull(address);
+
+        IPAddress normalizedAddress = address.IsIPv4MappedToIPv6 ? address.MapToIPv4() : address;
+
+        if (normalizedAddress.AddressFamily != AddressFamily.InterNetworkV6
+            || ipv6PrefixLength >= _ipv6AddressBitCount)
+        {
+            return normalizedAddress.ToString();
+        }
+
+        int prefixLength = Math.Max(ipv6PrefixLength, 1);
+        byte[] addressBytes = normalizedAddress.GetAddressBytes();
+        for (int bitIndex = prefixLength; bitIndex < _ipv6AddressBitCount; bitIndex++)
+        {
+            addressBytes[bitIndex / 8] &= (byte)~(0x80 >> (bitIndex % 8));
+        }
+
+        return string.Create(CultureInfo.InvariantCulture, $"{new IPAddress(addressBytes)}/{prefixLength}");
+    }
+
+    /// <summary>
+    /// Returns the partition key used by the named concurrency policy.
+    /// </summary>
+    /// <param name="httpContext">The current HTTP context.</param>
+    /// <param name="options">The rate limiting options.</param>
+    /// <param name="logger">The logger used when the client address falls back to an unknown-client partition.</param>
+    /// <param name="fallbackWarningThrottle">An optional throttle for fallback warnings.</param>
+    /// <returns>The endpoint key, combined with the client key when concurrency is partitioned by client.</returns>
+    internal static string GetConcurrencyPartitionKey(
+        HttpContext httpContext,
+        ApplicationRateLimitingOptions options,
+        ILogger logger,
+        RateLimitingFallbackWarningThrottle? fallbackWarningThrottle = null)
+    {
+        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(options);
+
+        string endpointPartitionKey = GetEndpointPartitionKey(httpContext);
+
+        return options.ConcurrencyPolicy.PartitionByClient
+            ? $"{endpointPartitionKey}|{GetClientPartitionKey(httpContext, options, logger, fallbackWarningThrottle)}"
+            : endpointPartitionKey;
     }
 
     private static string GetEndpointPartitionKey(HttpContext httpContext)

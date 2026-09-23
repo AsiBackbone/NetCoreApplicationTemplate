@@ -66,6 +66,10 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * Added a fail-closed release evidence manifest and automated asset validation.
 * Added a dated decision record for deferred NuGet package signing with an
   assigned owner, mandatory review date, and re-evaluation criteria.
+* Added an `application-database` readiness check, tagged `ready` and `database`, that reports whether the application database accepts connections. It is registered when EF Core data access is enabled and `ProjectTemplate:HealthChecks:DatabaseReadinessCheckEnabled` is `true` (the default). Previously `/health/ready` ran no checks and always reported `Healthy`.
+* Added the anonymous `/health/audit` endpoint, which runs checks tagged `audit`.
+* Added `ApplicationAuditReconciliationOptions.HealthStaleRunThreshold`. It defaults to three times `Interval` and must be greater than `Interval`.
+* Added `ProjectTemplate:RateLimiting:IPv6PartitionPrefixLength` (default `64`, valid range 1–128) and `ProjectTemplate:RateLimiting:ConcurrencyPolicy:PartitionByClient` (default `true`).
 
 ### Changed
 
@@ -111,6 +115,15 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * Documented `Strict-Transport-Security` as an intentional middleware omission, named the layer that owns HSTS, and added `max-age`, `includeSubDomains`, `preload`, and rollback decisions to the production deployment checklist.
 * Relocated community, governance, maintainer, support, release, and asset-notice documents to `.github/` and consolidated overlapping community and maintainer files. Content is unchanged; GitHub resolves community health files from `.github/` identically to the repository root.
 * Reordered the README so installation commands and the default security posture precede project goals, and consolidated the AsiBackbone boundary and documentation-ownership sections into a single related-projects block.
+
+* **Behavior change for adopters using audit reconciliation:** `application-audit-integrity` is now tagged `audit` and `integrity` instead of `ready`, `audit`, and `integrity`, and is served by `/health/audit`. A critical audit finding no longer removes every replica from load balancing through `/health/ready`. Move audit alerting to `/health/audit`. `/health` still runs every registered check.
+* **Behavior change for adopters using audit reconciliation:** the audit integrity check now reports `Degraded` when reconciliation has not completed a run in the current process, or when its last successful run is older than `HealthStaleRunThreshold`. Previously a stopped or failing worker left the check reading zero findings and `Healthy` indefinitely. Freshness is evaluated only when `RunWorker` is `true`.
+* **Behavior change for adopters:** `/health/ready` now fails when EF Core data access is enabled and the database is unreachable. For SQLite, a database file that has not been created yet counts as unreachable, so apply migrations before a local instance reports ready. Set `ProjectTemplate:HealthChecks:DatabaseReadinessCheckEnabled` to `false` when another component owns database readiness.
+* **Behavior change for adopters:** IPv6 clients are now rate limited by /64 prefix rather than by full address, so rotating addresses within one prefix no longer bypasses per-client limits. IPv4 and IPv4-mapped IPv6 clients are still limited per IPv4 address. Set `IPv6PartitionPrefixLength` to `128` to restore per-address partitioning.
+* **Behavior change for adopters using the `concurrency` policy:** permits are now partitioned by endpoint and client instead of by endpoint only, so one client can no longer exhaust an endpoint's concurrency for every other client. Set `ConcurrencyPolicy:PartitionByClient` to `false` to restore one shared pool per endpoint.
+* **Behavior change for adopters:** a configured `ExcludedPathPrefixes` list for security headers or request logging now replaces the code defaults instead of being appended to them, so configuration can remove a default exclusion. Blank entries are ignored, which lets a later configuration source remove an inherited entry by setting its index to an empty string. Previously the shipped `appsettings.json` values were appended to identical code defaults, producing duplicates, and no default could be removed through configuration.
+* **Behavior change for adopters:** the authentication cookie is now named `__Host-ProjectTemplate.Web.Authentication` with `Path=/` whenever it is always `Secure`, binding the session to the exact issuing host. Existing sessions end once after upgrading because the cookie name changes. The Development-only `AllowInsecureHttp` override keeps the unprefixed `.ProjectTemplate.Web.Authentication` name.
+* Corrected `.github/SUPPORT.md`, which described `2.x` feature completion at `2.10.0` in the past tense before that release was published.
 
 ### Fixed
 
