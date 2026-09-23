@@ -35,13 +35,13 @@ public static class HealthCheckExtensions
         app.MapHealthChecks("/health")
             .AllowAnonymous();
 
-        app.MapHealthChecks("/health/audit-integrity", new HealthCheckOptions
+        app.MapHealthChecks("/health/ready", new HealthCheckOptions
         {
             Predicate = healthCheck => healthCheck.Tags.Contains(ApplicationHealthCheckTags.Ready)
         })
         .AllowAnonymous();
 
-        app.MapHealthChecks("/health/audit", new HealthCheckOptions
+        app.MapHealthChecks("/health/audit-integrity", new HealthCheckOptions
         {
             Predicate = healthCheck => healthCheck.Tags.Contains(ApplicationHealthCheckTags.Audit)
         })
