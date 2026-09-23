@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using ProjectTemplate.Web.HealthChecks;
 
 namespace ProjectTemplate.Web.Extensions;
 
@@ -22,6 +23,11 @@ public static class HealthCheckExtensions
     /// <summary>
     /// Maps baseline health check endpoints for infrastructure, reverse proxies, and hosting platforms.
     /// </summary>
+    /// <remarks>
+    /// <c>/health/ready</c> runs only checks tagged <see cref="ApplicationHealthCheckTags.Ready"/>, and
+    /// <c>/health/audit-integrity</c> runs only checks tagged <see cref="ApplicationHealthCheckTags.Audit"/>. Audit integrity is
+    /// reported separately so an integrity finding alerts operators without removing every replica from rotation.
+    /// </remarks>
     /// <param name="app">The web application used to map health check endpoints.</param>
     /// <returns>The original <see cref="WebApplication"/> for chaining.</returns>
     public static WebApplication MapApplicationHealthChecks(this WebApplication app)
@@ -31,7 +37,13 @@ public static class HealthCheckExtensions
 
         app.MapHealthChecks("/health/ready", new HealthCheckOptions
         {
-            Predicate = healthCheck => healthCheck.Tags.Contains("ready")
+            Predicate = healthCheck => healthCheck.Tags.Contains(ApplicationHealthCheckTags.Ready)
+        })
+        .AllowAnonymous();
+
+        app.MapHealthChecks("/health/audit-integrity", new HealthCheckOptions
+        {
+            Predicate = healthCheck => healthCheck.Tags.Contains(ApplicationHealthCheckTags.Audit)
         })
         .AllowAnonymous();
 

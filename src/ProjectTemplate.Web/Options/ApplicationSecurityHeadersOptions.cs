@@ -53,6 +53,10 @@ public sealed class ApplicationSecurityHeadersOptions
     /// <summary>
     /// Gets or sets path prefixes that are excluded from applying the security headers.
     /// </summary>
+    /// <remarks>
+    /// A configured list replaces these defaults rather than extending them. A blank configured entry is ignored, so a
+    /// later configuration source can remove an inherited entry by overriding its index with an empty value.
+    /// </remarks>
     public List<string> ExcludedPathPrefixes { get; set; } =
     [
             "/health",

@@ -33,9 +33,8 @@ public sealed class RequestLoggingExtensionsBranchGapTests
     }
 
     [Theory]
-    [InlineData("")]
     [InlineData("health")]
-    [InlineData("   ")]
+    [InlineData("metrics/")]
     public void AddApplicationRequestLogging_InvalidExcludedPathPrefix_FailsOptionsValidation(string excludedPrefix)
     {
         ServiceCollection services = new();
@@ -56,6 +55,32 @@ public sealed class RequestLoggingExtensionsBranchGapTests
             "ProjectTemplate:RequestLogging:ExcludedPathPrefixes values must start with '/'.",
             exception.Message,
             StringComparison.Ordinal);
+    }
+
+    // Blank entries are ignored rather than rejected, so a later configuration source can remove an inherited
+    // prefix by overriding its index with an empty value. See ConfigurationListBinding.
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void AddApplicationRequestLogging_BlankExcludedPathPrefix_IsIgnored(string excludedPrefix)
+    {
+        ServiceCollection services = new();
+        IConfiguration configuration = CreateConfiguration(new Dictionary<string, string?>
+        {
+            [$"{ApplicationRequestLoggingOptions.SectionName}:CorrelationHeaderName"] = "X-Correlation-ID",
+            [$"{ApplicationRequestLoggingOptions.SectionName}:ExcludedPathPrefixes:0"] = "/health",
+            [$"{ApplicationRequestLoggingOptions.SectionName}:ExcludedPathPrefixes:1"] = excludedPrefix
+        });
+
+        _ = services.AddApplicationRequestLogging(configuration);
+
+        using ServiceProvider provider = services.BuildServiceProvider();
+
+        ApplicationRequestLoggingOptions options = provider
+            .GetRequiredService<IOptions<ApplicationRequestLoggingOptions>>()
+            .Value;
+
+        Assert.Equal("/health", Assert.Single(options.ExcludedPathPrefixes));
     }
 
     [Fact]

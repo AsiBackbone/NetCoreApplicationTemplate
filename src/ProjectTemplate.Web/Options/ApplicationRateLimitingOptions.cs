@@ -38,6 +38,16 @@ public sealed class ApplicationRateLimitingOptions
     public string UnknownClientPartitionKey { get; set; } = "unknown-client";
 
     /// <summary>
+    /// Gets or sets the IPv6 prefix length used to group client addresses into one rate limiting partition.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to <c>64</c>. A single IPv6 subscriber commonly controls a whole /64 and can rotate addresses within it,
+    /// so partitioning by full address would let one client bypass per-client limits. Use <c>128</c> to partition by
+    /// full address. IPv4 and IPv4-mapped IPv6 addresses are always partitioned by their IPv4 address.
+    /// </remarks>
+    public int IPv6PartitionPrefixLength { get; set; } = 64;
+
+    /// <summary>
     /// Gets or sets the global fixed-window rate limiting options.
     /// </summary>
     public FixedWindowRateLimitingOptions GlobalFixedWindow { get; set; } = new()

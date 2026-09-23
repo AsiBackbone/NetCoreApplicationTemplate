@@ -18,7 +18,7 @@ public static class ApplicationAuditReconciliationServiceExtensions
         services.AddHealthChecks()
             .AddCheck<ApplicationAuditIntegrityHealthCheck>(
                 "application-audit-integrity",
-                tags: ["ready", "audit", "integrity"]);
+                tags: [ApplicationHealthCheckTags.Audit, ApplicationHealthCheckTags.Integrity]);
         return services;
     }
 }

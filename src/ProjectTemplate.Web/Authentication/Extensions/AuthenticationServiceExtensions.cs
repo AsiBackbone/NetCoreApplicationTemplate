@@ -17,6 +17,16 @@ namespace ProjectTemplate.Web.Authentication.Extensions;
 public static class AuthenticationServiceExtensions
 {
     /// <summary>
+    /// The authentication cookie name used when the cookie is always sent with the <c>Secure</c> attribute.
+    /// </summary>
+    public const string HostPrefixedAuthenticationCookieName = "__Host-ProjectTemplate.Web.Authentication";
+
+    /// <summary>
+    /// The authentication cookie name used when the Development-only insecure HTTP override is active.
+    /// </summary>
+    public const string AuthenticationCookieName = ".ProjectTemplate.Web.Authentication";
+
+    /// <summary>
     /// Adds application authentication services based on configuration using the secure cookie policy without an
     /// environment-specific plain HTTP override.
     /// </summary>
@@ -94,13 +104,24 @@ public static class AuthenticationServiceExtensions
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(applicationAuthenticationOptions.Cookie.ExpireMinutes);
                 options.SlidingExpiration = applicationAuthenticationOptions.Cookie.SlidingExpiration;
 
-                options.Cookie.Name = ".ProjectTemplate.Web.Authentication";
                 options.Cookie.HttpOnly = true;
                 options.Cookie.SameSite = SameSiteMode.Lax;
                 options.Cookie.SecurePolicy = applicationAuthenticationOptions.Cookie.AllowInsecureHttp &&
                     environment?.IsDevelopment() == true
                         ? CookieSecurePolicy.SameAsRequest
                         : CookieSecurePolicy.Always;
+
+                // Browsers accept a __Host- cookie only when it is Secure, has Path=/, and has no Domain, which binds
+                // the session cookie to this exact host. The prefix is used only when the cookie is always Secure, so
+                // the Development-only insecure HTTP override keeps working with an unprefixed name.
+                bool useHostPrefix = options.Cookie.SecurePolicy == CookieSecurePolicy.Always;
+                options.Cookie.Name = useHostPrefix
+                    ? HostPrefixedAuthenticationCookieName
+                    : AuthenticationCookieName;
+                if (useHostPrefix)
+                {
+                    options.Cookie.Path = "/";
+                }
             });
 
         ApplicationAuthenticationOptions applicationAuthenticationOptions = configuration

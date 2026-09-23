@@ -44,6 +44,41 @@ public sealed class AuthenticationCookieSecurePolicyTests
     }
 
     [Fact]
+    public void CookieName_AlwaysSecure_UsesHostPrefixAndRootPath()
+    {
+        using ServiceProvider serviceProvider = CreateServiceProvider(
+            Environments.Production,
+            new Dictionary<string, string?>());
+
+        CookieAuthenticationOptions options = serviceProvider
+            .GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>()
+            .Get(CookieAuthenticationDefaults.AuthenticationScheme);
+
+        Assert.Equal(AuthenticationServiceExtensions.HostPrefixedAuthenticationCookieName, options.Cookie.Name);
+        Assert.StartsWith("__Host-", options.Cookie.Name, StringComparison.Ordinal);
+        Assert.Equal("/", options.Cookie.Path);
+        Assert.Null(options.Cookie.Domain);
+    }
+
+    [Fact]
+    public void CookieName_DevelopmentInsecureOverride_OmitsHostPrefix()
+    {
+        using ServiceProvider serviceProvider = CreateServiceProvider(
+            Environments.Development,
+            new Dictionary<string, string?>
+            {
+                ["ProjectTemplate:Authentication:Cookie:AllowInsecureHttp"] = "true"
+            });
+
+        CookieAuthenticationOptions options = serviceProvider
+            .GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>()
+            .Get(CookieAuthenticationDefaults.AuthenticationScheme);
+
+        Assert.Equal(AuthenticationServiceExtensions.AuthenticationCookieName, options.Cookie.Name);
+        Assert.DoesNotContain("__Host-", options.Cookie.Name, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void CookieSecurePolicy_InsecureOverrideOutsideDevelopment_FailsValidation()
     {
         using ServiceProvider serviceProvider = CreateServiceProvider(

@@ -87,6 +87,9 @@ public sealed class RateLimitingTests
         {
             ["ProjectTemplate:RateLimiting:Enabled"] = "true",
             ["ProjectTemplate:RateLimiting:UseGlobalLimiter"] = "false",
+            // The test server supplies no client address. Both requests must share one fallback partition, because
+            // the concurrency policy now partitions by client as well as by endpoint.
+            ["ProjectTemplate:RateLimiting:UseSharedUnknownClientPartition"] = "true",
             ["ProjectTemplate:RateLimiting:ConcurrencyPolicy:PermitLimit"] = "1",
             ["ProjectTemplate:RateLimiting:ConcurrencyPolicy:QueueLimit"] = "0"
         });
@@ -505,9 +508,166 @@ public sealed class RateLimitingTests
     }
 
     /// <summary>
+    /// Verifies that IPv6 clients within one /64 share a partition so rotating addresses cannot bypass the limiter.
+    /// </summary>
+    [Fact]
+    public void GetAddressPartitionKey_IPv6AddressesInSameSlash64_ShareOnePartition()
+    {
+        string first = RateLimitingServiceExtensions.GetAddressPartitionKey(
+            IPAddress.Parse("2001:db8:1:2:aaaa::1"),
+            64);
+        string second = RateLimitingServiceExtensions.GetAddressPartitionKey(
+            IPAddress.Parse("2001:db8:1:2:bbbb:cccc:dddd:2"),
+            64);
+
+        Assert.Equal("2001:db8:1:2::/64", first);
+        Assert.Equal(first, second);
+    }
+
+    /// <summary>
+    /// Verifies that IPv6 clients in different /64 networks receive different partitions.
+    /// </summary>
+    [Fact]
+    public void GetAddressPartitionKey_IPv6AddressesInDifferentSlash64_UseDifferentPartitions()
+    {
+        string first = RateLimitingServiceExtensions.GetAddressPartitionKey(
+            IPAddress.Parse("2001:db8:1:2::1"),
+            64);
+        string second = RateLimitingServiceExtensions.GetAddressPartitionKey(
+            IPAddress.Parse("2001:db8:1:3::1"),
+            64);
+
+        Assert.NotEqual(first, second);
+    }
+
+    /// <summary>
+    /// Verifies that a prefix length that is not a multiple of eight masks the partial byte correctly.
+    /// </summary>
+    [Fact]
+    public void GetAddressPartitionKey_NonByteAlignedPrefix_MasksPartialByte()
+    {
+        string partitionKey = RateLimitingServiceExtensions.GetAddressPartitionKey(
+            IPAddress.Parse("2001:db8:1:2f::1"),
+            60);
+
+        Assert.Equal("2001:db8:1:20::/60", partitionKey);
+    }
+
+    /// <summary>
+    /// Verifies that a prefix length of 128 keeps the full IPv6 address.
+    /// </summary>
+    [Fact]
+    public void GetAddressPartitionKey_PrefixLength128_UsesFullAddress()
+    {
+        string partitionKey = RateLimitingServiceExtensions.GetAddressPartitionKey(
+            IPAddress.Parse("2001:db8:1:2:aaaa::1"),
+            128);
+
+        Assert.Equal("2001:db8:1:2:aaaa::1", partitionKey);
+    }
+
+    /// <summary>
+    /// Verifies that IPv4-mapped IPv6 addresses are partitioned by IPv4 address rather than collapsed into one
+    /// IPv6 prefix, since a dual-stack listener reports every IPv4 client in that form.
+    /// </summary>
+    [Fact]
+    public void GetAddressPartitionKey_IPv4MappedAddress_UsesIPv4Address()
+    {
+        string first = RateLimitingServiceExtensions.GetAddressPartitionKey(
+            IPAddress.Parse("::ffff:203.0.113.10"),
+            64);
+        string second = RateLimitingServiceExtensions.GetAddressPartitionKey(
+            IPAddress.Parse("::ffff:203.0.113.11"),
+            64);
+
+        Assert.Equal("203.0.113.10", first);
+        Assert.Equal("203.0.113.11", second);
+    }
+
+    /// <summary>
+    /// Verifies that client partitioning applies the configured IPv6 prefix length to the remote address.
+    /// </summary>
+    [Fact]
+    public void GetClientPartitionKey_IPv6RemoteAddress_UsesConfiguredPrefix()
+    {
+        DefaultHttpContext httpContext = new();
+        httpContext.Connection.RemoteIpAddress = IPAddress.Parse("2001:db8:1:2:aaaa::1");
+        TestLogger logger = new();
+
+        string partitionKey = RateLimitingServiceExtensions.GetClientPartitionKey(
+            httpContext,
+            new ApplicationRateLimitingOptions(),
+            logger);
+
+        Assert.Equal("2001:db8:1:2::/64", partitionKey);
+        Assert.Empty(logger.Entries);
+    }
+
+    /// <summary>
+    /// Verifies that the concurrency policy partitions by endpoint and client by default.
+    /// </summary>
+    [Fact]
+    public void GetConcurrencyPartitionKey_Default_CombinesEndpointAndClient()
+    {
+        DefaultHttpContext httpContext = new();
+        httpContext.Request.Path = "/orders";
+        httpContext.Connection.RemoteIpAddress = IPAddress.Parse("203.0.113.10");
+
+        string partitionKey = RateLimitingServiceExtensions.GetConcurrencyPartitionKey(
+            httpContext,
+            new ApplicationRateLimitingOptions(),
+            new TestLogger());
+
+        Assert.Equal("/orders|203.0.113.10", partitionKey);
+    }
+
+    /// <summary>
+    /// Verifies that disabling client partitioning restores one shared permit pool per endpoint.
+    /// </summary>
+    [Fact]
+    public void GetConcurrencyPartitionKey_PartitionByClientDisabled_UsesEndpointOnly()
+    {
+        DefaultHttpContext httpContext = new();
+        httpContext.Request.Path = "/orders";
+        httpContext.Connection.RemoteIpAddress = IPAddress.Parse("203.0.113.10");
+        ApplicationRateLimitingOptions options = new();
+        options.ConcurrencyPolicy.PartitionByClient = false;
+
+        string partitionKey = RateLimitingServiceExtensions.GetConcurrencyPartitionKey(
+            httpContext,
+            options,
+            new TestLogger());
+
+        Assert.Equal("/orders", partitionKey);
+    }
+
+    /// <summary>
+    /// Verifies that startup validation rejects an IPv6 partition prefix length outside 1 through 128.
+    /// </summary>
+    /// <param name="prefixLength">The configured prefix length.</param>
+    [Theory]
+    [InlineData("0")]
+    [InlineData("129")]
+    public void RateLimiting_InvalidIPv6PartitionPrefixLength_FailsStartup(string prefixLength)
+    {
+        OptionsValidationException exception =
+            AssertRateLimitingOptionsValidationFails(
+                new Dictionary<string, string?>
+                {
+                    ["ProjectTemplate:RateLimiting:Enabled"] = "true",
+                    ["ProjectTemplate:RateLimiting:IPv6PartitionPrefixLength"] = prefixLength
+                });
+
+        Assert.Contains(
+            "ProjectTemplate:RateLimiting:IPv6PartitionPrefixLength must be between 1 and 128",
+            exception.Message,
+            StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// Creates a test application factory with the supplied in-memory configuration overrides.
     /// </summary>
-    /// <param name="configurationValues">The configuration key/value pairs used to override application settings for a test.</param>
+    /// <param name="configurationValues">The configuration values applied to the test host.</param>
     /// <returns>A configured <see cref="ApplicationWebApplicationFactory"/> instance.</returns>
     private static ApplicationWebApplicationFactory CreateFactory(IReadOnlyDictionary<string, string?> configurationValues)
     {

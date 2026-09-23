@@ -31,14 +31,27 @@ app.MapApplicationHealthChecks();
 | `/health` | General application health endpoint. |
 | `/health/ready` | Readiness endpoint intended for dependency-aware checks such as database, cache, or external service availability. |
 | `/health/live` | Liveness endpoint intended to verify that the application process can respond. |
+| `/health/audit-integrity` | Audit integrity endpoint. Runs only checks tagged `audit`, such as the optional audit reconciliation check. |
 
-The baseline application provides the readiness endpoint shape. It does not, by itself, prove database, cache, queue, or external service availability.
+When EF Core data access is enabled, readiness includes the `application-database` check, which reports whether the application database accepts connections. The check is tagged `ready` and `database` and is registered only when the data access provider is not `None`. For file-backed SQLite, the check verifies that the configured database file already exists before opening the connection; it never creates a missing database as a side effect of readiness. Apply migrations before expecting a local instance to report ready.
 
-The generated template does not add database, cache, queue, or external-service readiness checks automatically. Consuming applications must register the tagged dependency checks that define production readiness for their service.
+The database readiness check can be turned off when another component already owns database readiness. The setting is read each time the check runs; when it is `false`, the registered check reports `Healthy` without contacting the database:
+
+```json
+"ProjectTemplate": {
+  "HealthChecks": {
+    "DatabaseReadinessCheckEnabled": false
+  }
+}
+```
+
+The template does not add cache, queue, or external-service readiness checks. Consuming applications must register any additional tagged dependency checks that define production readiness for their service.
+
+Audit integrity is intentionally kept out of readiness. An integrity finding needs operator review, but it does not stop an instance from serving traffic, and a failing readiness check would remove every replica from load balancing at the same moment. Alert on `/health/audit-integrity` instead. That endpoint returns `200` for `Healthy` and `Degraded` and `503` for `Unhealthy`. Because `/health` runs every registered check, it also reflects audit integrity; do not use `/health` as a load-balancer readiness probe.
 
 ## Access and Deployment Boundary
 
-All three health endpoints are mapped with `.AllowAnonymous()` intentionally. This keeps container, reverse-proxy, load-balancer, and orchestration probes independent of browser login state and prevents the authenticated fallback policy from turning a failed probe into an authentication redirect.
+All four health endpoints are mapped with `.AllowAnonymous()` intentionally. This keeps container, reverse-proxy, load-balancer, and orchestration probes independent of browser login state and prevents the authenticated fallback policy from turning a failed probe into an authentication redirect.
 
 Anonymous application access does not imply unrestricted Internet exposure. Production deployments should restrict health endpoint reachability through the deployment boundary appropriate to the environment, such as:
 
@@ -49,7 +62,7 @@ Anonymous application access does not imply unrestricted Internet exposure. Prod
 
 Avoid returning secrets, configuration values, dependency connection details, exception messages, or other sensitive diagnostics from health responses. Applications that require authenticated health diagnostics should add a separate protected diagnostics endpoint rather than changing the lightweight liveness contract accidentally.
 
-When the application starts in the `Production` environment, it emits one structured warning identifying `/health`, `/health/ready`, and `/health/live` as anonymously mapped routes. The warning does not mean anonymous health probes are inherently unsafe; it is an operational signal reminding the deployment operator to confirm that reverse-proxy, ingress, firewall, or service-mesh routing exposes those endpoints only as intended.
+When the application starts in the `Production` environment, it emits one structured warning identifying `/health`, `/health/ready`, `/health/live`, and `/health/audit-integrity` as anonymously mapped routes. The warning does not mean anonymous health probes are inherently unsafe; it is an operational signal reminding the deployment operator to confirm that reverse-proxy, ingress, firewall, or service-mesh routing exposes those endpoints only as intended.
 
 Development does not emit this health-route warning. The diagnostic is startup-only and does not add request-path log noise.
 
@@ -75,14 +88,14 @@ Should this application instance receive normal traffic?
 
 Only checks tagged `ready` are included in the readiness endpoint. This keeps dependency-aware readiness separate from process liveness.
 
-Example future readiness check:
+Example additional readiness check:
 
 ```csharp
 builder.Services
     .AddHealthChecks()
-    .AddCheck<DatabaseHealthCheck>(
-        "database",
-        tags: new[] { "ready" });
+    .AddCheck<CacheHealthCheck>(
+        "cache",
+        tags: [ApplicationHealthCheckTags.Ready]);
 ```
 
 Use readiness for dependencies that should remove an instance from rotation when unavailable, such as required database connectivity or a required local cache. Avoid adding optional integrations unless the application cannot serve useful traffic without them.
@@ -122,7 +135,7 @@ The default security header configuration excludes `/health`:
 ]
 ```
 
-Because the exclusion is prefix-based, `/health`, `/health/ready`, and `/health/live` are all excluded from the security header middleware, except `X-Content-Type-Options: nosniff`. `Strict-Transport-Security` is registered separately and still applies to HTTPS health responses outside Development. This keeps health probe responses small and infrastructure-friendly.
+Because the exclusion is prefix-based, `/health`, `/health/ready`, `/health/live`, and `/health/audit-integrity` are all excluded from the security header middleware, except `X-Content-Type-Options: nosniff`. `Strict-Transport-Security` is registered separately and still applies to HTTPS health responses outside Development. This keeps health probe responses small and infrastructure-friendly.
 
 ## Contract References
 

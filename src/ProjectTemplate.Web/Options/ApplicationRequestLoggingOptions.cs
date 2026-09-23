@@ -50,6 +50,10 @@ public sealed class ApplicationRequestLoggingOptions
     /// Gets or sets path prefixes that should be excluded from normal request logging.
     /// Matching requests are logged at Verbose level so the default sinks suppress them.
     /// </summary>
+    /// <remarks>
+    /// A configured list replaces these defaults rather than extending them. A blank configured entry is ignored, so a
+    /// later configuration source can remove an inherited entry by overriding its index with an empty value.
+    /// </remarks>
     public List<string> ExcludedPathPrefixes { get; set; } =
     [
         "/health",

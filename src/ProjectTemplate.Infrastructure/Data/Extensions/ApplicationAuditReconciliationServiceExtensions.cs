@@ -33,6 +33,9 @@ public static class ApplicationAuditReconciliationServiceExtensions
                 "The warning finding threshold must not be negative.")
             .Validate(options => options.HealthUnhealthyFindingCount >= options.HealthWarningFindingCount,
                 "The unhealthy finding threshold must not be less than the warning threshold.")
+            .Validate(options => options.HealthStaleRunThreshold is null ||
+                    options.HealthStaleRunThreshold > options.Interval,
+                "The health stale-run threshold must be greater than the reconciliation interval.")
             .ValidateOnStart();
 
         if (configure is not null)
