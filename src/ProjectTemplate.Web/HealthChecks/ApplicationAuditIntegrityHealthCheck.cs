@@ -9,7 +9,7 @@ namespace ProjectTemplate.Web.HealthChecks;
 /// </summary>
 /// <remarks>
 /// The check is registered with the <see cref="ApplicationHealthCheckTags.Audit"/> tag and exposed through
-/// <c>/health/audit</c>. It is intentionally excluded from readiness: an integrity finding requires operator review,
+/// <c>/health/audit-integrity</c>. It is intentionally excluded from readiness: an integrity finding requires operator review,
 /// and a readiness failure would remove every replica from load balancing at the same moment.
 /// </remarks>
 public sealed class ApplicationAuditIntegrityHealthCheck(

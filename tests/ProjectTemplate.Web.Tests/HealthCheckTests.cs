@@ -110,7 +110,7 @@ public sealed class HealthCheckTests
         using ApplicationWebApplicationFactory factory = CreateFactory();
         using HttpClient client = factory.CreateHttpsClient();
 
-        using HttpResponseMessage response = await client.GetAsync("/health/audit", TestContext.Current.CancellationToken);
+        using HttpResponseMessage response = await client.GetAsync("/health/audit-integrity", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -130,7 +130,7 @@ public sealed class HealthCheckTests
         using ApplicationWebApplicationFactory factory = CreateFactory();
         using HttpClient client = factory.CreateHttpsClient();
 
-        using HttpResponseMessage response = await client.GetAsync("/health/audit", TestContext.Current.CancellationToken);
+        using HttpResponseMessage response = await client.GetAsync("/health/audit-integrity", TestContext.Current.CancellationToken);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.True(response.Headers.Contains("X-Content-Type-Options"));

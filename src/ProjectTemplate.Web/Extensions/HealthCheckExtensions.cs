@@ -25,7 +25,7 @@ public static class HealthCheckExtensions
     /// </summary>
     /// <remarks>
     /// <c>/health/ready</c> runs only checks tagged <see cref="ApplicationHealthCheckTags.Ready"/>, and
-    /// <c>/health/audit</c> runs only checks tagged <see cref="ApplicationHealthCheckTags.Audit"/>. Audit integrity is
+    /// <c>/health/audit-integrity</c> runs only checks tagged <see cref="ApplicationHealthCheckTags.Audit"/>. Audit integrity is
     /// reported separately so an integrity finding alerts operators without removing every replica from rotation.
     /// </remarks>
     /// <param name="app">The web application used to map health check endpoints.</param>
@@ -35,7 +35,7 @@ public static class HealthCheckExtensions
         app.MapHealthChecks("/health")
             .AllowAnonymous();
 
-        app.MapHealthChecks("/health/ready", new HealthCheckOptions
+        app.MapHealthChecks("/health/audit-integrity", new HealthCheckOptions
         {
             Predicate = healthCheck => healthCheck.Tags.Contains(ApplicationHealthCheckTags.Ready)
         })

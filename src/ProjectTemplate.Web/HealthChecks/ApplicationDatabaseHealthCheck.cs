@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using ProjectTemplate.Infrastructure.Data;
@@ -52,6 +53,11 @@ public sealed class ApplicationDatabaseHealthCheck(
         using IServiceScope scope = _scopeFactory.CreateScope();
         ApplicationDbContext dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
+        if (IsMissingSqliteDatabase(dbContext))
+        {
+            return new HealthCheckResult(context.Registration.FailureStatus, UnavailableDescription);
+        }
+
         bool canConnect = await dbContext.Database
             .CanConnectAsync(cancellationToken)
             .ConfigureAwait(false);
@@ -59,5 +65,21 @@ public sealed class ApplicationDatabaseHealthCheck(
         return canConnect
             ? HealthCheckResult.Healthy(AvailableDescription)
             : new HealthCheckResult(context.Registration.FailureStatus, UnavailableDescription);
+    }
+
+    private static bool IsMissingSqliteDatabase(ApplicationDbContext dbContext)
+    {
+        if (!string.Equals(
+                dbContext.Database.ProviderName,
+                "Microsoft.EntityFrameworkCore.Sqlite",
+                StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        string dataSource = dbContext.Database.GetDbConnection().DataSource;
+
+        return !string.IsNullOrWhiteSpace(dataSource) &&
+            !string.Equals(dataSource, ":memory:", StringComparison.OrdinalIgnoreCase) && !File.Exists(dataSource);
     }
 }

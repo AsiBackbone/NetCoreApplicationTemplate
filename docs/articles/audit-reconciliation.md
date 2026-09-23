@@ -63,7 +63,7 @@ Finding keys are deterministic for a reason, mutation batch, and destination. Re
 
 ## Health checks
 
-Registration adds `application-audit-integrity` with the tags `audit` and `integrity`. The `/health/audit` endpoint runs the check, and `/health` includes it with every other registered check. It is deliberately not tagged `ready`: an integrity finding needs operator review, and a readiness failure would take every replica out of load balancing at the same time. Alert on `/health/audit` rather than routing traffic on it.
+Registration adds `application-audit-integrity` with the tags `audit` and `integrity`. The `/health/audit-integrity` endpoint runs the check, and `/health` includes it with every other registered check. It is deliberately not tagged `ready`: an integrity finding needs operator review, and a readiness failure would take every replica out of load balancing at the same time. Alert on `/health/audit-integrity` rather than routing traffic on it.
 
 The check returns:
 

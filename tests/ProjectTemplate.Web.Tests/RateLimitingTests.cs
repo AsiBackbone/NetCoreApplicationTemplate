@@ -508,10 +508,6 @@ public sealed class RateLimitingTests
     }
 
     /// <summary>
-    /// Creates a test application factory with the supplied in-memory configuration overrides.
-    /// </summary>
-    /// <returns>A configured <see cref="ApplicationWebApplicationFactory"/> instance.</returns>
-    /// <summary>
     /// Verifies that IPv6 clients within one /64 share a partition so rotating addresses cannot bypass the limiter.
     /// </summary>
     [Fact]
@@ -668,6 +664,11 @@ public sealed class RateLimitingTests
             StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// Creates a test application factory with the supplied in-memory configuration overrides.
+    /// </summary>
+    /// <param name="configurationValues">The configuration values applied to the test host.</param>
+    /// <returns>A configured <see cref="ApplicationWebApplicationFactory"/> instance.</returns>
     private static ApplicationWebApplicationFactory CreateFactory(IReadOnlyDictionary<string, string?> configurationValues)
     {
         return ApplicationWebApplicationFactory.CreateAllowingAnonymousAccess(configurationValues);
