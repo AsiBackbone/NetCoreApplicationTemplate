@@ -1,0 +1,555 @@
+{
+  "contract": "ncat.audit-completion",
+  "contractVersion": "1.0",
+  "generation": {
+    "repository": "AsiBackbone/NetCoreApplicationTemplate",
+    "generator": "tests/ProjectTemplate.Web.Tests/AuditCompletionContractVectorTests.cs",
+    "regenerate": "NCAT_UPDATE_CONTRACT_VECTORS=true dotnet test --configuration Release",
+    "valuesAreSynthetic": true
+  },
+  "schemaVersions": {
+    "completionMessage": "1.0",
+    "mutationManifest": "1.0",
+    "auditRecord": "1.0"
+  },
+  "manifest": {
+    "algorithm": "SHA-256",
+    "digestEncoding": "uppercase-hex",
+    "byteEncoding": "utf-8-without-bom"
+  },
+  "idempotency": {
+    "keyPrefix": "ncat-audit-completion:",
+    "hashInput": "<destination>\\n<mutationBatchId with leading and trailing whitespace trimmed>",
+    "destinationNormalization": "trimmed before hashing and delivery; the message carries the trimmed destination",
+    "mutationBatchIdNormalization": "trimmed for hashing only; the message and manifest carry the original identifier",
+    "hashAlgorithm": "SHA-256",
+    "digestEncoding": "uppercase-hex"
+  },
+  "persistenceOutcomes": {
+    "supported": [
+      "Committed"
+    ],
+    "withoutReceipt": [
+      {
+        "scenario": "no-mutation",
+        "behavior": "SaveChanges with no audited changes completes no mutation batch; no receipt or message is produced."
+      },
+      {
+        "scenario": "failed",
+        "behavior": "A failed mutation or local completion throws before commit; the staged outbox entry is rolled back and no message is produced."
+      },
+      {
+        "scenario": "rolled-back",
+        "behavior": "A rolled-back transaction discards the staged outbox entry; no message is produced."
+      }
+    ]
+  },
+  "vectors": [
+    {
+      "name": "committed-single-record-all-identifiers",
+      "description": "One created record with every optional correlation identifier supplied.",
+      "auditRecords": [
+        {
+          "schemaVersion": "1.0",
+          "mutationBatchId": "synthetic-batch-0001",
+          "entity": "SyntheticOrder",
+          "state": "Added",
+          "keyValues": "{\"Id\":\"00000000-0000-0000-0000-000000000001\"}",
+          "originalValues": "",
+          "currentValues": "{\"Status\":\"Open\",\"Total\":12.50}",
+          "operationExecutionId": "operation-0001",
+          "executionAttemptId": "attempt-0001",
+          "decisionAuditRecordId": "decision-0001",
+          "correlationId": "correlation-0001",
+          "traceId": "0af7651916cd43dd8448eb211c80319c",
+          "spanId": "b7ad6b7169203331"
+        }
+      ],
+      "canonicalManifest": {
+        "schemaVersion": "1.0",
+        "json": "{\"schemaVersion\":\"1.0\",\"mutationBatchId\":\"synthetic-batch-0001\",\"auditRecordCount\":1,\"records\":[{\"schemaVersion\":\"1.0\",\"entity\":\"SyntheticOrder\",\"state\":\"Added\",\"keyValues\":{\"Id\":\"00000000-0000-0000-0000-000000000001\"},\"originalValues\":{},\"currentValues\":{\"Status\":\"Open\",\"Total\":12.50},\"operationExecutionId\":\"operation-0001\",\"executionAttemptId\":\"attempt-0001\",\"decisionAuditRecordId\":\"decision-0001\",\"correlationId\":\"correlation-0001\",\"traceId\":\"0af7651916cd43dd8448eb211c80319c\",\"spanId\":\"b7ad6b7169203331\"}]}",
+        "utf8ByteLength": 513,
+        "expectedDigest": "5C76D7E1DD3190F518F9029A2140D2E84469E0269E5C158FE03AD5DEA14159F5"
+      },
+      "receipt": {
+        "mutationBatchId": "synthetic-batch-0001",
+        "auditRecordCount": 1,
+        "persistenceOutcome": "Committed",
+        "completedUtc": "2026-07-18T12:00:00+00:00",
+        "mutationManifestHash": "5C76D7E1DD3190F518F9029A2140D2E84469E0269E5C158FE03AD5DEA14159F5",
+        "mutationManifestAlgorithm": "SHA-256",
+        "mutationManifestSchemaVersion": "1.0",
+        "operationExecutionId": "operation-0001",
+        "executionAttemptId": "attempt-0001",
+        "decisionAuditRecordId": "decision-0001",
+        "correlationId": "correlation-0001",
+        "traceId": "0af7651916cd43dd8448eb211c80319c"
+      },
+      "message": {
+        "schemaVersion": "1.0",
+        "destination": "default",
+        "idempotencyKey": "ncat-audit-completion:97CEC51409BC16540BF147470BA45A578FA833CA2BFF782E5629C69D6E9DD5B1",
+        "mutationBatchId": "synthetic-batch-0001",
+        "auditRecordCount": 1,
+        "persistenceOutcome": "Committed",
+        "receiptCompletedUtc": "2026-07-18T12:00:00Z",
+        "mutationManifestHash": "5C76D7E1DD3190F518F9029A2140D2E84469E0269E5C158FE03AD5DEA14159F5",
+        "mutationManifestAlgorithm": "SHA-256",
+        "mutationManifestSchemaVersion": "1.0",
+        "operationExecutionId": "operation-0001",
+        "executionAttemptId": "attempt-0001",
+        "decisionAuditRecordId": "decision-0001",
+        "correlationId": "correlation-0001",
+        "traceId": "0af7651916cd43dd8448eb211c80319c"
+      }
+    },
+    {
+      "name": "committed-multi-record-canonical-ordering",
+      "description": "Unordered records, unordered properties, nested values, escaping, and empty payloads that exercise canonicalization.",
+      "auditRecords": [
+        {
+          "schemaVersion": "1.0",
+          "mutationBatchId": "synthetic-batch-0002",
+          "entity": "SyntheticOrder",
+          "state": "Modified",
+          "keyValues": "{\"Id\":\"00000000-0000-0000-0000-000000000002\"}",
+          "originalValues": "{\"Total\":1.50,\"Status\":\"Open\",\"Tags\":[\"b\",\"a\"]}",
+          "currentValues": "{\"Tags\":[\"b\",\"a\"],\"Total\":2.0,\"Status\":\"Closed\"}",
+          "operationExecutionId": "operation-0002",
+          "executionAttemptId": "attempt-0002",
+          "decisionAuditRecordId": null,
+          "correlationId": "correlation-0002",
+          "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+          "spanId": "00f067aa0ba902b7"
+        },
+        {
+          "schemaVersion": "1.0",
+          "mutationBatchId": "synthetic-batch-0002",
+          "entity": "SyntheticCustomer",
+          "state": "Deleted",
+          "keyValues": "{\"Id\":\"00000000-0000-0000-0000-000000000003\"}",
+          "originalValues": "{\"Name\":\"***\",\"Note\":\"café <a+b> & 'quoted'\",\"Profile\":{\"z\":null,\"a\":true}}",
+          "currentValues": "",
+          "operationExecutionId": "operation-0002",
+          "executionAttemptId": "attempt-0002",
+          "decisionAuditRecordId": null,
+          "correlationId": "correlation-0002",
+          "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+          "spanId": "00f067aa0ba902b8"
+        },
+        {
+          "schemaVersion": "1.0",
+          "mutationBatchId": "synthetic-batch-0002",
+          "entity": "SyntheticCustomer",
+          "state": "Added",
+          "keyValues": "{\"Id\":\"00000000-0000-0000-0000-000000000004\"}",
+          "originalValues": "   ",
+          "currentValues": "{\"Name\":\"***\",\"Profile\":{\"b\":[1,2,{\"y\":1,\"x\":0}],\"a\":false}}",
+          "operationExecutionId": "operation-0002",
+          "executionAttemptId": "attempt-0002",
+          "decisionAuditRecordId": null,
+          "correlationId": "correlation-0002",
+          "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+          "spanId": "00f067aa0ba902b9"
+        }
+      ],
+      "canonicalManifest": {
+        "schemaVersion": "1.0",
+        "json": "{\"schemaVersion\":\"1.0\",\"mutationBatchId\":\"synthetic-batch-0002\",\"auditRecordCount\":3,\"records\":[{\"schemaVersion\":\"1.0\",\"entity\":\"SyntheticCustomer\",\"state\":\"Added\",\"keyValues\":{\"Id\":\"00000000-0000-0000-0000-000000000004\"},\"originalValues\":{},\"currentValues\":{\"Name\":\"***\",\"Profile\":{\"a\":false,\"b\":[1,2,{\"x\":0,\"y\":1}]}},\"operationExecutionId\":\"operation-0002\",\"executionAttemptId\":\"attempt-0002\",\"decisionAuditRecordId\":\"\",\"correlationId\":\"correlation-0002\",\"traceId\":\"4bf92f3577b34da6a3ce929d0e0e4736\",\"spanId\":\"00f067aa0ba902b9\"},{\"schemaVersion\":\"1.0\",\"entity\":\"SyntheticCustomer\",\"state\":\"Deleted\",\"keyValues\":{\"Id\":\"00000000-0000-0000-0000-000000000003\"},\"originalValues\":{\"Name\":\"***\",\"Note\":\"caf\\u00E9 \\u003Ca\\u002Bb\\u003E \\u0026 \\u0027quoted\\u0027\",\"Profile\":{\"a\":true,\"z\":null}},\"currentValues\":{},\"operationExecutionId\":\"operation-0002\",\"executionAttemptId\":\"attempt-0002\",\"decisionAuditRecordId\":\"\",\"correlationId\":\"correlation-0002\",\"traceId\":\"4bf92f3577b34da6a3ce929d0e0e4736\",\"spanId\":\"00f067aa0ba902b8\"},{\"schemaVersion\":\"1.0\",\"entity\":\"SyntheticOrder\",\"state\":\"Modified\",\"keyValues\":{\"Id\":\"00000000-0000-0000-0000-000000000002\"},\"originalValues\":{\"Status\":\"Open\",\"Tags\":[\"b\",\"a\"],\"Total\":1.50},\"currentValues\":{\"Status\":\"Closed\",\"Tags\":[\"b\",\"a\"],\"Total\":2.0},\"operationExecutionId\":\"operation-0002\",\"executionAttemptId\":\"attempt-0002\",\"decisionAuditRecordId\":\"\",\"correlationId\":\"correlation-0002\",\"traceId\":\"4bf92f3577b34da6a3ce929d0e0e4736\",\"spanId\":\"00f067aa0ba902b7\"}]}",
+        "utf8ByteLength": 1487,
+        "expectedDigest": "CE0B7B8FEB67307337EA3FF8F90E64B654F1C8CC65BB3A1C9CEE0C7BC560E118"
+      },
+      "receipt": {
+        "mutationBatchId": "synthetic-batch-0002",
+        "auditRecordCount": 3,
+        "persistenceOutcome": "Committed",
+        "completedUtc": "2026-07-18T12:00:00+00:00",
+        "mutationManifestHash": "CE0B7B8FEB67307337EA3FF8F90E64B654F1C8CC65BB3A1C9CEE0C7BC560E118",
+        "mutationManifestAlgorithm": "SHA-256",
+        "mutationManifestSchemaVersion": "1.0",
+        "operationExecutionId": "operation-0002",
+        "executionAttemptId": "attempt-0002",
+        "decisionAuditRecordId": null,
+        "correlationId": "correlation-0002",
+        "traceId": "4bf92f3577b34da6a3ce929d0e0e4736"
+      },
+      "message": {
+        "schemaVersion": "1.0",
+        "destination": "default",
+        "idempotencyKey": "ncat-audit-completion:B4BF057528FECE7A8555F7F5A8B4470BA2910C7BE8655CAC63FB5FF25A51555F",
+        "mutationBatchId": "synthetic-batch-0002",
+        "auditRecordCount": 3,
+        "persistenceOutcome": "Committed",
+        "receiptCompletedUtc": "2026-07-18T12:00:00Z",
+        "mutationManifestHash": "CE0B7B8FEB67307337EA3FF8F90E64B654F1C8CC65BB3A1C9CEE0C7BC560E118",
+        "mutationManifestAlgorithm": "SHA-256",
+        "mutationManifestSchemaVersion": "1.0",
+        "operationExecutionId": "operation-0002",
+        "executionAttemptId": "attempt-0002",
+        "decisionAuditRecordId": null,
+        "correlationId": "correlation-0002",
+        "traceId": "4bf92f3577b34da6a3ce929d0e0e4736"
+      }
+    },
+    {
+      "name": "committed-null-identifiers-custom-destination",
+      "description": "A system mutation without operation, attempt, decision, correlation, or trace identifiers delivered to a named destination.",
+      "auditRecords": [
+        {
+          "schemaVersion": "1.0",
+          "mutationBatchId": "synthetic-batch-0003",
+          "entity": "SyntheticSetting",
+          "state": "Modified",
+          "keyValues": "{\"Key\":\"synthetic.setting\"}",
+          "originalValues": "{\"Value\":\"before\"}",
+          "currentValues": "{\"Value\":\"after\"}",
+          "operationExecutionId": null,
+          "executionAttemptId": null,
+          "decisionAuditRecordId": null,
+          "correlationId": null,
+          "traceId": null,
+          "spanId": null
+        }
+      ],
+      "canonicalManifest": {
+        "schemaVersion": "1.0",
+        "json": "{\"schemaVersion\":\"1.0\",\"mutationBatchId\":\"synthetic-batch-0003\",\"auditRecordCount\":1,\"records\":[{\"schemaVersion\":\"1.0\",\"entity\":\"SyntheticSetting\",\"state\":\"Modified\",\"keyValues\":{\"Key\":\"synthetic.setting\"},\"originalValues\":{\"Value\":\"before\"},\"currentValues\":{\"Value\":\"after\"},\"operationExecutionId\":\"\",\"executionAttemptId\":\"\",\"decisionAuditRecordId\":\"\",\"correlationId\":\"\",\"traceId\":\"\",\"spanId\":\"\"}]}",
+        "utf8ByteLength": 399,
+        "expectedDigest": "C2FF5545DEBC5B6AA27B40692049272E8E77EE8A8D0D6BBA5128EC0F986FE224"
+      },
+      "receipt": {
+        "mutationBatchId": "synthetic-batch-0003",
+        "auditRecordCount": 1,
+        "persistenceOutcome": "Committed",
+        "completedUtc": "2026-07-18T12:00:00+00:00",
+        "mutationManifestHash": "C2FF5545DEBC5B6AA27B40692049272E8E77EE8A8D0D6BBA5128EC0F986FE224",
+        "mutationManifestAlgorithm": "SHA-256",
+        "mutationManifestSchemaVersion": "1.0",
+        "operationExecutionId": null,
+        "executionAttemptId": null,
+        "decisionAuditRecordId": null,
+        "correlationId": null,
+        "traceId": null
+      },
+      "message": {
+        "schemaVersion": "1.0",
+        "destination": "accountability-archive",
+        "idempotencyKey": "ncat-audit-completion:61ABC28956F47CE8E0515302590E7E1944E19E33F5FF92E8FA8F1224CC2DFA77",
+        "mutationBatchId": "synthetic-batch-0003",
+        "auditRecordCount": 1,
+        "persistenceOutcome": "Committed",
+        "receiptCompletedUtc": "2026-07-18T12:00:00Z",
+        "mutationManifestHash": "C2FF5545DEBC5B6AA27B40692049272E8E77EE8A8D0D6BBA5128EC0F986FE224",
+        "mutationManifestAlgorithm": "SHA-256",
+        "mutationManifestSchemaVersion": "1.0",
+        "operationExecutionId": null,
+        "executionAttemptId": null,
+        "decisionAuditRecordId": null,
+        "correlationId": null,
+        "traceId": null
+      }
+    },
+    {
+      "name": "committed-padded-mutation-batch-id",
+      "description": "A mutation batch identifier with surrounding whitespace: the idempotency key hashes the trimmed identifier while the message and manifest keep it unchanged.",
+      "auditRecords": [
+        {
+          "schemaVersion": "1.0",
+          "mutationBatchId": " synthetic-batch-0004 ",
+          "entity": "SyntheticSetting",
+          "state": "Added",
+          "keyValues": "{\"Key\":\"synthetic.padded\"}",
+          "originalValues": "",
+          "currentValues": "{\"Value\":\"on\"}",
+          "operationExecutionId": "operation-0004",
+          "executionAttemptId": "attempt-0004",
+          "decisionAuditRecordId": null,
+          "correlationId": null,
+          "traceId": null,
+          "spanId": null
+        }
+      ],
+      "canonicalManifest": {
+        "schemaVersion": "1.0",
+        "json": "{\"schemaVersion\":\"1.0\",\"mutationBatchId\":\" synthetic-batch-0004 \",\"auditRecordCount\":1,\"records\":[{\"schemaVersion\":\"1.0\",\"entity\":\"SyntheticSetting\",\"state\":\"Added\",\"keyValues\":{\"Key\":\"synthetic.padded\"},\"originalValues\":{},\"currentValues\":{\"Value\":\"on\"},\"operationExecutionId\":\"operation-0004\",\"executionAttemptId\":\"attempt-0004\",\"decisionAuditRecordId\":\"\",\"correlationId\":\"\",\"traceId\":\"\",\"spanId\":\"\"}]}",
+        "utf8ByteLength": 404,
+        "expectedDigest": "0ADF0FCCEFCE50923CDD5C15C9067291B0FCCE618DC513F5743FEFC053A7830B"
+      },
+      "receipt": {
+        "mutationBatchId": " synthetic-batch-0004 ",
+        "auditRecordCount": 1,
+        "persistenceOutcome": "Committed",
+        "completedUtc": "2026-07-18T12:00:00+00:00",
+        "mutationManifestHash": "0ADF0FCCEFCE50923CDD5C15C9067291B0FCCE618DC513F5743FEFC053A7830B",
+        "mutationManifestAlgorithm": "SHA-256",
+        "mutationManifestSchemaVersion": "1.0",
+        "operationExecutionId": "operation-0004",
+        "executionAttemptId": "attempt-0004",
+        "decisionAuditRecordId": null,
+        "correlationId": null,
+        "traceId": null
+      },
+      "message": {
+        "schemaVersion": "1.0",
+        "destination": "default",
+        "idempotencyKey": "ncat-audit-completion:4177ECD9384E6FF303454E89C324EEEF687D3734C954F9FBFC52F5F1E5FEBCC9",
+        "mutationBatchId": " synthetic-batch-0004 ",
+        "auditRecordCount": 1,
+        "persistenceOutcome": "Committed",
+        "receiptCompletedUtc": "2026-07-18T12:00:00Z",
+        "mutationManifestHash": "0ADF0FCCEFCE50923CDD5C15C9067291B0FCCE618DC513F5743FEFC053A7830B",
+        "mutationManifestAlgorithm": "SHA-256",
+        "mutationManifestSchemaVersion": "1.0",
+        "operationExecutionId": "operation-0004",
+        "executionAttemptId": "attempt-0004",
+        "decisionAuditRecordId": null,
+        "correlationId": null,
+        "traceId": null
+      }
+    }
+  ],
+  "invalidMessages": [
+    {
+      "name": "manifest-digest-mismatch",
+      "rule": "The digest does not match the canonical manifest of the retained batch.",
+      "enforcedBy": "ncat-manifest-verifier",
+      "message": {
+        "schemaVersion": "1.0",
+        "destination": "default",
+        "idempotencyKey": "ncat-audit-completion:97CEC51409BC16540BF147470BA45A578FA833CA2BFF782E5629C69D6E9DD5B1",
+        "mutationBatchId": "synthetic-batch-0001",
+        "auditRecordCount": 1,
+        "persistenceOutcome": "Committed",
+        "receiptCompletedUtc": "2026-07-18T12:00:00Z",
+        "mutationManifestHash": "44136FA355B3678A1146AD16F7E8649E94FB4FC21FE77E8310C060F61CAAFF8A",
+        "mutationManifestAlgorithm": "SHA-256",
+        "mutationManifestSchemaVersion": "1.0",
+        "operationExecutionId": "operation-0001",
+        "executionAttemptId": "attempt-0001",
+        "decisionAuditRecordId": "decision-0001",
+        "correlationId": "correlation-0001",
+        "traceId": "0af7651916cd43dd8448eb211c80319c"
+      }
+    },
+    {
+      "name": "manifest-digest-not-hex",
+      "rule": "The digest is not hexadecimal.",
+      "enforcedBy": "ncat-manifest-verifier",
+      "message": {
+        "schemaVersion": "1.0",
+        "destination": "default",
+        "idempotencyKey": "ncat-audit-completion:97CEC51409BC16540BF147470BA45A578FA833CA2BFF782E5629C69D6E9DD5B1",
+        "mutationBatchId": "synthetic-batch-0001",
+        "auditRecordCount": 1,
+        "persistenceOutcome": "Committed",
+        "receiptCompletedUtc": "2026-07-18T12:00:00Z",
+        "mutationManifestHash": "NOT-A-HEX-DIGEST",
+        "mutationManifestAlgorithm": "SHA-256",
+        "mutationManifestSchemaVersion": "1.0",
+        "operationExecutionId": "operation-0001",
+        "executionAttemptId": "attempt-0001",
+        "decisionAuditRecordId": "decision-0001",
+        "correlationId": "correlation-0001",
+        "traceId": "0af7651916cd43dd8448eb211c80319c"
+      }
+    },
+    {
+      "name": "manifest-algorithm-unsupported",
+      "rule": "The manifest algorithm is not the algorithm that produced the digest.",
+      "enforcedBy": "ncat-manifest-verifier",
+      "message": {
+        "schemaVersion": "1.0",
+        "destination": "default",
+        "idempotencyKey": "ncat-audit-completion:97CEC51409BC16540BF147470BA45A578FA833CA2BFF782E5629C69D6E9DD5B1",
+        "mutationBatchId": "synthetic-batch-0001",
+        "auditRecordCount": 1,
+        "persistenceOutcome": "Committed",
+        "receiptCompletedUtc": "2026-07-18T12:00:00Z",
+        "mutationManifestHash": "5C76D7E1DD3190F518F9029A2140D2E84469E0269E5C158FE03AD5DEA14159F5",
+        "mutationManifestAlgorithm": "SHA-1",
+        "mutationManifestSchemaVersion": "1.0",
+        "operationExecutionId": "operation-0001",
+        "executionAttemptId": "attempt-0001",
+        "decisionAuditRecordId": "decision-0001",
+        "correlationId": "correlation-0001",
+        "traceId": "0af7651916cd43dd8448eb211c80319c"
+      }
+    },
+    {
+      "name": "audit-record-count-mismatch",
+      "rule": "The audit record count does not match the retained batch.",
+      "enforcedBy": "ncat-manifest-verifier",
+      "message": {
+        "schemaVersion": "1.0",
+        "destination": "default",
+        "idempotencyKey": "ncat-audit-completion:97CEC51409BC16540BF147470BA45A578FA833CA2BFF782E5629C69D6E9DD5B1",
+        "mutationBatchId": "synthetic-batch-0001",
+        "auditRecordCount": 2,
+        "persistenceOutcome": "Committed",
+        "receiptCompletedUtc": "2026-07-18T12:00:00Z",
+        "mutationManifestHash": "5C76D7E1DD3190F518F9029A2140D2E84469E0269E5C158FE03AD5DEA14159F5",
+        "mutationManifestAlgorithm": "SHA-256",
+        "mutationManifestSchemaVersion": "1.0",
+        "operationExecutionId": "operation-0001",
+        "executionAttemptId": "attempt-0001",
+        "decisionAuditRecordId": "decision-0001",
+        "correlationId": "correlation-0001",
+        "traceId": "0af7651916cd43dd8448eb211c80319c"
+      }
+    },
+    {
+      "name": "mutation-batch-id-missing",
+      "rule": "The mutation batch identifier is empty.",
+      "enforcedBy": "ncat-outbox-staging",
+      "message": {
+        "schemaVersion": "1.0",
+        "destination": "default",
+        "idempotencyKey": "ncat-audit-completion:97CEC51409BC16540BF147470BA45A578FA833CA2BFF782E5629C69D6E9DD5B1",
+        "mutationBatchId": "",
+        "auditRecordCount": 1,
+        "persistenceOutcome": "Committed",
+        "receiptCompletedUtc": "2026-07-18T12:00:00Z",
+        "mutationManifestHash": "5C76D7E1DD3190F518F9029A2140D2E84469E0269E5C158FE03AD5DEA14159F5",
+        "mutationManifestAlgorithm": "SHA-256",
+        "mutationManifestSchemaVersion": "1.0",
+        "operationExecutionId": "operation-0001",
+        "executionAttemptId": "attempt-0001",
+        "decisionAuditRecordId": "decision-0001",
+        "correlationId": "correlation-0001",
+        "traceId": "0af7651916cd43dd8448eb211c80319c"
+      }
+    },
+    {
+      "name": "destination-too-long",
+      "rule": "The destination exceeds 128 characters.",
+      "enforcedBy": "ncat-outbox-staging",
+      "message": {
+        "schemaVersion": "1.0",
+        "destination": "ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "idempotencyKey": "ncat-audit-completion:97CEC51409BC16540BF147470BA45A578FA833CA2BFF782E5629C69D6E9DD5B1",
+        "mutationBatchId": "synthetic-batch-0001",
+        "auditRecordCount": 1,
+        "persistenceOutcome": "Committed",
+        "receiptCompletedUtc": "2026-07-18T12:00:00Z",
+        "mutationManifestHash": "5C76D7E1DD3190F518F9029A2140D2E84469E0269E5C158FE03AD5DEA14159F5",
+        "mutationManifestAlgorithm": "SHA-256",
+        "mutationManifestSchemaVersion": "1.0",
+        "operationExecutionId": "operation-0001",
+        "executionAttemptId": "attempt-0001",
+        "decisionAuditRecordId": "decision-0001",
+        "correlationId": "correlation-0001",
+        "traceId": "0af7651916cd43dd8448eb211c80319c"
+      }
+    },
+    {
+      "name": "idempotency-key-mismatch",
+      "rule": "The idempotency key is not derived from the destination and mutation batch identifier.",
+      "enforcedBy": "adapter",
+      "message": {
+        "schemaVersion": "1.0",
+        "destination": "default",
+        "idempotencyKey": "ncat-audit-completion:44136FA355B3678A1146AD16F7E8649E94FB4FC21FE77E8310C060F61CAAFF8A",
+        "mutationBatchId": "synthetic-batch-0001",
+        "auditRecordCount": 1,
+        "persistenceOutcome": "Committed",
+        "receiptCompletedUtc": "2026-07-18T12:00:00Z",
+        "mutationManifestHash": "5C76D7E1DD3190F518F9029A2140D2E84469E0269E5C158FE03AD5DEA14159F5",
+        "mutationManifestAlgorithm": "SHA-256",
+        "mutationManifestSchemaVersion": "1.0",
+        "operationExecutionId": "operation-0001",
+        "executionAttemptId": "attempt-0001",
+        "decisionAuditRecordId": "decision-0001",
+        "correlationId": "correlation-0001",
+        "traceId": "0af7651916cd43dd8448eb211c80319c"
+      }
+    },
+    {
+      "name": "persistence-outcome-unsupported",
+      "rule": "Only supported persistence outcomes are emitted; failed, rolled-back, and no-mutation saves produce no message.",
+      "enforcedBy": "adapter",
+      "message": {
+        "schemaVersion": "1.0",
+        "destination": "default",
+        "idempotencyKey": "ncat-audit-completion:97CEC51409BC16540BF147470BA45A578FA833CA2BFF782E5629C69D6E9DD5B1",
+        "mutationBatchId": "synthetic-batch-0001",
+        "auditRecordCount": 1,
+        "persistenceOutcome": "RolledBack",
+        "receiptCompletedUtc": "2026-07-18T12:00:00Z",
+        "mutationManifestHash": "5C76D7E1DD3190F518F9029A2140D2E84469E0269E5C158FE03AD5DEA14159F5",
+        "mutationManifestAlgorithm": "SHA-256",
+        "mutationManifestSchemaVersion": "1.0",
+        "operationExecutionId": "operation-0001",
+        "executionAttemptId": "attempt-0001",
+        "decisionAuditRecordId": "decision-0001",
+        "correlationId": "correlation-0001",
+        "traceId": "0af7651916cd43dd8448eb211c80319c"
+      }
+    },
+    {
+      "name": "message-schema-version-unsupported",
+      "rule": "The completion message schema version is not supported by this contract version.",
+      "enforcedBy": "adapter",
+      "message": {
+        "schemaVersion": "2.0",
+        "destination": "default",
+        "idempotencyKey": "ncat-audit-completion:97CEC51409BC16540BF147470BA45A578FA833CA2BFF782E5629C69D6E9DD5B1",
+        "mutationBatchId": "synthetic-batch-0001",
+        "auditRecordCount": 1,
+        "persistenceOutcome": "Committed",
+        "receiptCompletedUtc": "2026-07-18T12:00:00Z",
+        "mutationManifestHash": "5C76D7E1DD3190F518F9029A2140D2E84469E0269E5C158FE03AD5DEA14159F5",
+        "mutationManifestAlgorithm": "SHA-256",
+        "mutationManifestSchemaVersion": "1.0",
+        "operationExecutionId": "operation-0001",
+        "executionAttemptId": "attempt-0001",
+        "decisionAuditRecordId": "decision-0001",
+        "correlationId": "correlation-0001",
+        "traceId": "0af7651916cd43dd8448eb211c80319c"
+      }
+    },
+    {
+      "name": "manifest-schema-version-unsupported",
+      "rule": "The canonical manifest schema version is not supported by this contract version.",
+      "enforcedBy": "adapter",
+      "message": {
+        "schemaVersion": "1.0",
+        "destination": "default",
+        "idempotencyKey": "ncat-audit-completion:97CEC51409BC16540BF147470BA45A578FA833CA2BFF782E5629C69D6E9DD5B1",
+        "mutationBatchId": "synthetic-batch-0001",
+        "auditRecordCount": 1,
+        "persistenceOutcome": "Committed",
+        "receiptCompletedUtc": "2026-07-18T12:00:00Z",
+        "mutationManifestHash": "5C76D7E1DD3190F518F9029A2140D2E84469E0269E5C158FE03AD5DEA14159F5",
+        "mutationManifestAlgorithm": "SHA-256",
+        "mutationManifestSchemaVersion": "2.0",
+        "operationExecutionId": "operation-0001",
+        "executionAttemptId": "attempt-0001",
+        "decisionAuditRecordId": "decision-0001",
+        "correlationId": "correlation-0001",
+        "traceId": "0af7651916cd43dd8448eb211c80319c"
+      }
+    },
+    {
+      "name": "optional-identifier-whitespace",
+      "rule": "Optional identifiers are either null or non-whitespace; whitespace-only values are malformed.",
+      "enforcedBy": "adapter",
+      "message": {
+        "schemaVersion": "1.0",
+        "destination": "default",
+        "idempotencyKey": "ncat-audit-completion:97CEC51409BC16540BF147470BA45A578FA833CA2BFF782E5629C69D6E9DD5B1",
+        "mutationBatchId": "synthetic-batch-0001",
+        "auditRecordCount": 1,
+        "persistenceOutcome": "Committed",
+        "receiptCompletedUtc": "2026-07-18T12:00:00Z",
+        "mutationManifestHash": "5C76D7E1DD3190F518F9029A2140D2E84469E0269E5C158FE03AD5DEA14159F5",
+        "mutationManifestAlgorithm": "SHA-256",
+        "mutationManifestSchemaVersion": "1.0",
+        "operationExecutionId": "operation-0001",
+        "executionAttemptId": "attempt-0001",
+        "decisionAuditRecordId": "decision-0001",
+        "correlationId": "   ",
+        "traceId": "0af7651916cd43dd8448eb211c80319c"
+      }
+    }
+  ]
+}

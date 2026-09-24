@@ -6,6 +6,16 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+### Added
+
+* Published versioned audit-completion contract vectors under
+  `contracts/audit-completion/v1/` for external adapters. The vectors are
+  generated through production manifest, hashing, outbox staging, and dispatch
+  code, and a contract test fails when that behavior drifts. The repository-only
+  directory documents the compatibility policy for additive fields, breaking
+  changes, schema versions, and canonical hash changes. It is not included in
+  generated projects.
+
 ### Changed
 
 * Completed the AsiBackbone 6.0 and Learning 1.0 alignment review, updated
