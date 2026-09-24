@@ -36,12 +36,12 @@ All values are synthetic. The vectors contain no personal data, credentials, or 
 | `generation` | Source repository, generating test, and regeneration command. |
 | `schemaVersions` | Completion message, canonical manifest, and audit record schema versions. |
 | `manifest` | Digest algorithm (`SHA-256`), digest encoding (uppercase hex), and byte encoding (UTF-8, no BOM). |
-| `idempotency` | Key prefix and derivation: `ncat-audit-completion:` + uppercase hex SHA-256 of `<destination>\n<mutationBatchId>`. |
+| `idempotency` | Key prefix and derivation: `ncat-audit-completion:` + uppercase hex SHA-256 of the UTF-8 bytes of `<destination>\n<mutationBatchId.Trim()>`. The destination is trimmed before hashing and is delivered trimmed. The mutation batch ID is trimmed **only** for hashing; `message.mutationBatchId` and the manifest keep the original value. The `committed-padded-mutation-batch-id` vector covers this case. |
 | `persistenceOutcomes` | Outcomes that produce messages (`supported`) and scenarios that produce none (`withoutReceipt`). |
 | `vectors[]` | Valid cases: the retained `auditRecords` input, the `canonicalManifest` text with its UTF-8 byte length and expected digest, the `receipt`, and the dispatched `message`. |
 | `invalidMessages[]` | Messages an adapter must reject, each with a `rule` and `enforcedBy` (`ncat-manifest-verifier`, `ncat-outbox-staging`, or `adapter`). |
 
-`canonicalManifest.json` is the exact text that is hashed. Encode it as UTF-8 without a BOM, hash it with SHA-256, and compare the result with `expectedDigest`. The escape sequences inside that string, such as `é` and `+`, are part of the canonical form. They are what the production JSON writer emits, and an adapter that recanonicalizes must reproduce them.
+`vectors[].canonicalManifest.json` is the exact text that is hashed. Encode it as UTF-8 without a BOM, hash it with SHA-256, and compare the result with `vectors[].canonicalManifest.expectedDigest`. The escape sequences inside that string, such as `\u00E9` and `\u002B`, are part of the canonical form. They are what the production JSON writer emits, and an adapter that recanonicalizes must reproduce them.
 
 `receipt` and `message` use camelCase property names, the same shape as `System.Text.Json` web defaults. NCAT does not prescribe a wire format beyond this: the adapter owns the protocol, and these objects describe the fields and values it receives.
 
@@ -58,7 +58,7 @@ Pin a release tag that contains `contracts/audit-completion/v1/`. The first rele
 A consuming adapter's tests should:
 
 1. for each entry in `vectors`, rebuild the canonical manifest from `auditRecords` (if the adapter canonicalizes), check its digest against `expectedDigest`, and confirm that the adapter accepts `message`;
-2. recompute the idempotency key from `message.destination` and `message.mutationBatchId`, and compare it with `message.idempotencyKey`;
+2. recompute the idempotency key from `message.destination` and the trimmed `message.mutationBatchId`, and compare it with `message.idempotencyKey`;
 3. for each entry in `invalidMessages`, confirm that the adapter rejects `message`;
 4. reject any `contractVersion` whose major version it does not support.
 

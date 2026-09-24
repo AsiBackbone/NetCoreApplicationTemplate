@@ -56,11 +56,12 @@ public sealed class AuditCompletionContractVectorTests
         Assert.True(
             File.Exists(fixturePath),
             $"Contract fixture '{fixturePath}' is missing. Set {_updateEnvironmentVariable}=true to generate it.");
-        string actual = (await File.ReadAllTextAsync(fixturePath, TestContext.Current.CancellationToken))
-            .Replace("\r\n", "\n", StringComparison.Ordinal);
+        // Compare raw bytes so a BOM or CRLF checkout also fails; .gitattributes keeps contract JSON as LF.
+        byte[] actual = await File.ReadAllBytesAsync(fixturePath, TestContext.Current.CancellationToken);
+        byte[] expectedBytes = new UTF8Encoding(false).GetBytes(expected);
 
         Assert.True(
-            string.Equals(expected, actual, StringComparison.Ordinal),
+            expectedBytes.AsSpan().SequenceEqual(actual),
             $"Production audit-completion behavior no longer matches '{fixturePath}'. " +
             "If the change is intentional, follow the compatibility policy in contracts/audit-completion/README.md, " +
             $"then set {_updateEnvironmentVariable}=true and rerun this test to regenerate the fixture.");
@@ -150,7 +151,9 @@ public sealed class AuditCompletionContractVectorTests
             ["idempotency"] = new JsonObject
             {
                 ["keyPrefix"] = "ncat-audit-completion:",
-                ["hashInput"] = "<destination>\\n<mutationBatchId>",
+                ["hashInput"] = "<destination>\\n<mutationBatchId with leading and trailing whitespace trimmed>",
+                ["destinationNormalization"] = "trimmed before hashing and delivery; the message carries the trimmed destination",
+                ["mutationBatchIdNormalization"] = "trimmed for hashing only; the message and manifest carry the original identifier",
                 ["hashAlgorithm"] = "SHA-256",
                 ["digestEncoding"] = "uppercase-hex"
             },
@@ -228,6 +231,22 @@ public sealed class AuditCompletionContractVectorTests
                     /*lang=json,strict*/ """{"Key":"synthetic.setting"}""",
                     /*lang=json,strict*/ """{"Value":"before"}""",
                     /*lang=json,strict*/ """{"Value":"after"}""",
+                    null)
+            ]);
+
+        yield return new VectorDefinition(
+            "committed-padded-mutation-batch-id",
+            "A mutation batch identifier with surrounding whitespace: the idempotency key hashes the trimmed identifier while the message and manifest keep it unchanged.",
+            _defaultDestination,
+            " synthetic-batch-0004 ",
+            new AuditContextIds("operation-0004", "attempt-0004", null, null, null),
+            [
+                new RecordDefinition(
+                    "SyntheticSetting",
+                    "Added",
+                    /*lang=json,strict*/ """{"Key":"synthetic.padded"}""",
+                    "",
+                    /*lang=json,strict*/ """{"Value":"on"}""",
                     null)
             ]);
     }
