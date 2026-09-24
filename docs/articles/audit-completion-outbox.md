@@ -103,6 +103,8 @@ The durable record and publisher message contain only:
 
 They do not contain audited entity keys, original values, or current values. Destination adapters should preserve this boundary and must not rehydrate raw audit values merely to deliver a completion notification.
 
+Adapter authors can test their message handling against the published [audit-completion contract vectors](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/contracts/audit-completion/README.md). These vectors pin the message fields, idempotency key derivation, and canonical manifest digests NCAT produces.
+
 ## No-publisher operation
 
 NCAT continues to operate when no external publisher or governance product is installed. Ready entries are moved to `Deferred` and scheduled for a later check rather than causing the web host or business mutation to fail.

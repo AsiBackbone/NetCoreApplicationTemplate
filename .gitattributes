@@ -85,6 +85,9 @@
 *.example   text eol=crlf
 *.editorconfig text eol=crlf
 
+# Cross-repository contract vectors keep LF so every checkout matches the published bytes.
+contracts/**/*.json text eol=lf
+
 
 ###############################################################################
 # SQL / database scripts (Windows/Visual Studio-oriented files)
