@@ -18,6 +18,7 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ### Changed
 
+* Updated the repository-pinned DocFX tool from 2.78.5 to 2.81.0.
 * Completed the AsiBackbone 6.0 and Learning 1.0 alignment review, updated
   current terminology, and confirmed that NCAT remains compatible with its 2.x
   public and generated-template contracts.
