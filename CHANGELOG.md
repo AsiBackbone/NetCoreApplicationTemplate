@@ -72,9 +72,10 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 * Updated the narrowly scoped, time-bounded OWASP Dependency-Check
   suppressions for `OpenTelemetry.Extensions.Hosting` and
-  `OpenTelemetry.Exporter.OpenTelemetryProtocol` 1.19.0. CVE-2026-54285
-  affects the JavaScript `@opentelemetry/core` package, not these .NET NuGet
-  packages; all other package versions and vulnerabilities remain scanned.
+  `OpenTelemetry.Exporter.OpenTelemetryProtocol`, and
+  `OpenTelemetry.Instrumentation.AspNetCore` 1.19.0. CVE-2026-54285 affects
+  the JavaScript `@opentelemetry/core` package, not these .NET NuGet packages;
+  all other package versions and vulnerabilities remain scanned.
 
 ## 2.10.0 - 2026-09-19
 
