@@ -68,6 +68,14 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
   batch id on each pass. Those records are now read newest first and capped by
   the new `MaximumMalformedRecordsPerRun` option (default 1000, range 1-10000).
 
+### Security
+
+* Updated the narrowly scoped, time-bounded OWASP Dependency-Check
+  suppressions for `OpenTelemetry.Extensions.Hosting` and
+  `OpenTelemetry.Exporter.OpenTelemetryProtocol` 1.19.0. CVE-2026-54285
+  affects the JavaScript `@opentelemetry/core` package, not these .NET NuGet
+  packages; all other package versions and vulnerabilities remain scanned.
+
 ## 2.10.0 - 2026-09-19
 
 ### Added

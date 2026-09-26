@@ -30,11 +30,11 @@
             <![CDATA[
       CVE-2026-54285 affects @opentelemetry/core (npm) in opentelemetry-js
       versions prior to 2.8.0. The scanned dependency is the
-      OpenTelemetry.Extensions.Hosting 1.18.0 NuGet package from
+      OpenTelemetry.Extensions.Hosting 1.19.0 NuGet package from
       OpenTelemetry .NET, so this is a reviewed cross-ecosystem false positive.
     ]]>
         </notes>
-        <packageUrl regex="true">^pkg:nuget/OpenTelemetry\.Extensions\.Hosting@1\.18\.0$</packageUrl>
+        <packageUrl regex="true">^pkg:nuget/OpenTelemetry\.Extensions\.Hosting@1\.19\.0$</packageUrl>
         <vulnerabilityName>CVE-2026-54285</vulnerabilityName>
     </suppress>
     
@@ -45,11 +45,11 @@
             <![CDATA[
       CVE-2026-54285 affects @opentelemetry/core (npm) in opentelemetry-js
       versions prior to 2.8.0. The scanned dependency is the
-      OpenTelemetry.Exporter.OpenTelemetryProtocol 1.18.0 NuGet package from
+      OpenTelemetry.Exporter.OpenTelemetryProtocol 1.19.0 NuGet package from
       OpenTelemetry .NET, so this is a reviewed cross-ecosystem false positive.
     ]]>
         </notes>
-        <packageUrl regex="true">^pkg:nuget/OpenTelemetry\.Exporter\.OpenTelemetryProtocol@1\.18\.0$</packageUrl>
+        <packageUrl regex="true">^pkg:nuget/OpenTelemetry\.Exporter\.OpenTelemetryProtocol@1\.19\.0$</packageUrl>
         <vulnerabilityName>CVE-2026-54285</vulnerabilityName>
     </suppress>
 
