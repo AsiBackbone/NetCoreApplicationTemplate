@@ -4,7 +4,7 @@ This project provides a reusable ASP.NET Core application template. Support is f
 
 ## Maintenance Posture
 
-The `2.x` line reached feature completion at release `2.10.0`, which is the latest published release. From `2.10.0` onward, the `2.x` line accepts only the changes listed as in scope below.
+The `2.x` line reached feature completion at release `2.10.0`. Release `2.11.0` is the latest published release. From `2.10.0` onward, the `2.x` line accepts only the changes listed as in scope below.
 
 **In scope for future releases**
 
@@ -67,7 +67,7 @@ Users should not expect:
 
 | Version line | Support expectation |
 |:---|:---|
-| `2.x` | Current stable line; latest release `2.10.0`. Feature-complete from `2.10.0` onward. Supported for security fixes, dependency servicing, reproducible defects, and documentation fixes. |
+| `2.x` | Current stable line; latest release `2.11.0`. Feature-complete from `2.10.0` onward. Supported for security fixes, dependency servicing, reproducible defects, and documentation fixes. |
 | `1.0.x` | Legacy stable line under the previous NuGet package identity. Best effort unless a release note states otherwise. |
 | Pre-1.0 releases | Best effort only. Consumers should upgrade to the current stable release when practical. |
 | Older stable releases after a newer minor or major release | Best effort unless a release note states otherwise. |

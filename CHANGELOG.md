@@ -4,7 +4,7 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
-## Unreleased
+## 2.11.0 - 2026-09-26
 
 ### Added
 

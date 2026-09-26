@@ -14,8 +14,8 @@
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageReadmeFile>PACKAGE-README.md</PackageReadmeFile>
     <PackageIcon>PACKAGE-ICON.png</PackageIcon>
-    <PackageReleaseNotes>Minor 2.10.0 release of the NetCoreApplicationTemplate dotnet new template. This backward-compatible release adds verifiable release evidence, certificate encryption for Data Protection keys, stricter security defaults and startup diagnostics, hardened external authentication and rate limiting, worker retry backoff, and stronger build and coverage enforcement. The package ID, template identities, short name, supported options, and net10.0 target remain unchanged. This release completes feature development for the 2.x line.</PackageReleaseNotes>
-    <VersionPrefix>2.10.0</VersionPrefix>
+    <PackageReleaseNotes>Minor 2.11.0 release of the NetCoreApplicationTemplate dotnet new template. This release publishes the audit-completion v1 contract vectors and strengthens generated applications with unsafe-request antiforgery validation, canonical audit value rendering, normalized actor claims, transactional reconciliation with concurrency guards, and bounded malformed-record queries. Existing unsafe endpoints that intentionally omit antiforgery tokens and consumers that compare stored canonical audit digests require review. The package ID, template identities, short name, supported options, and net10.0 target remain unchanged.</PackageReleaseNotes>
+    <VersionPrefix>2.11.0</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Version>$(VersionPrefix)</Version>
     <PackageType>Template</PackageType>
