@@ -7,23 +7,9 @@
         https://dependency-check.github.io/DependencyCheck/dependency-suppression.1.4.xsd">
 
     <!--
-    Cross-ecosystem OpenTelemetry findings applying to Go or C++
-    implementations rather than the .NET NuGet packages.
+    Reviewed cross-ecosystem OpenTelemetry findings applying to JavaScript
+    implementations rather than the exact .NET NuGet packages below.
   -->
-
-    <suppress until="2027-01-31Z">
-        <notes>
-            <![CDATA[
-      CVE-2026-54285 affects @opentelemetry/core in the JavaScript
-      opentelemetry-js project prior to version 2.8.0. It does not apply
-      to OpenTelemetry .NET NuGet packages. Dependency-Check is associating
-      the JavaScript advisory with similarly named OpenTelemetry NuGet
-      components, so these findings are reviewed cross-ecosystem false positives.
-    ]]>
-        </notes>
-        <packageUrl regex="true">^pkg:nuget/OpenTelemetry\..+@1\.18\.0$</packageUrl>
-        <vulnerabilityName>CVE-2026-54285</vulnerabilityName>
-    </suppress>
 
     <suppress until="2027-01-31Z">
         <notes>
@@ -37,8 +23,6 @@
         <packageUrl regex="true">^pkg:nuget/OpenTelemetry\.Extensions\.Hosting@1\.19\.0$</packageUrl>
         <vulnerabilityName>CVE-2026-54285</vulnerabilityName>
     </suppress>
-    
-
 
     <suppress until="2027-01-31Z">
         <notes>
@@ -52,9 +36,6 @@
         <packageUrl regex="true">^pkg:nuget/OpenTelemetry\.Exporter\.OpenTelemetryProtocol@1\.19\.0$</packageUrl>
         <vulnerabilityName>CVE-2026-54285</vulnerabilityName>
     </suppress>
-
-
-
 
     <!--
     CVE-2012-2055 applies to historical GitHub Enterprise behavior,
