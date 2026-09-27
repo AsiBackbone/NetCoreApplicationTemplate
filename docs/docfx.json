@@ -45,6 +45,10 @@
       }
     ],
     "dest": "_site",
+    "sitemap": {
+      "baseUrl": "https://asibackbone.github.io/NetCoreApplicationTemplate/",
+      "changefreq": "weekly"
+    },
     "template": [
       "default",
       "modern"
