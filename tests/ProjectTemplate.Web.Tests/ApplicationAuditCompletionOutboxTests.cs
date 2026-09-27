@@ -187,6 +187,57 @@ public sealed class ApplicationAuditCompletionOutboxTests
         Assert.Equal(0, health.DeadLetterCount);
     }
 
+    [Fact]
+    public async Task QueryAsync_FiltersAndProjectsOperationalFields()
+    {
+        await using SqliteConnection connection = new("Data Source=:memory:");
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
+        await using ApplicationDbContext context = CreateContext(connection);
+        _ = await context.Database.EnsureCreatedAsync(TestContext.Current.CancellationToken);
+        ApplicationAuditCompletionOutbox outbox = CreateOutbox(context, []);
+        ApplicationMutationAuditReceipt receipt = CreateReceipt("query-batch");
+        ApplicationAuditCompletionOutboxEntry entry = Assert.IsType<ApplicationAuditCompletionOutboxEntry>(
+            await outbox.StageAsync(
+                context,
+                receipt,
+                " query-destination ",
+                TestContext.Current.CancellationToken));
+        _ = await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        IReadOnlyList<ApplicationAuditCompletionOutboxItem> items = await outbox.QueryAsync(
+            new(
+                $" {ApplicationAuditCompletionOutboxStatuses.Pending} ",
+                " query-destination ",
+                " query-batch ",
+                MaximumResults: 0),
+            TestContext.Current.CancellationToken);
+
+        ApplicationAuditCompletionOutboxItem item = Assert.Single(items);
+        Assert.Equal(entry.Id, item.Id);
+        Assert.Equal(receipt.MutationBatchId, item.MutationBatchId);
+        Assert.Equal("query-destination", item.Destination);
+        Assert.Equal(ApplicationAuditCompletionOutboxStatuses.Pending, item.Status);
+    }
+
+    [Fact]
+    public async Task QueryAsync_Disabled_ReturnsNoItems()
+    {
+        await using SqliteConnection connection = new("Data Source=:memory:");
+        await connection.OpenAsync(TestContext.Current.CancellationToken);
+        await using ApplicationDbContext context = CreateContext(connection);
+        _ = await context.Database.EnsureCreatedAsync(TestContext.Current.CancellationToken);
+        ApplicationAuditCompletionOutbox outbox = CreateOutbox(
+            context,
+            [],
+            options => options.Enabled = false);
+
+        IReadOnlyList<ApplicationAuditCompletionOutboxItem> items = await outbox.QueryAsync(
+            new ApplicationAuditCompletionOutboxQueryRequest(),
+            TestContext.Current.CancellationToken);
+
+        Assert.Empty(items);
+    }
+
     private static ApplicationDbContext CreateContext(SqliteConnection connection)
     {
         DbContextOptions<ApplicationDbContext> options = new DbContextOptionsBuilder<ApplicationDbContext>()

@@ -339,6 +339,40 @@ public sealed class ApplicationAuditedTransactionTests
         Assert.Equal(1, await context.AuditRecords.CountAsync(TestContext.Current.CancellationToken));
     }
 
+    [Fact]
+    public void Execute_LocalCompletionWithoutAuditReceipt_RollsBack()
+    {
+        using SqliteConnection connection = new("Data Source=:memory:");
+        connection.Open();
+        ApplicationSaveChangesPipeline pipeline = CreatePipeline();
+        using ApplicationDbContext context = CreateContext(connection, pipeline);
+        context.Database.EnsureCreated();
+        var coordinator = new ApplicationAuditedTransaction(context, pipeline);
+
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => coordinator.Execute(
+            _ => { },
+            (_, _) => Assert.Fail("Completion must not run without a new audit receipt.")));
+
+        Assert.Contains("produced no new audit receipt", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Execute_WithPendingChanges_RejectsAmbiguousTransactionBoundary()
+    {
+        using SqliteConnection connection = new("Data Source=:memory:");
+        connection.Open();
+        ApplicationSaveChangesPipeline pipeline = CreatePipeline();
+        using ApplicationDbContext context = CreateContext(connection, pipeline);
+        context.Database.EnsureCreated();
+        _ = context.ExternalLoginAccounts.Add(CreateAccount("github", "already-pending"));
+        var coordinator = new ApplicationAuditedTransaction(context, pipeline);
+
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
+            coordinator.Execute(_ => { }));
+
+        Assert.Contains("unsaved changes", exception.Message, StringComparison.Ordinal);
+    }
+
     private static ApplicationSaveChangesPipeline CreatePipeline(IApplicationAuditStore? auditStore = null)
     {
         return new ApplicationSaveChangesPipeline(
