@@ -1,3 +1,4 @@
+using System.Diagnostics.Metrics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -100,6 +101,19 @@ public sealed class AuditHostedServiceTests
     {
         var reconciler = new CompletingReconciler();
         var query = new BlockingOutboxQuery();
+        var pendingMeasurements = new List<long>();
+        using var listener = new MeterListener
+        {
+            InstrumentPublished = (instrument, meterListener) =>
+            {
+                if (instrument.Name == "ncat.audit.outbox.pending")
+                {
+                    meterListener.EnableMeasurementEvents(instrument);
+                }
+            }
+        };
+        listener.SetMeasurementEventCallback<long>((_, value, _, _) => pendingMeasurements.Add(value));
+        listener.Start();
         using var metrics = new ApplicationAuditReconciliationMetrics();
         using ServiceProvider provider = CreateProvider(services =>
         {
@@ -118,10 +132,12 @@ public sealed class AuditHostedServiceTests
             NullLogger<ApplicationAuditReconciliationHostedService>.Instance);
 
         await service.StartAsync(TestContext.Current.CancellationToken);
-        await query.Called.Task.WaitAsync(TestContext.Current.CancellationToken);
+        await query.SecondCall.Task.WaitAsync(TestContext.Current.CancellationToken);
         await service.StopAsync(TestContext.Current.CancellationToken);
+        listener.RecordObservableInstruments();
 
-        Assert.Equal(1, reconciler.CallCount);
+        Assert.Equal(2, reconciler.CallCount);
+        Assert.Contains(1, pendingMeasurements);
     }
 
     [Fact]
@@ -314,11 +330,18 @@ public sealed class AuditHostedServiceTests
 
     private sealed class BlockingOutboxQuery : IApplicationAuditCompletionOutboxQuery
     {
-        public TaskCompletionSource Called { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int _callCount;
+
+        public TaskCompletionSource SecondCall { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public async Task<ApplicationAuditCompletionOutboxHealth> GetHealthAsync(CancellationToken cancellationToken = default)
         {
-            Called.TrySetResult();
+            if (Interlocked.Increment(ref _callCount) == 1)
+            {
+                return new(true, 1, TimeSpan.FromSeconds(1), 0, 0);
+            }
+
+            SecondCall.TrySetResult();
             await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
             return new(true, 1, TimeSpan.FromSeconds(1), 0, 0);
         }

@@ -344,16 +344,18 @@ public sealed class ApplicationAuditedTransactionTests
     {
         using SqliteConnection connection = new("Data Source=:memory:");
         connection.Open();
-        ApplicationSaveChangesPipeline pipeline = CreatePipeline();
+        ApplicationSaveChangesPipeline pipeline = CreatePipeline(auditingEnabled: false);
         using ApplicationDbContext context = CreateContext(connection, pipeline);
         context.Database.EnsureCreated();
         var coordinator = new ApplicationAuditedTransaction(context, pipeline);
 
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => coordinator.Execute(
-            _ => { },
+            dbContext => dbContext.ExternalLoginAccounts.Add(CreateAccount("github", "missing-receipt")),
             (_, _) => Assert.Fail("Completion must not run without a new audit receipt.")));
 
+        context.ChangeTracker.Clear();
         Assert.Contains("produced no new audit receipt", exception.Message, StringComparison.Ordinal);
+        Assert.Empty(context.ExternalLoginAccounts);
     }
 
     [Fact]
@@ -373,11 +375,13 @@ public sealed class ApplicationAuditedTransactionTests
         Assert.Contains("unsaved changes", exception.Message, StringComparison.Ordinal);
     }
 
-    private static ApplicationSaveChangesPipeline CreatePipeline(IApplicationAuditStore? auditStore = null)
+    private static ApplicationSaveChangesPipeline CreatePipeline(
+        IApplicationAuditStore? auditStore = null,
+        bool auditingEnabled = true)
     {
         return new ApplicationSaveChangesPipeline(
             new TestCurrentActorAccessor(),
-            Microsoft.Extensions.Options.Options.Create(CreateDataAccessOptions()),
+            Microsoft.Extensions.Options.Options.Create(CreateDataAccessOptions(auditingEnabled)),
             auditStore);
     }
 
@@ -411,13 +415,13 @@ public sealed class ApplicationAuditedTransactionTests
             saveChangesInterceptor);
     }
 
-    private static DataAccessOptions CreateDataAccessOptions()
+    private static DataAccessOptions CreateDataAccessOptions(bool auditingEnabled = true)
     {
         return new DataAccessOptions
         {
             Auditing = new DataAuditingOptions
             {
-                Enabled = true,
+                Enabled = auditingEnabled,
                 StorageMode = AuditStorageModes.Local
             }
         };

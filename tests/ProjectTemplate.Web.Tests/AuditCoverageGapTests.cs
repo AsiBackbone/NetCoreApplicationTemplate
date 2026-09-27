@@ -9,6 +9,7 @@ using ProjectTemplate.Infrastructure.Data.Extensions;
 using ProjectTemplate.Infrastructure.Data.Options;
 using ProjectTemplate.Web.HealthChecks;
 using ProjectTemplate.Web.Services;
+using ApplicationHealthCheckOptions = ProjectTemplate.Web.Options.ApplicationHealthCheckOptions;
 
 namespace ProjectTemplate.Web.Tests;
 
@@ -93,8 +94,8 @@ public sealed class AuditCoverageGapTests
     public void DatabaseHealthCheck_RejectsNullDependencies()
     {
         using ServiceProvider provider = new ServiceCollection().BuildServiceProvider();
-        IOptionsMonitor<Options.ApplicationHealthCheckOptions> options =
-            new StaticOptionsMonitor<Options.ApplicationHealthCheckOptions>(new());
+        IOptionsMonitor<ApplicationHealthCheckOptions> options =
+            new StaticOptionsMonitor<ApplicationHealthCheckOptions>(new());
 
         _ = Assert.Throws<ArgumentNullException>(() => new ApplicationDatabaseHealthCheck(null!, options));
         _ = Assert.Throws<ArgumentNullException>(() => new ApplicationDatabaseHealthCheck(
