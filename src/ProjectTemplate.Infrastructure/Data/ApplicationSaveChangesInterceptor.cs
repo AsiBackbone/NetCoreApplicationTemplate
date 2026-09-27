@@ -20,7 +20,13 @@ public sealed class ApplicationSaveChangesInterceptor : SaveChangesInterceptor
         _saveChangesPipeline = saveChangesPipeline;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Runs <see cref="IApplicationSaveChangesPipeline.ApplyBeforeSaveChanges" /> before EF Core persists the
+    /// tracked changes of an <see cref="ApplicationDbContext" />. Other contexts pass through unchanged.
+    /// </summary>
+    /// <param name="eventData">Contextual information about the save operation.</param>
+    /// <param name="result">The current interception result, returned unchanged.</param>
+    /// <returns>The <paramref name="result" /> supplied by EF Core.</returns>
     public override InterceptionResult<int> SavingChanges(
         DbContextEventData eventData,
         InterceptionResult<int> result)
@@ -33,7 +39,15 @@ public sealed class ApplicationSaveChangesInterceptor : SaveChangesInterceptor
         return result;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Runs <see cref="IApplicationSaveChangesPipeline.ApplyBeforeSaveChangesAsync" /> before EF Core
+    /// asynchronously persists the tracked changes of an <see cref="ApplicationDbContext" />. Other contexts pass
+    /// through unchanged.
+    /// </summary>
+    /// <param name="eventData">Contextual information about the save operation.</param>
+    /// <param name="result">The current interception result, returned unchanged.</param>
+    /// <param name="cancellationToken">A token that can cancel the operation.</param>
+    /// <returns>The <paramref name="result" /> supplied by EF Core.</returns>
     public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData,
         InterceptionResult<int> result,
@@ -49,7 +63,14 @@ public sealed class ApplicationSaveChangesInterceptor : SaveChangesInterceptor
         return result;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Runs <see cref="IApplicationSaveChangesPipeline.ApplyAfterSaveChanges" /> after EF Core persists the tracked
+    /// changes of an <see cref="ApplicationDbContext" />, and saves again when the pipeline appended audit records
+    /// that depend on database-generated values.
+    /// </summary>
+    /// <param name="eventData">Contextual information about the completed save operation.</param>
+    /// <param name="result">The number of state entries written by the original save.</param>
+    /// <returns>The <paramref name="result" /> supplied by EF Core.</returns>
     public override int SavedChanges(
         SaveChangesCompletedEventData eventData,
         int result)
@@ -63,7 +84,15 @@ public sealed class ApplicationSaveChangesInterceptor : SaveChangesInterceptor
         return result;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Runs <see cref="IApplicationSaveChangesPipeline.ApplyAfterSaveChangesAsync" /> after EF Core asynchronously
+    /// persists the tracked changes of an <see cref="ApplicationDbContext" />, and saves again when the pipeline
+    /// appended audit records that depend on database-generated values.
+    /// </summary>
+    /// <param name="eventData">Contextual information about the completed save operation.</param>
+    /// <param name="result">The number of state entries written by the original save.</param>
+    /// <param name="cancellationToken">A token that can cancel the operation.</param>
+    /// <returns>The <paramref name="result" /> supplied by EF Core.</returns>
     public override async ValueTask<int> SavedChangesAsync(
         SaveChangesCompletedEventData eventData,
         int result,
