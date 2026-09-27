@@ -421,6 +421,45 @@ public sealed class ApplicationAuditReconciliationTests
             .ToListAsync(TestContext.Current.CancellationToken));
     }
 
+    [Fact]
+    public async Task QueryFindingsAsync_FiltersAndProjectsFinding()
+    {
+        await using TestDatabase database = await TestDatabase.CreateAsync();
+        ApplicationAuditReconciliationFinding finding = await CreateOpenFindingAsync(database, "query-finding-batch");
+
+        IReadOnlyList<ApplicationAuditReconciliationFindingItem> items = await database.Reconciler.QueryFindingsAsync(
+            new(
+                $" {finding.ReasonCode} ",
+                $" {finding.Severity} ",
+                " query-finding-batch ",
+                $" {ApplicationAuditReconciliationRemediationStatuses.Open} ",
+                MaximumResults: 0),
+            TestContext.Current.CancellationToken);
+
+        ApplicationAuditReconciliationFindingItem item = Assert.Single(items);
+        Assert.Equal(finding.Id, item.Id);
+        Assert.Equal(finding.FindingKey, item.FindingKey);
+        Assert.Equal(finding.MutationBatchId, item.MutationBatchId);
+    }
+
+    [Fact]
+    public async Task GetSummaryAsync_ReportsCurrentFindingsAndDisabledState()
+    {
+        await using TestDatabase enabledDatabase = await TestDatabase.CreateAsync();
+        _ = await CreateOpenFindingAsync(enabledDatabase, "summary-batch");
+
+        ApplicationAuditReconciliationSummary enabledSummary = await enabledDatabase.Reconciler.GetSummaryAsync(
+            TestContext.Current.CancellationToken);
+
+        await using TestDatabase disabledDatabase = await TestDatabase.CreateAsync(enabled: false);
+        ApplicationAuditReconciliationSummary disabledSummary = await disabledDatabase.Reconciler.GetSummaryAsync(
+            TestContext.Current.CancellationToken);
+
+        Assert.True(enabledSummary.Enabled);
+        Assert.Equal(1, enabledSummary.OpenFindingCount);
+        Assert.False(disabledSummary.Enabled);
+    }
+
     private static async Task<ApplicationAuditReconciliationFinding> CreateOpenFindingAsync(
         TestDatabase database,
         string batchId)
