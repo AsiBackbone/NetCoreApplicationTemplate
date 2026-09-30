@@ -14,6 +14,13 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+* `SECURITY.md` no longer references a version-controlled ruleset
+  (`eng/repository-controls/main-branch-ruleset.json`) or an audit script
+  (`scripts/Manage-RepositorySecurityControls.ps1`) that do not exist in this
+  repository. The repository-host controls section now matches the
+  branch-protection model in the Repository Security Profile and states that
+  those settings are verified manually against its checklist. Two unresolved
+  drafting comments were removed.
 * `ApplicationSaveChangesInterceptor` documents its four EF Core overrides
   directly instead of inheriting EF Core's comments, which removes four
   `InvalidCref` warnings from the documentation build.
