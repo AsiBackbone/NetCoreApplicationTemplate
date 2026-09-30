@@ -49,11 +49,6 @@ Because NCAT is a template rather than a deployed application, a report is easie
 
 ## Expected Response Posture
 
-<!-- VERIFY BEFORE COMMIT: the sibling repositories currently say "community-maintained" in this
-     paragraph. That wording is inaccurate across the organization. The intent is to correct
-     Learning and AsiBackbone to match the accurate wording below, not to reintroduce the
-     inaccurate wording here. -->
-
 This project is solo-maintained and does not promise a formal security-response SLA or fixed acknowledgment or remediation timelines.
 
 The expected best-effort process is:
@@ -82,29 +77,15 @@ Do not describe a repository, package, template, sample, workflow, or generated 
 
 The phrase **secure baseline** in this project refers to concrete controls: closed-by-default routed endpoints, explicit anonymous exceptions, startup validation, request protection, secure headers, rate limiting, and centralized error handling. Deployment-specific trust boundaries, provider registrations, credentials, network exposure, and business authorization remain the consuming application's responsibility.
 
-## Repository-host security controls
+## Repository-Host Security Controls
 
-<!-- VERIFY BEFORE COMMIT: this section assumes NCAT has adopted the sibling pattern of a
-     version-controlled ruleset (eng/repository-controls/main-branch-ruleset.json), an audit
-     script (scripts/Manage-RepositorySecurityControls.ps1), and a desired-state document.
-     If those artifacts do not yet exist in this repository, either add them to match
-     AsiBackbone and Learning, or replace this section with the previous manual-verification
-     text and the existing docs/articles/repository-security-profile.md reference. Do not
-     publish this section until the referenced paths resolve — lychee will fail the build. -->
+Repository-host protections are treated as part of the project's supply-chain boundary rather than as an implicit GitHub administrator default. The required state is documented in [Repository Security Profile](docs/articles/repository-security-profile.md).
 
-Repository-host protections are treated as part of the project's supply-chain boundary rather than as an implicit GitHub administrator default. The canonical desired state is documented in [Repository Security Profile](docs/articles/repository-security-profile.md) and represented by `eng/repository-controls/main-branch-ruleset.json`.
+The maintained posture requires secret scanning and secret-scanning push protection, Dependabot security updates, pull-request flow and the documented required status checks on `main`, disabled force pushes and branch deletion on `main`, and deliberate maintainer approval for the `template-package-publish` and `container-publish` environments.
 
-The maintained posture requires secret scanning and secret-scanning push protection, an explicit ruleset for `main`, the existing release-blocking status checks, pull-request-only changes, linear history, and protection against branch deletion and force pushes.
+These controls are GitHub repository, branch-protection, security-analysis, and environment settings. They are not stored in git, their state cannot be inferred from committed workflow YAML, and no build, container, or package release workflow changes them. This repository does not currently include a version-controlled ruleset or an automated settings-audit script, so these controls are verified manually.
 
-Some controls remain repository- or organization-setting concerns rather than source-controlled workflow concerns. Their state cannot be inferred from committed YAML alone. Audit the live GitHub settings with:
-
-```powershell
-./scripts/Manage-RepositorySecurityControls.ps1
-```
-
-The script is read-only by default and exposes an explicit `-Apply` path for an authenticated repository administrator. Use `-WhatIf` before `-Apply`. Repository-host controls are not changed by a normal build, container, or package release workflow.
-
-Verify secret scanning, push protection, Dependabot security updates, ruleset enforcement, and publishing-environment reviewers before each stable release and after material permission or publishing changes.
+Verify the live GitHub settings against the verification checklist in the [Repository Security Profile](docs/articles/repository-security-profile.md) before each stable release and after material permission, publishing, or maintainership changes.
 
 ## Repository Secret-Scanning Controls
 
