@@ -1,6 +1,8 @@
 # AsiBackbone 6.0 Alignment Review
 
-> **Status:** Complete on 2026-09-19 for [issue #524](https://github.com/AsiBackbone/NetCoreApplicationTemplate/issues/524).
+> **Historical record:** Complete on 2026-09-19 for [issue #524](https://github.com/AsiBackbone/NetCoreApplicationTemplate/issues/524).
+>
+> This page records the completed NCAT alignment review against the immutable AsiBackbone `v6.0.0` and Learning `v1.0.0` baselines. It is not a statement of the current AsiBackbone or Learning release line.
 
 This review determines whether aligning NetCoreApplicationTemplate (NCAT) with AsiBackbone 6.0 and Learning 1.0 requires a breaking NCAT release. It does not make AsiBackbone a dependency of NCAT.
 
@@ -12,7 +14,7 @@ This review determines whether aligning NetCoreApplicationTemplate (NCAT) with A
 | AsiBackbone | [`v6.0.0`](https://github.com/AsiBackbone/AsiBackbone/releases/tag/v6.0.0) | [`4dbd840`](https://github.com/AsiBackbone/AsiBackbone/commit/4dbd8407f7223dac635e704d4c6b138f818814fe) |
 | Learning | [`v1.0.0`](https://github.com/AsiBackbone/Learning/releases/tag/v1.0.0) | [`6a0abb8`](https://github.com/AsiBackbone/Learning/commit/6a0abb8661fd81d64b2086447710c003d887d407) |
 
-The final [AsiBackbone 5.x-to-6.0 migration guide](https://github.com/AsiBackbone/AsiBackbone/blob/main/docs/articles/upgrade-500-to-600.md), [6.0 public API naming review](https://github.com/AsiBackbone/AsiBackbone/blob/main/docs/articles/public-api-naming-600.md), [Learning compatibility guide](https://asibackbone.github.io/Learning/getting-started/learning-1-asibackbone-6-compatibility.html), and [Learning API boundary](https://asibackbone.github.io/Learning/getting-started/asibackbone-6-api-boundary.html) were used as the authoritative alignment inputs.
+The final [AsiBackbone 5.x-to-6.0 migration guide](https://github.com/AsiBackbone/AsiBackbone/blob/v6.0.0/docs/articles/upgrade-500-to-600.md), [6.0 public API naming review](https://github.com/AsiBackbone/AsiBackbone/blob/v6.0.0/docs/articles/public-api-naming-600.md), [Learning compatibility guide](https://github.com/AsiBackbone/Learning/blob/v1.0.0/docs/getting-started/learning-1-asibackbone-6-compatibility.md), and [Learning API boundary](https://github.com/AsiBackbone/Learning/blob/v1.0.0/docs/getting-started/asibackbone-6-api-boundary.md) were used as the authoritative alignment inputs.
 
 ## Touchpoint Inventory
 
