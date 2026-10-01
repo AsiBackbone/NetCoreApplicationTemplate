@@ -26,7 +26,7 @@ Triagers may help label, organize, request information for, and close issues or 
 
 ### Contributors
 
-Anyone who opens an issue or discussion, submits a pull request, improves documentation, or otherwise participates constructively is a Contributor. Contributions are subject to the [Code of Conduct](CODE_OF_CONDUCT.md), [Community Standards](COMMUNITY_STANDARDS.md), and [Contributing](CONTRIBUTING.md) guidance.
+Anyone who opens an issue or discussion, submits a pull request, improves documentation, or otherwise participates constructively is a Contributor. Contributions are subject to the [Code of Conduct](CODE_OF_CONDUCT.md), [Community Standards](COMMUNITY_STANDARDS.md), and [Contributing](../CONTRIBUTING.md) guidance.
 
 ### Emeritus Maintainers
 
@@ -45,7 +45,7 @@ Bug fixes, documentation corrections, dependency updates, tests, and other chang
 - A Core Maintainer confirms scope, compatibility, and release impact.
 - Code Owner review is obtained when GitHub can obtain an independent approval.
 
-For a self-authored pull request under the bootstrap solo-maintainer model, the maintainer reviews the final diff and evidence and follows the constrained merge path in [Repository Security Profile](docs/articles/repository-security-profile.md). The bootstrap path is not permission for routine direct pushes to `main`.
+For a self-authored pull request under the bootstrap solo-maintainer model, the maintainer reviews the final diff and evidence and follows the constrained merge path in [Repository Security Profile](../docs/articles/repository-security-profile.md). The bootstrap path is not permission for routine direct pushes to `main`.
 
 ### Significant Decisions
 
@@ -67,7 +67,7 @@ A Core Maintainer who believes a decision would create serious or irreversible h
 
 ## Issue and Pull Request Governance
 
-Issues and pull requests follow the workflow in [CONTRIBUTING.md](CONTRIBUTING.md) and are triaged on a best-effort basis under [SUPPORT.md](SUPPORT.md).
+Issues and pull requests follow the workflow in [CONTRIBUTING.md](../CONTRIBUTING.md) and are triaged on a best-effort basis under [SUPPORT.md](SUPPORT.md).
 
 Maintainers evaluate work for:
 
@@ -89,7 +89,7 @@ NetCoreApplicationTemplate follows Semantic Versioning and does not promise a fi
 
 Release preparation and evidence must follow [RELEASE.md](RELEASE.md). Release changes merge through protected `main`; publication tags point to the merged release commit; and protected environments control NuGet and container publication. A branch, tag, package, container, GitHub Release, and Zenodo record have distinct roles and must not be treated as interchangeable release evidence.
 
-Security releases may use an expedited review window. Private reporting, disclosure, and vulnerability handling follow [SECURITY.md](SECURITY.md).
+Security releases may use an expedited review window. Private reporting, disclosure, and vulnerability handling follow [SECURITY.md](../SECURITY.md).
 
 ## AI-Assisted Development
 
@@ -105,9 +105,9 @@ When maintainer ownership changes, update this file, [MAINTAINERS.md](MAINTAINER
 
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Community Standards](COMMUNITY_STANDARDS.md)
-- [Contributing](CONTRIBUTING.md)
+- [Contributing](../CONTRIBUTING.md)
 - [Maintainers](MAINTAINERS.md)
 - [Support Policy](SUPPORT.md)
-- [Security Policy](SECURITY.md)
+- [Security Policy](../SECURITY.md)
 - [Release Checklist and Runbook](RELEASE.md)
 

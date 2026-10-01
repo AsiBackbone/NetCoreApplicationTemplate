@@ -41,7 +41,7 @@ Issues should describe the problem, expected behavior, actual behavior, and rele
 
 Feature requests should explain the consumer scenario and why the behavior belongs in the reusable template rather than in a downstream application.
 
-Security issues should not be reported publicly. Follow [SECURITY.md](SECURITY.md) for vulnerability reporting.
+Security issues should not be reported publicly. Follow [SECURITY.md](../SECURITY.md) for vulnerability reporting.
 
 ## Enforcement
 
@@ -53,7 +53,7 @@ The goal is not to over-police normal disagreement. The goal is to keep the repo
 
 - [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
 - [GOVERNANCE.md](GOVERNANCE.md)
-- [CONTRIBUTING.md](CONTRIBUTING.md)
-- [SECURITY.md](SECURITY.md)
+- [CONTRIBUTING.md](../CONTRIBUTING.md)
+- [SECURITY.md](../SECURITY.md)
 - [SUPPORT.md](SUPPORT.md)
 - [MAINTAINERS.md](MAINTAINERS.md)
