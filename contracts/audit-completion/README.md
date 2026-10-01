@@ -53,7 +53,15 @@ Fetch the file at a pinned revision instead of `main`:
 https://raw.githubusercontent.com/AsiBackbone/NetCoreApplicationTemplate/<tag-or-commit>/contracts/audit-completion/v1/audit-completion-vectors.json
 ```
 
-Pin a release tag that contains `contracts/audit-completion/v1/`. The first release to contain it is the one after `v2.10.0`. Until then, pin a commit SHA from `main`. Vendor the pinned copy into the consuming repository's test assets and update it deliberately, so that an NCAT change shows up as a reviewed diff rather than an unexpected test failure.
+Pin an immutable revision: a release tag that contains `contracts/audit-completion/v1/`, or the exact commit SHA that tag resolves to. `v2.11.0` is the first release that contains the v1 contract vectors, so it is the earliest tag a consumer can pin. Later release tags that still contain `v1/` carry a compatible `1.x` contract under the compatibility policy below. Do not pin `main` or another branch name, because branch heads move.
+
+For example, to pin the first published v1 baseline:
+
+```text
+https://raw.githubusercontent.com/AsiBackbone/NetCoreApplicationTemplate/v2.11.0/contracts/audit-completion/v1/audit-completion-vectors.json
+```
+
+Record the commit SHA the tag resolves to and the SHA-256 of the fetched file alongside the vendored copy, so a later re-fetch can prove the bytes have not changed. Vendor the pinned copy into the consuming repository's test assets and update it deliberately, so that an NCAT change shows up as a reviewed diff rather than an unexpected test failure.
 
 A consuming adapter's tests should:
 
