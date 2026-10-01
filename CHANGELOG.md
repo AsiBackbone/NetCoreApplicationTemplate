@@ -36,8 +36,10 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * Project branch-status automation no longer fails issue-branch pushes when the
   issue is not yet in the project. The project App token is limited to
   organization Projects, so it cannot add items to a project owned by a
-  personal account; the workflow now reports a `Project status not updated`
-  warning instead. Project PR-status automation reports the same warning when a
+  personal account; the workflow now reports that `Resource not accessible by
+  integration` error as a `Project status not updated` warning instead. Any
+  other failure to add the issue still fails the job. Project PR-status
+  automation reports the same warning when a
   linked issue is not in the project, rather than skipping it silently.
 * `ASSETS-LICENSES.md` (repository and generated template) lists the pinned
   versions of `Microsoft.AspNetCore.Mvc.Testing` (10.0.12) and
@@ -67,8 +69,11 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
   CVE-2026-54285 to the updated `OpenTelemetry.Extensions.Hosting` 1.19.1,
   `OpenTelemetry.Exporter.OpenTelemetryProtocol` 1.19.1, and
   `OpenTelemetry.Instrumentation.Http` 1.19.0 packages. The CVE affects the
-  JavaScript `@opentelemetry/core` package, not these .NET packages; expiry
-  dates are unchanged and all other versions and vulnerabilities remain scanned.
+  JavaScript `@opentelemetry/core` package, not these .NET packages. Likewise
+  moved the CVE-2012-2055 suppression to `Microsoft.SourceLink.GitHub`
+  10.0.401; that CVE concerns historical GitHub Enterprise behavior, not Source
+  Link. Expiry dates are unchanged and all other versions and vulnerabilities
+  remain scanned.
 * Dependabot commit messages use the prefix `chore` with the dependency scope,
   producing `chore(deps): ...` instead of `chore(deps)(deps): ...`.
 

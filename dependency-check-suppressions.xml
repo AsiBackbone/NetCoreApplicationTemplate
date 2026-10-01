@@ -84,7 +84,7 @@
       CVE-2012-2055 does not apply to Microsoft Source Link.
     ]]>
         </notes>
-        <packageUrl regex="true">^pkg:nuget/Microsoft\.SourceLink\.GitHub@10\.0\.303$</packageUrl>
+        <packageUrl regex="true">^pkg:nuget/Microsoft\.SourceLink\.GitHub@10\.0\.401$</packageUrl>
         <vulnerabilityName>CVE-2012-2055</vulnerabilityName>
     </suppress>
 
