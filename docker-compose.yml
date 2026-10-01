@@ -6,7 +6,9 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      # Publish on the loopback interface only. Forwarded headers below trust any proxy for local development, so
+      # exposing the port on all interfaces would let other machines on the network spoof client addresses.
+      - "127.0.0.1:8080:8080"
     env_file:
       - path: ./.env
         required: false

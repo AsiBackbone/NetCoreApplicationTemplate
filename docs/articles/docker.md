@@ -26,7 +26,7 @@ The runtime image runs as the built-in non-root .NET container user and exposes 
 ## Run with Docker
 
 ```powershell
-docker run --rm -p 8080:8080 projecttemplate-web:dev
+docker run --rm -p 127.0.0.1:8080:8080 projecttemplate-web:dev
 ```
 
 The application is available at:

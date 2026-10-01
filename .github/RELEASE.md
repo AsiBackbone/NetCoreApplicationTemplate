@@ -27,7 +27,7 @@ git checkout -b release/vMAJOR.MINOR.PATCH
 
 Complete these checks before tagging a stable release:
 
-- Confirm the [Repository Security Profile](docs/articles/repository-security-profile.md) still matches effective GitHub settings, including secret-scanning push protection, `main` branch protection, and required reviewers on `template-package-publish` and `container-publish`.
+- Confirm the [Repository Security Profile](../docs/articles/repository-security-profile.md) still matches effective GitHub settings, including secret-scanning push protection, `main` branch protection, and required reviewers on `template-package-publish` and `container-publish`.
 - Confirm the production release tag will point to the release commit after it is merged into `main`, not to an unmerged release branch commit.
 - Confirm CI passes on the release branch.
 - Confirm CodeQL/security scanning passes.
@@ -59,7 +59,7 @@ Before approving publication, review generated artifacts from the release workfl
 
 Confirm artifact names, versions, repository URLs, license metadata, authorship metadata, package descriptions, package IDs, and release notes are accurate before publication.
 
-For a tagged release, confirm the GitHub Release contains all seven durable evidence assets documented in [Container Release Publishing](docs/articles/container-publish.md#durable-release-assets). GitHub Actions artifacts are temporary workflow hand-offs and do not satisfy this requirement.
+For a tagged release, confirm the GitHub Release contains all seven durable evidence assets documented in [Container Release Publishing](../docs/articles/container-publish.md#durable-release-assets). GitHub Actions artifacts are temporary workflow hand-offs and do not satisfy this requirement.
 
 ## 4. NuGet Publication Policy
 
@@ -90,7 +90,7 @@ Recommended order:
 
 Before publication, confirm one of the following is true:
 
-- Package author signing remains deferred under [ADR-0005](docs/adr/0005-defer-nuget-package-signing.md), its mandatory review date has not passed, and no early review trigger applies.
+- Package author signing remains deferred under [ADR-0005](../docs/adr/0005-defer-nuget-package-signing.md), its mandatory review date has not passed, and no early review trigger applies.
 - A project-controlled signing certificate, timestamping approach, and signing policy are configured and documented.
 
 External contributors are not expected to sign release packages. Official packages should be produced only by the maintainer-controlled release workflow.

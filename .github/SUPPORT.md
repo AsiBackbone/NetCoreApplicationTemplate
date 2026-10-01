@@ -40,7 +40,7 @@ Use [GitHub Issues](https://github.com/AsiBackbone/NetCoreApplicationTemplate/is
 - Security-adjacent behavior that is not a private vulnerability report.
 - Feature requests, which are acknowledged and closed with reference to the maintenance posture above. Open a discussion instead if the idea is worth recording for a future line.
 
-Use the private vulnerability reporting process described in [SECURITY.md](SECURITY.md) for suspected vulnerabilities.
+Use the private vulnerability reporting process described in [SECURITY.md](../SECURITY.md) for suspected vulnerabilities.
 
 ## Support Expectations
 
@@ -87,6 +87,6 @@ Maintainers may close issues that are stale, unreproducible, out of scope, dupli
 
 ## Pull Request Support
 
-Pull requests should follow [CONTRIBUTING.md](CONTRIBUTING.md). Maintainer review is required before merge.
+Pull requests should follow [CONTRIBUTING.md](../CONTRIBUTING.md). Maintainer review is required before merge.
 
 Large or broad pull requests may be redirected into smaller issues. Pull requests that change release, security, workflow, template packaging, or governance behavior may require additional review even when CI passes.

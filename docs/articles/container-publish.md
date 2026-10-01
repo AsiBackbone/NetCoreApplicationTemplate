@@ -109,7 +109,7 @@ docker build -t projecttemplate-web:dev .
 Run the container:
 
 ```powershell
-docker run --rm -p 8080:8080 projecttemplate-web:dev
+docker run --rm -p 127.0.0.1:8080:8080 projecttemplate-web:dev
 ```
 
 Verify the probe contract:

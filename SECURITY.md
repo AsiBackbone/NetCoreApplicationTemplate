@@ -222,9 +222,9 @@ If a concern exists both in NCAT and in a referenced repository, mention that re
 
 ## Related Documents
 
-- [SUPPORT.md](SUPPORT.md)
-- [MAINTAINERS.md](MAINTAINERS.md)
-- [GOVERNANCE.md](GOVERNANCE.md)
+- [SUPPORT.md](.github/SUPPORT.md)
+- [MAINTAINERS.md](.github/MAINTAINERS.md)
+- [GOVERNANCE.md](.github/GOVERNANCE.md)
 - [CONTRIBUTING.md](CONTRIBUTING.md)
-- [COMMUNITY_STANDARDS.md](COMMUNITY_STANDARDS.md)
-- [RELEASE.md](RELEASE.md)
+- [COMMUNITY_STANDARDS.md](.github/COMMUNITY_STANDARDS.md)
+- [RELEASE.md](.github/RELEASE.md)

@@ -24,6 +24,24 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * `ApplicationSaveChangesInterceptor` documents its four EF Core overrides
   directly instead of inheriting EF Core's comments, which removes four
   `InvalidCref` warnings from the documentation build.
+* Relative links in the governance documents now resolve. The files under
+  `.github/` linked to root files such as `CONTRIBUTING.md` and `SECURITY.md`
+  and to `docs/` as if they lived at the repository root, and `SECURITY.md`
+  linked to `SUPPORT.md`, `MAINTAINERS.md`, `GOVERNANCE.md`,
+  `COMMUNITY_STANDARDS.md`, and `RELEASE.md` at the root instead of under
+  `.github/`. Twenty links returned 404 on GitHub.
+* Link validation now also checks `SECURITY.md`, `PACKAGE-README.md`, and the
+  Markdown files under `.github/`, so broken links there fail CI.
+* `template.json` references the template schema over HTTPS.
+
+### Changed
+
+* The Docker Compose file publishes port `8080` on the loopback interface only
+  (`127.0.0.1:8080:8080`), and the `docker run` examples do the same. The
+  Compose configuration trusts any proxy for forwarded headers during local
+  development, so publishing on all interfaces let other machines on the
+  network spoof client addresses. To reach the container from another machine,
+  change the mapping deliberately and configure explicit known proxies.
 
 ## 2.11.0 - 2026-09-26
 

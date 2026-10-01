@@ -121,6 +121,9 @@ jobs:
             --remap "^https://github\.com/AsiBackbone/NetCoreApplicationTemplate/blob/main file://${{ github.workspace }}"
             './README.md'
             './CONTRIBUTING.md'
+            './SECURITY.md'
+            './PACKAGE-README.md'
+            './.github/*.md'
             './docs/_site/**/*.html'
           token: ${{ secrets.GITHUB_TOKEN }}
           fail: true
@@ -137,6 +140,9 @@ jobs:
             --remap "^https://github\.com/AsiBackbone/NetCoreApplicationTemplate/blob/main file://${{ github.workspace }}"
             './README.md'
             './CONTRIBUTING.md'
+            './SECURITY.md'
+            './PACKAGE-README.md'
+            './.github/*.md'
             './docs/_site/**/*.html'
           token: ${{ secrets.GITHUB_TOKEN }}
           fail: true
