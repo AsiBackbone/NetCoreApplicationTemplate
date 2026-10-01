@@ -20,7 +20,7 @@ env:
 jobs:
   build-docs:
     name: Build documentation
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
@@ -80,7 +80,7 @@ jobs:
   deploy-docs:
     name: Deploy documentation
     needs: build-docs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     permissions:
       pages: write
