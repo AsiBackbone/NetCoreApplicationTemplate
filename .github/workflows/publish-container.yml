@@ -19,7 +19,7 @@ concurrency:
 jobs:
   build-scan:
     name: Build, scan, and package image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 35
 
     permissions:
@@ -158,7 +158,7 @@ jobs:
 
   publish:
     name: Publish signed container image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: build-scan
     timeout-minutes: 30
 

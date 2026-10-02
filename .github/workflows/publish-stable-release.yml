@@ -43,7 +43,7 @@ jobs:
     name: Request README release update
     needs: publish-container
     if: ${{ !contains(github.ref_name, '-') }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
       actions: write
@@ -68,7 +68,7 @@ jobs:
       ${{ !cancelled() &&
           needs.publish-container.result == 'success' &&
           needs.update-readme.result != 'failure' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions: {}
     steps:
       - run: echo "Stable release publication and evidence verification completed successfully."

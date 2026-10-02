@@ -33,6 +33,18 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * Link validation now also checks `SECURITY.md`, `PACKAGE-README.md`, and the
   Markdown files under `.github/`, so broken links there fail CI.
 * `template.json` references the template schema over HTTPS.
+* Project branch-status automation no longer fails issue-branch pushes when the
+  issue is not yet in the project. The project App token is limited to
+  organization Projects, so it cannot add items to a project owned by a
+  personal account; the workflow now reports that `Resource not accessible by
+  integration` error as a `Project status not updated` warning instead. Any
+  other failure to add the issue still fails the job. Project PR-status
+  automation reports the same warning when a
+  linked issue is not in the project, rather than skipping it silently.
+* `ASSETS-LICENSES.md` (repository and generated template) lists the pinned
+  versions of `Microsoft.AspNetCore.Mvc.Testing` (10.0.12) and
+  `Microsoft.NET.Test.Sdk` (18.10.1); both had fallen behind
+  `Directory.Packages.props`.
 
 ### Changed
 
@@ -42,6 +54,28 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
   development, so publishing on all interfaces let other machines on the
   network spoof client addresses. To reach the container from another machine,
   change the mapping deliberately and configure explicit known proxies.
+* Pinned workflow jobs to `ubuntu-24.04` instead of `ubuntu-latest`, which
+  GitHub migrates to Ubuntu 26 beginning October 19, 2026. The template smoke
+  test matrix keeps `ubuntu-latest`, `windows-latest`, and `macos-latest`: it
+  deliberately tracks current runner images, and its check names are required
+  by the `main` ruleset.
+* Updated `OpenTelemetry.Extensions.Hosting` and
+  `OpenTelemetry.Exporter.OpenTelemetryProtocol` to 1.19.1,
+  `OpenTelemetry.Instrumentation.Http` to 1.19.0 (aligning it with the other
+  OpenTelemetry instrumentation), `System.Drawing.Common` to 10.0.12,
+  `SQLitePCLRaw.bundle_e_sqlite3` to 3.0.5, `Microsoft.SourceLink.GitHub` to
+  10.0.401, `FsCheck` to 3.4.0, and `coverlet.MTP` to 10.1.0.
+* Moved the version-pinned OWASP Dependency-Check suppressions for
+  CVE-2026-54285 to the updated `OpenTelemetry.Extensions.Hosting` 1.19.1,
+  `OpenTelemetry.Exporter.OpenTelemetryProtocol` 1.19.1, and
+  `OpenTelemetry.Instrumentation.Http` 1.19.0 packages. The CVE affects the
+  JavaScript `@opentelemetry/core` package, not these .NET packages. Likewise
+  moved the CVE-2012-2055 suppression to `Microsoft.SourceLink.GitHub`
+  10.0.401; that CVE concerns historical GitHub Enterprise behavior, not Source
+  Link. Expiry dates are unchanged and all other versions and vulnerabilities
+  remain scanned.
+* Dependabot commit messages use the prefix `chore` with the dependency scope,
+  producing `chore(deps): ...` instead of `chore(deps)(deps): ...`.
 
 ## 2.11.0 - 2026-09-26
 

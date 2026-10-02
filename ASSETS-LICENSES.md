@@ -52,7 +52,7 @@ _OpenTelemetry is a collection of tools, APIs, and SDKs that can be used to inst
 ## [AspNet.Security.OAuth.GitHub](https://www.nuget.org/packages/AspNet.Security.OAuth.GitHub)
 _This package contains the GitHub authentication middleware for ASP.NET Core. It enables an application to support authentication using GitHub accounts, allowing users to sign in with their GitHub credentials. This middleware allows applications to authenticate users by redirecting them to the GitHub login page and handling the authentication response._
 
-## [SQLitePCLRaw.bundle_e_sqlite3 3.0.4](https://www.nuget.org/packages/SQLitePCLRaw.bundle_e_sqlite3/3.0.4)
+## [SQLitePCLRaw.bundle_e_sqlite3 3.0.5](https://www.nuget.org/packages/SQLitePCLRaw.bundle_e_sqlite3/3.0.5)
 _This package bundles the SQLitePCLRaw provider and native SQLite components used by the generated application's SQLite data-access path. Its package metadata declares the Apache-2.0 license._
 
 <br /><br />
@@ -84,9 +84,9 @@ SOFTWARE.
 
 ## [coverlet.MTP](https://www.nuget.org/packages/coverlet.MTP)
 _Coverlet is a cross platform code coverage framework, with support for line, branch and method coverage. It works with [.NET Framework](https://github.com/coverlet-coverage/coverlet/blob/master/Documentation/KnownIssues.md#badimageformatexception-net-framework-47x-48x) on Windows and .NET Core on all supported platforms._
-## [Microsoft.AspNetCore.Mvc.Testing](https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc.Testing/10.0.11)
+## [Microsoft.AspNetCore.Mvc.Testing](https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc.Testing/10.0.12)
 _`Microsoft.AspNetCore.Mvc.Testing` provides support for writing integration tests for ASP.NET Core apps that utilize MVC or Minimal APIs._
-## [Microsoft.NET.Test.Sdk 18.9.0](https://www.nuget.org/packages/Microsoft.NET.Test.Sdk/18.9.0)
+## [Microsoft.NET.Test.Sdk 18.10.1](https://www.nuget.org/packages/Microsoft.NET.Test.Sdk/18.10.1)
 _The MSbuild targets and properties for building .NET test projects._
 ## [Microsoft.AspNetCore.Authentication.OpenIdConnect](https://www.nuget.org/packages/Microsoft.AspNetCore.Authentication.OpenIdConnect)
 _This package contains the OpenID Connect middleware for ASP.NET Core. It enables an application to support authentication using the OpenID Connect protocol, which is an identity layer on top of the OAuth 2.0 protocol. This middleware allows applications to authenticate users by redirecting them to an OpenID Connect provider (such as Azure AD, IdentityServer, etc.) and handling the response._
@@ -121,7 +121,7 @@ _This package contains extensions for configuring options in .NET applications u
 ### [BSD-3-Clause](https://licenses.nuget.org/BSD-3-Clause) License
 The following package is distributed under the BSD 3-Clause license:
 
-## [FsCheck 3.3.3](https://www.nuget.org/packages/FsCheck/3.3.3)
+## [FsCheck 3.4.0](https://www.nuget.org/packages/FsCheck/3.4.0)
 _FsCheck provides property-based testing used by the template's generated test project. Its package metadata declares the BSD-3-Clause license._
 
 ```text

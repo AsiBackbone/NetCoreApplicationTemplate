@@ -17,7 +17,7 @@ env:
 jobs:
   move-linked-issue-to-review:
     name: Move linked issue to review
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     if: github.event.pull_request.draft == false && github.event.pull_request.user.login != 'dependabot[bot]'
 
@@ -172,7 +172,7 @@ jobs:
             ITEM_ID=$(echo "$issueJson" | jq -r '.itemId // empty')
 
             if [ -z "$ITEM_ID" ] || [ "$ITEM_ID" = "null" ]; then
-              echo "Issue #$ISSUE_NUMBER is linked but is not currently in project #$PROJECT_NUMBER. Skipping."
+              echo "::warning title=Project status not updated::Issue #$ISSUE_NUMBER is linked but is not in project $PROJECT_OWNER/$PROJECT_NUMBER. Add the issue to the project to enable status automation."
               continue
             fi
 

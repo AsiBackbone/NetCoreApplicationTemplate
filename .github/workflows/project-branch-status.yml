@@ -13,7 +13,7 @@ env:
 jobs:
   move-issue-to-in-progress:
     name: Move issue to in progress
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     if: github.event.ref_type == 'branch' && !startsWith(github.event.ref, 'dependabot/')
 
@@ -176,7 +176,11 @@ jobs:
           if [ -z "$ITEM_ID" ] || [ "$ITEM_ID" = "null" ]; then
             echo "Issue is not currently in the project. Adding it now..."
 
-            gh api graphql \
+            # The project automation App token cannot add items to a project owned by a personal
+            # account. Report that specific permission error as a warning instead of failing every
+            # issue-branch push; add the issue to the project (or enable the project's auto-add
+            # workflow) to restore status sync. Any other failure still fails the job.
+            if ! gh api graphql 2> add-item-error.log \
               -f projectId="$PROJECT_ID" \
               -f contentId="$ISSUE_ID" \
               -f query='
@@ -190,7 +194,17 @@ jobs:
                     }
                   }
                 }
-              ' > added-item.json
+              ' > added-item.json; then
+              cat add-item-error.log >&2
+
+              if grep -Fq 'Resource not accessible by integration' add-item-error.log; then
+                echo "::warning title=Project status not updated::Issue #$ISSUE_NUMBER is not in project $PROJECT_OWNER/$PROJECT_NUMBER and the automation token cannot add it. Add the issue to the project to enable status automation."
+                exit 0
+              fi
+
+              echo "Could not add issue #$ISSUE_NUMBER to the project."
+              exit 1
+            fi
 
             ITEM_ID=$(jq -r '.data.addProjectV2ItemById.item.id // empty' added-item.json)
           fi

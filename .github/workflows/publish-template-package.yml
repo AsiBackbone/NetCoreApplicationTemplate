@@ -39,7 +39,7 @@ concurrency:
 jobs:
   verify-ci:
     name: Verify CI passed for tagged commit
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     if: github.ref_type == 'tag'
     permissions:
@@ -73,7 +73,7 @@ jobs:
 
   pack-template:
     name: Pack template package
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
 
     steps:
@@ -175,7 +175,7 @@ jobs:
     needs:
       - verify-ci
       - pack-template
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
 
     permissions:

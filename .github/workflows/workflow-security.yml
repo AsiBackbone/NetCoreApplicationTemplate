@@ -24,7 +24,7 @@ permissions: {}
 jobs:
   zizmor:
     name: Analyze workflows with zizmor
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
 
     permissions:
@@ -48,7 +48,7 @@ jobs:
 
   actionlint:
     name: Validate workflows with actionlint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
 
     permissions:

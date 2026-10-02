@@ -52,7 +52,7 @@ _The OpenTelemetry .NET packages provide the generated application's tracing, me
 
 _This package provides the generated application's optional GitHub authentication handler._
 
-## [SQLitePCLRaw.bundle_e_sqlite3 3.0.4](https://www.nuget.org/packages/SQLitePCLRaw.bundle_e_sqlite3/3.0.4)
+## [SQLitePCLRaw.bundle_e_sqlite3 3.0.5](https://www.nuget.org/packages/SQLitePCLRaw.bundle_e_sqlite3/3.0.5)
 
 _This package bundles the SQLitePCLRaw provider and native SQLite components used by the generated application's SQLite data-access path. Its package metadata declares the Apache-2.0 license._
 
@@ -88,11 +88,11 @@ SOFTWARE.
 
 _Coverlet provides cross-platform code coverage collection for the generated test project._
 
-## [Microsoft.AspNetCore.Mvc.Testing](https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc.Testing/10.0.11)
+## [Microsoft.AspNetCore.Mvc.Testing](https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc.Testing/10.0.12)
 
 _Microsoft.AspNetCore.Mvc.Testing supports integration testing of ASP.NET Core applications._
 
-## [Microsoft.NET.Test.Sdk 18.9.0](https://www.nuget.org/packages/Microsoft.NET.Test.Sdk/18.9.0)
+## [Microsoft.NET.Test.Sdk 18.10.1](https://www.nuget.org/packages/Microsoft.NET.Test.Sdk/18.10.1)
 
 _The MSBuild targets and properties for building .NET test projects._
 
@@ -151,7 +151,7 @@ _This package provides configuration binding for the .NET options pattern._
 ### [BSD-3-Clause](https://licenses.nuget.org/BSD-3-Clause) License
 The following package is distributed under the BSD 3-Clause license:
 
-## [FsCheck 3.3.3](https://www.nuget.org/packages/FsCheck/3.3.3)
+## [FsCheck 3.4.0](https://www.nuget.org/packages/FsCheck/3.4.0)
 
 _FsCheck provides property-based testing used by the generated test project. Its package metadata declares the BSD-3-Clause license._
 
