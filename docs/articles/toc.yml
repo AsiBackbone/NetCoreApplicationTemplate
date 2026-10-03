@@ -77,6 +77,8 @@
 
 - name: Release & Compatibility
   items:
+    - name: 2.11.1 Release Notes
+      href: release-notes-2111.md
     - name: 2.11.0 Release Notes
       href: release-notes-2110.md
     - name: Build Quality and Reproducibility

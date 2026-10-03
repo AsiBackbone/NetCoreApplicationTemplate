@@ -106,13 +106,13 @@ Health routes are explicitly anonymous at the application layer for infrastructu
 Install the published package:
 
 ```powershell
-dotnet new install NetCoreApplicationTemplate::2.11.0
+dotnet new install NetCoreApplicationTemplate::2.11.1
 ```
 
 For local package validation, install the packed package directly:
 
 ```powershell
-dotnet new install ./artifacts/template-package/NetCoreApplicationTemplate.2.11.0.nupkg
+dotnet new install ./artifacts/template-package/NetCoreApplicationTemplate.2.11.1.nupkg
 ```
 
 Generate the default cookie-authenticated scaffold:
@@ -235,7 +235,7 @@ This project follows Semantic Versioning. Version metadata is managed centrally 
 Suggested citation:
 
 ```text
-Cavell, Christopher D. NetCoreApplicationTemplate. Version 2.11.0. Zenodo. MIT License. https://doi.org/10.5281/zenodo.20373042
+Cavell, Christopher D. NetCoreApplicationTemplate. Version 2.11.1. Zenodo. MIT License. https://doi.org/10.5281/zenodo.20373042
 ```
 
 ## License
