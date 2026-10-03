@@ -4,7 +4,7 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
-## Unreleased
+## 2.11.1 - 2026-10-03
 
 ### Added
 
@@ -76,6 +76,13 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
   remain scanned.
 * Dependabot commit messages use the prefix `chore` with the dependency scope,
   producing `chore(deps): ...` instead of `chore(deps)(deps): ...`.
+
+### Compatibility
+
+* This is a backward-compatible patch release focused on dependency servicing,
+  security hardening, repository automation, test coverage, and documentation.
+* The package ID, template identities, short name, supported options, public
+  application surface, and `net10.0` target remain unchanged.
 
 ## 2.11.0 - 2026-09-26
 
