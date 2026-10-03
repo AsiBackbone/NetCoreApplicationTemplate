@@ -37,9 +37,9 @@ NuGet author signing is tracked separately by
 ## Current Release
 
 <!-- BEGIN LATEST_RELEASE -->
-Current release: __[Release 2.11.0](https://github.com/AsiBackbone/NetCoreApplicationTemplate/releases/tag/v2.11.0)__
+Current release: __[Release 2.11.1](https://github.com/AsiBackbone/NetCoreApplicationTemplate/releases/tag/v2.11.1)__
 
-Tag: `v2.11.0`
+Tag: `v2.11.1`
 <!-- END LATEST_RELEASE -->
 
 ## Maintenance Status
