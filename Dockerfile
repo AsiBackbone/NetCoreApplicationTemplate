@@ -23,7 +23,7 @@ RUN dotnet publish "src/ProjectTemplate.Web/ProjectTemplate.Web.csproj" \
     /p:UseAppHost=false \
     /p:ContinuousIntegrationBuild=true
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:57460add89e2b3dd1950c41d8b7dc96eeb7a24d13d98e3656ce9997a8b746bd6 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:222759b391a1aaf241166672c8f99b2d4ada452e7b5319f3c6e8f265a37b5ad4 AS final
 WORKDIR /app
 
 ENV ASPNETCORE_URLS=http://+:8080 \
