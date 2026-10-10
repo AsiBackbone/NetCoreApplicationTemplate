@@ -109,7 +109,7 @@ jobs:
 
     steps:
       - name: Harden the runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: ${{ env.EGRESS_POLICY }}
           allowed-endpoints: ${{ env.ALLOWED_ENDPOINTS_DOTNET }}
@@ -172,14 +172,14 @@ jobs:
             -filefilters:"-**/bin/**;-**/obj/**;-**/*.g.cs"
 
       - name: Publish test results artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: test-results
           path: ./artifacts/test-results
           if-no-files-found: warn
 
       - name: Publish coverage report artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: coverage-report
           path: ./artifacts/coverage-report
@@ -227,7 +227,7 @@ jobs:
 
     steps:
       - name: Harden the runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: ${{ env.EGRESS_POLICY }}
           allowed-endpoints: ${{ env.ALLOWED_ENDPOINTS_SMOKE }}
@@ -392,7 +392,7 @@ jobs:
 
     steps:
       - name: Harden the runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: ${{ env.EGRESS_POLICY }}
           allowed-endpoints: ${{ env.ALLOWED_ENDPOINTS_DOTNET }}
@@ -484,13 +484,13 @@ jobs:
 
       # GitHub Actions is interpreted by CodeQL directly and does not use a repository build.
       - name: Initialize CodeQL for GitHub Actions
-        uses: github/codeql-action/init@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        uses: github/codeql-action/init@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
         with:
           languages: actions
           build-mode: none
 
       - name: Perform CodeQL Actions analysis
-        uses: github/codeql-action/analyze@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        uses: github/codeql-action/analyze@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
 
   codeql-analysis:
     name: CodeQL analysis
@@ -521,7 +521,7 @@ jobs:
       # C# uses manual extraction so the controlled locked restore and solution build below
       # are the build CodeQL observes rather than redundant work after buildless extraction.
       - name: Initialize CodeQL for C#
-        uses: github/codeql-action/init@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        uses: github/codeql-action/init@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
         with:
           languages: csharp
           build-mode: manual
@@ -533,7 +533,7 @@ jobs:
         run: dotnet build ${{ env.SOLUTION_FILE }} --configuration ${{ env.CONFIGURATION }} --no-restore /p:ContinuousIntegrationBuild=true
 
       - name: Perform CodeQL C# analysis
-        uses: github/codeql-action/analyze@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        uses: github/codeql-action/analyze@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
 
       - name: Report CodeQL C# runtime
         if: always()
