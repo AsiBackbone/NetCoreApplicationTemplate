@@ -9,6 +9,7 @@ on:
     paths:
       - '**/*.md'
       - 'docs/**'
+      - 'scripts/Ensure-PublishedHtmlMetadata.ps1'
       - 'lychee.toml'
       - '.github/workflows/link-validation.yml'
 
@@ -18,6 +19,7 @@ on:
     paths:
       - '**/*.md'
       - 'docs/**'
+      - 'scripts/Ensure-PublishedHtmlMetadata.ps1'
       - 'lychee.toml'
       - '.github/workflows/link-validation.yml'
 
@@ -107,7 +109,18 @@ jobs:
           # Add only the landing-page placeholder here so rendered NCAT links
           # can be checked without running the full test/coverage pipeline twice.
           New-Item -ItemType Directory -Path "./docs/_site/coverage" -Force | Out-Null
-          Set-Content -LiteralPath "./docs/_site/coverage/index.html" -Value "<!doctype html><title>Coverage publication placeholder</title>"
+          Set-Content -LiteralPath "./docs/_site/coverage/index.html" -Value "<!doctype html><html><head><title>Coverage publication placeholder</title></head><body></body></html>"
+
+      - name: Test published HTML metadata tooling
+        shell: pwsh
+        run: ./scripts/Ensure-PublishedHtmlMetadata.ps1 -SelfTest
+
+      - name: Ensure published HTML metadata
+        shell: pwsh
+        run: |
+          ./scripts/Ensure-PublishedHtmlMetadata.ps1 `
+            -SiteDirectory "./docs/_site" `
+            -NoIndexPathPrefix @("coverage")
 
       - name: Validate complete NCAT publication locally
         if: github.event_name != 'schedule' && github.event_name != 'workflow_dispatch'
