@@ -72,6 +72,13 @@ jobs:
           New-Item -ItemType Directory -Path "./docs/_site/coverage" -Force | Out-Null
           Copy-Item -Path "./artifacts/coverage-report/*" -Destination "./docs/_site/coverage" -Recurse -Force
 
+      - name: Ensure published HTML metadata
+        shell: pwsh
+        run: |
+          ./scripts/Ensure-PublishedHtmlMetadata.ps1 `
+            -SiteDirectory "./docs/_site" `
+            -NoIndexPathPrefix @("coverage")
+
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:

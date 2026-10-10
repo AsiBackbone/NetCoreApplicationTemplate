@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
+## Unreleased
+
+### Fixed
+
+* Ensured every published documentation page has page-specific search and social-preview descriptions when authored metadata is absent, and marked generated coverage reports `noindex` so search engines focus on durable documentation.
+
 ## 2.11.2 - 2026-10-10
 
 ### Changed
