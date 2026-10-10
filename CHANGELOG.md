@@ -4,6 +4,27 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
+## 2.11.2 - 2026-10-10
+
+### Changed
+
+* Refreshed the pinned .NET SDK 10.0.401 and ASP.NET Core 10.0 container image
+  digests included in generated projects.
+* Updated pinned GitHub Actions used by repository CI, security scanning,
+  artifact handling, and release workflows.
+
+### Fixed
+
+* The support policy now identifies 2.11.1, rather than 2.11.0, as the latest
+  published release while 2.11.2 is being prepared.
+
+### Compatibility
+
+* This is a backward-compatible patch release focused on dependency servicing
+  and repository automation maintenance.
+* The package ID, template identities, short name, supported options, public
+  application surface, and `net10.0` target remain unchanged.
+
 ## 2.11.1 - 2026-10-03
 
 ### Added
