@@ -7,6 +7,7 @@ repository-code: "https://github.com/AsiBackbone/NetCoreApplicationTemplate"
 url: "https://AsiBackbone.github.io/NetCoreApplicationTemplate/"
 type: software
 license: MIT
+doi: "10.5281/zenodo.20373042"
 identifiers:
   - type: doi
     value: "10.5281/zenodo.20373042"
