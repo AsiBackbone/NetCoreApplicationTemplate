@@ -6,6 +6,7 @@
 [![Coverage Report](https://img.shields.io/badge/coverage%20gate-75%25-brightgreen)](https://asibackbone.github.io/NetCoreApplicationTemplate/coverage/index.html)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13645/badge)](https://www.bestpractices.dev/projects/13645)
 [![Documentation](https://github.com/AsiBackbone/NetCoreApplicationTemplate/actions/workflows/publish-docs.yml/badge.svg)](https://github.com/AsiBackbone/NetCoreApplicationTemplate/actions/workflows/publish-docs.yml)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://asibackbone.github.io/NetCoreApplicationTemplate/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE.txt)
 [![GitHub Release](https://img.shields.io/github/v/release/AsiBackbone/NetCoreApplicationTemplate?display_name=tag)](https://github.com/AsiBackbone/NetCoreApplicationTemplate/releases/latest)

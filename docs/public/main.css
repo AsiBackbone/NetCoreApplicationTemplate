@@ -1,0 +1,10 @@
+.navbar-brand {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+
+    .navbar-brand #logo,
+    .navbar-brand img {
+        margin-right: 0.5rem !important;
+    }
