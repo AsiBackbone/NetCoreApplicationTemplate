@@ -221,7 +221,7 @@ requires no external governance, audit, or policy product.
 
 ## Support and Community
 
-- Use [GitHub Discussions](https://github.com/AsiBackbone/NetCoreApplicationTemplate/discussions) for setup and usage questions, design or extension guidance, and community feedback.
+- Use [AsiBackbone organization Discussions](https://github.com/orgs/AsiBackbone/discussions) for setup and usage questions, design or extension guidance, and community feedback. Identify `AsiBackbone/NetCoreApplicationTemplate` in project-specific posts.
 - Use [GitHub Issues](https://github.com/AsiBackbone/NetCoreApplicationTemplate/issues) for reproducible bugs, documentation gaps, and focused feature requests.
 - Report suspected vulnerabilities through the private process in [SECURITY.md](SECURITY.md).
 - Participate under the repository [Code of Conduct](.github/CODE_OF_CONDUCT.md) and [Community Standards](.github/COMMUNITY_STANDARDS.md).

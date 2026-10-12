@@ -106,7 +106,7 @@ dotnet new uninstall NetCoreApplicationTemplate
 - GitHub repository: https://github.com/AsiBackbone/NetCoreApplicationTemplate
 - Published documentation: https://asibackbone.github.io/NetCoreApplicationTemplate/
 - Template packaging documentation: https://asibackbone.github.io/NetCoreApplicationTemplate/articles/template-packaging.html
-- Community questions and feedback: https://github.com/AsiBackbone/NetCoreApplicationTemplate/discussions
+- Community questions and feedback: https://github.com/orgs/AsiBackbone/discussions
 - Changelog: CHANGELOG.md
 - License: LICENSE.txt
 - Releases: https://github.com/AsiBackbone/NetCoreApplicationTemplate/releases

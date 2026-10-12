@@ -26,11 +26,13 @@ Generated projects are not modified by later releases. Applications scaffolded f
 
 ## Support Channels
 
-Use [GitHub Discussions](https://github.com/AsiBackbone/NetCoreApplicationTemplate/discussions) for:
+Use [AsiBackbone organization Discussions](https://github.com/orgs/AsiBackbone/discussions) for:
 
 - Setup and usage questions.
 - Design, extension, or application-specific guidance that is not a template defect.
 - Community feedback and ideas. Capability ideas are welcome here as a record for any future line, but are not planned work for `2.x`.
+
+Name `AsiBackbone/NetCoreApplicationTemplate` and the affected template version so project-specific conversations remain easy to find on the shared surface.
 
 Use [GitHub Issues](https://github.com/AsiBackbone/NetCoreApplicationTemplate/issues) for:
 
