@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using ProjectTemplate.Infrastructure.Data;
@@ -10,8 +11,9 @@ namespace ProjectTemplate.Web.Tests;
 /// Covers the application-name fallback and value serialization branches of the internal <c>AuditEntry</c>.
 /// </summary>
 /// <remarks>
-/// The entry-assembly fallbacks inside <c>ToAuditRecord</c> are not reachable from a test host, because the test
-/// process always has an entry assembly with a name.
+/// The missing-entry-assembly branch is reached with <c>Assembly.SetEntryAssembly(null)</c>, which the test restores
+/// in a <c>finally</c> block; the test project runs tests sequentially, so no other test observes the override. The
+/// final <c>"Unknown Assembly"</c> fallback is not reachable, because a loaded assembly always has a name.
 /// </remarks>
 public sealed class AuditEntryBranchCoverageTests
 {
@@ -57,6 +59,34 @@ public sealed class AuditEntryBranchCoverageTests
         Assert.Equal(/*lang=json,strict*/ "{\"Id\":42}", record.KeyValues);
         Assert.Empty(record.OriginalValues);
         Assert.Contains("Audit Entry User", record.CurrentValues, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ToAuditRecord_NoEntryAssemblyAndBlankApplication_UsesDeclaringAssemblyName()
+    {
+        using ApplicationDbContext context = CreateContext();
+        AuditEntry auditEntry = new(context.Entry(CreateAccount()))
+        {
+            TableName = "ExternalLoginAccounts",
+            State = "Added",
+            Application = " ",
+            MutationBatchId = "audit-entry-no-entry-assembly"
+        };
+        var originalEntryAssembly = Assembly.GetEntryAssembly();
+        AuditRecord record;
+
+        Assembly.SetEntryAssembly(null);
+        try
+        {
+            record = auditEntry.ToAuditRecord();
+        }
+        finally
+        {
+            Assembly.SetEntryAssembly(originalEntryAssembly);
+        }
+
+        Assert.Equal(typeof(ApplicationDbContext).Assembly.GetName().Name, record.Application);
+        Assert.Same(originalEntryAssembly, Assembly.GetEntryAssembly());
     }
 
     private static ApplicationDbContext CreateContext()
