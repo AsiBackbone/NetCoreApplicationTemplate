@@ -6,6 +6,14 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+### Added
+
+* Added repository-only branch-coverage tests for the classes whose branch coverage was below 80% in the published
+  coverage report, covering constructor guards, disabled-mode early returns, synchronous outbox staging, publish
+  result dispositions, reconciliation delivery and record-shape findings, remediation input limits, audited
+  transaction savepoint and isolation paths, error-page status resolution, and request classification. The new
+  test files are excluded from generated scaffolds alongside the existing coverage-only tests.
+
 ### Fixed
 
 * Ensured every published documentation page has page-specific search and social-preview descriptions when authored metadata is absent, and marked generated coverage reports `noindex` so search engines focus on durable documentation.
