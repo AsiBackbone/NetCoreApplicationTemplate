@@ -204,7 +204,25 @@
         "tests/ProjectTemplate.Web.Tests/EfCoreMigrationCoverageTests.cs",
         "tests/ProjectTemplate.Web.Tests/ForwardedHeadersExtensionsCoverageTests.cs",
         "tests/ProjectTemplate.Web.Tests/OpenTelemetryServiceExtensionsCoverageTests.cs",
-        "tests/ProjectTemplate.Web.Tests/RequestLoggingExtensionsBranchGapTests.cs"
+        "tests/ProjectTemplate.Web.Tests/RequestLoggingExtensionsBranchGapTests.cs",
+        "tests/ProjectTemplate.Web.Tests/ApplicationAuditCompletionOutboxBranchCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/ApplicationAuditContextBranchCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/ApplicationAuditedTransactionBranchCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/ApplicationAuditIntegrityHealthCheckBranchCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/ApplicationAuditReconcilerBranchCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/ApplicationDatabaseHealthCheckBranchCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/ApplicationInformationControllerBranchCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/AuditEntryBranchCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/AuditHostedServiceBranchCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/CanonicalApplicationMutationManifestBuilderBranchCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/DataAccessOptionValuesBranchCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/DataAccessStartupLoggerBranchCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/ExternalControllerBranchCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/HomeControllerBranchCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/HttpContextApplicationAuditContextAccessorBranchCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/OpenTelemetryServiceExtensionsBranchCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/ProblemDetailsBranchCoverageTests.cs",
+        "tests/ProjectTemplate.Web.Tests/SecurityHeadersMiddlewareBranchCoverageTests.cs"
       ],
       "modifiers": [
         {
