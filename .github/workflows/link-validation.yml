@@ -73,7 +73,7 @@ jobs:
         run: dotnet tool restore
 
       - name: Build NCAT DocFX site
-        run: dotnet tool run docfx -- docs/docfx.json
+        run: dotnet tool run docfx -- docs/docfx.json --warningsAsErrors
 
       - name: Test documentation landing-page validator
         shell: pwsh

@@ -10,7 +10,7 @@
 - [ ] Ran `dotnet build --configuration Release`.
 - [ ] Ran `dotnet test --configuration Release`.
 - [ ] Ran `dotnet format NetCoreApplicationTemplate.slnx --verify-no-changes --verbosity minimal`.
-- [ ] Ran `dotnet tool run docfx -- .\\docs\\docfx.json`.
+- [ ] Ran `dotnet tool run docfx -- .\\docs\\docfx.json --warningsAsErrors`.
 - [ ] Not applicable / explained below.
 
 ## Documentation Guardrails

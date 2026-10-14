@@ -64,7 +64,7 @@ jobs:
             -filefilters:"-**/bin/**;-**/obj/**;-**/*.g.cs"
 
       - name: Build DocFX site
-        run: dotnet tool run docfx -- docs/docfx.json
+        run: dotnet tool run docfx -- docs/docfx.json --warningsAsErrors
 
       - name: Validate documentation landing page
         shell: pwsh
