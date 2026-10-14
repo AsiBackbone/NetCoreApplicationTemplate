@@ -19,10 +19,20 @@ $requiredHomepageSections = @(
     '<div class="home-hero">'
     '## Start here'
     '## Is the template a fit?'
-    '## At a Glance'
+    '## At a glance'
     '## Related projects'
     '## Design philosophy'
 )
+
+# Related-project descriptions are owned by each project and must match the wording on the
+# Learning and AsiBackbone homepages (LANDING-PAGE-STANDARD.md, Related Projects contract).
+$sharedProjectDescriptions = @(
+    '<p>Practical .NET architecture tutorials, labs, runnable samples, and reference patterns for governed execution, secure applications, AI integration, and policy-driven systems, including comparisons that show when these patterns are unnecessary.</p>'
+    '<p>A .NET governance and policy-control framework for auditable decision flows: policy evaluation, auditable decision records, acknowledgment workflows, capability-based authorization, host-owned execution boundaries, and ASP.NET Core integration.</p>'
+)
+
+# Homepage h2 headings use sentence case; only these proper nouns and acronyms may be capitalized after the first word.
+$headingProperNouns = @('API', 'APIs', 'ADR', 'ADRs', 'ASP.NET', 'AsiBackbone', 'Core', 'DocFX', 'EF', 'NCAT', '.NET')
 
 $requiredHomepageContent = @(
     'class="btn btn-primary" href="articles/template-packaging.md"'
@@ -45,7 +55,7 @@ $requiredHomepageContent = @(
     'https://doi.org/10.5281/zenodo.20546032'
     'https://doi.org/10.5281/zenodo.20373042'
     $designPhilosophyStatement
-)
+) + $sharedProjectDescriptions
 
 $ecosystemNavigation = [ordered]@{
     'Organization' = 'https://asibackbone.github.io/'
@@ -147,10 +157,26 @@ function Test-InOrder {
     }
 }
 
+function Test-HeadingCase {
+    param([string]$Content, [System.Collections.Generic.List[string]]$Errors)
+
+    foreach ($heading in [regex]::Matches($Content, '(?m)^## (?<text>.+?)\s*$')) {
+        $words = @($heading.Groups['text'].Value -split '\s+' | Select-Object -Skip 1)
+        foreach ($word in $words) {
+            $bare = $word.Trim('?', '!', ':', ',', '(', ')')
+            if ($bare -cmatch '^[A-Z]' -and $headingProperNouns -cnotcontains $bare) {
+                $Errors.Add("docs/index.md heading '## $($heading.Groups['text'].Value)' must use sentence case; '$bare' is not an allowed proper noun.")
+                break
+            }
+        }
+    }
+}
+
 function Test-Homepage {
     param([string]$Content, [System.Collections.Generic.List[string]]$Errors)
 
     Test-InOrder -Content $Content -Markers $requiredHomepageSections -Name 'docs/index.md' -Errors $Errors
+    Test-HeadingCase -Content $Content -Errors $Errors
     foreach ($requiredText in $requiredHomepageContent) {
         if (-not $Content.Contains($requiredText, [StringComparison]::Ordinal)) {
             $Errors.Add("docs/index.md is missing required landing-page content: $requiredText")
@@ -347,6 +373,9 @@ function Invoke-SelfTest {
         @{ Name = 'valid homepage'; Check = { param($e) Test-Homepage $validHomepage $e }; Pass = $true }
         @{ Name = 'missing product fit'; Check = { param($e) Test-Homepage $validHomepage.Replace('## Is the template a fit?', '') $e }; Pass = $false }
         @{ Name = 'philosophy before related projects'; Check = { param($e) Test-Homepage $reorderedHomepage $e }; Pass = $false }
+        @{ Name = 'title-case optional heading'; Check = { param($e) Test-Homepage $validHomepage.Replace('## At a glance', '## At a Glance') $e }; Pass = $false }
+        @{ Name = 'sentence-case heading with proper nouns'; Check = { param($e) Test-Homepage ($validHomepage + "`n## Architecture decisions and API reference`n## ASP.NET Core and EF Core notes") $e }; Pass = $true }
+        @{ Name = 'rewritten Learning description'; Check = { param($e) Test-Homepage $validHomepage.Replace($sharedProjectDescriptions[0], '<p>Education, not a dependency.</p>') $e }; Pass = $false }
         @{ Name = 'missing not-a-dependency statement'; Check = { param($e) Test-Homepage $validHomepage.Replace('Neither related project is a dependency of the template.', '') $e }; Pass = $false }
         @{ Name = 'valid navigation'; Check = { param($e) Test-Navigation $validToc $e }; Pass = $true }
         @{ Name = 'missing Community'; Check = { param($e) Test-Navigation $validToc.Replace('- name: Community', '- name: Discussions') $e }; Pass = $false }

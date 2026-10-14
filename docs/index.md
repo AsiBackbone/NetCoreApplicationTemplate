@@ -72,7 +72,7 @@ _disableToc: true
   </section>
 </div>
 
-## At a Glance
+## At a glance
 
 | Area | Current reference |
 |:---|:---|
@@ -83,13 +83,13 @@ _disableToc: true
 | Default authentication | Cookie authentication with authenticated-by-default routed endpoints |
 | Default data provider | SQLite for local development |
 
-## Understand the Generated Application
+## Understand the generated application
 
 - [Project Structure](articles/project-structure.md) explains the generated projects and responsibilities.
 - [Configuration](articles/configuration.md) documents the application-owned configuration surface.
 - [Middleware Pipeline](articles/middleware.md) records the runtime ordering contract and extension points.
 
-## Generated Application Reference
+## Generated application reference
 
 Use these articles when you need the exact behavior of the scaffold rather than general ASP.NET Core guidance:
 
@@ -114,21 +114,21 @@ The [Public Surface and Compatibility Boundaries](articles/public-surface-v1.md)
 
 These references identify the intended growth points and the behavior that should remain stable when extending a generated application.
 
-## Deployment & Operations
+## Deployment & operations
 
 - [Deployment Notes](articles/deployment.md)
 - [Docker Development](articles/docker.md)
 - [Production Deployment Checklist](articles/production-deployment-checklist.md)
 - [Runtime Readiness](articles/runtime-readiness.md)
 
-## Architecture Decisions and API Reference
+## Architecture decisions and API reference
 
 Repository-local design decisions remain first-class NCAT documentation because they explain why this implementation chose its concrete behavior.
 
 - [Architecture Decision Records](adr/index.md)
 - [API Reference](api/index.md)
 
-## Release & Compatibility
+## Release & compatibility
 
 Release and readiness evidence remains available after the core usage and implementation reference:
 
@@ -137,11 +137,11 @@ Release and readiness evidence remains available after the core usage and implem
 - [GitHub Workflow](articles/github-workflow.md)
 - [Test Coverage](https://asibackbone.github.io/NetCoreApplicationTemplate/coverage/)
 
-## Historical Archive
+## Historical archive
 
 - [v0.5.x to v1.0 Migration Guide](articles/v1-migration-guide.md) — retained at its original URL for consumers of preview releases; it is not current upgrade guidance.
 
-## Learn the Architecture
+## Learn the architecture
 
 For organization-level software architecture education, ASP.NET Core teaching, terminology, tutorials, tradeoff analysis, architectural comparisons, labs, and general secure-by-default guidance, use [AsiBackbone Learning](https://asibackbone.github.io/Learning/).
 
@@ -149,7 +149,7 @@ Learning provides broader educational context; it does **not** define NCAT runti
 
 ## Related projects
 
-Neither related project is a dependency of the template. Generated applications do not reference any AsiBackbone package.
+Neither related project is a dependency of the template. Generated applications do not reference any AsiBackbone package. If a host later adopts AsiBackbone, [Audit Accountability Integration](articles/audit-accountability-integration.md) describes the host-owned integration seams.
 
 <div class="project-grid">
   <article class="project-card" aria-current="page">
@@ -164,7 +164,7 @@ Neither related project is a dependency of the template. Generated applications 
   <article class="project-card">
     <span class="project-role">Learn the patterns</span>
     <h3><a href="https://asibackbone.github.io/Learning/">AsiBackbone Learning</a></h3>
-    <p>Education, not a dependency: practical .NET architecture tutorials, labs, and comparisons, including when these patterns are unnecessary.</p>
+    <p>Practical .NET architecture tutorials, labs, runnable samples, and reference patterns for governed execution, secure applications, AI integration, and policy-driven systems, including comparisons that show when these patterns are unnecessary.</p>
     <p class="project-links">
       <a href="https://asibackbone.github.io/Learning/" aria-label="AsiBackbone Learning documentation">Documentation</a>
       <a href="https://github.com/AsiBackbone/Learning" aria-label="AsiBackbone Learning repository">Repository</a>
@@ -174,7 +174,7 @@ Neither related project is a dependency of the template. Generated applications 
   <article class="project-card">
     <span class="project-role">Add governed decisions</span>
     <h3><a href="https://asibackbone.github.io/AsiBackbone/">AsiBackbone</a></h3>
-    <p>Optional governance infrastructure: a .NET policy-control framework a host can add when operations need explicit, auditable decisions. See <a href="articles/audit-accountability-integration.md">Audit Accountability Integration</a> for the host-owned integration seams.</p>
+    <p>A .NET governance and policy-control framework for auditable decision flows: policy evaluation, auditable decision records, acknowledgment workflows, capability-based authorization, host-owned execution boundaries, and ASP.NET Core integration.</p>
     <p class="project-links">
       <a href="https://asibackbone.github.io/AsiBackbone/" aria-label="AsiBackbone documentation">Documentation</a>
       <a href="https://github.com/AsiBackbone/AsiBackbone" aria-label="AsiBackbone repository">Repository</a>

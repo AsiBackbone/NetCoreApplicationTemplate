@@ -28,6 +28,12 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
   product name in the navbar wraps on small screens instead of causing horizontal scrolling.
   `scripts/Validate-LandingPage.ps1` checks the homepage, navigation, and footer in link validation and documentation
   publishing (AsiBackbone/.github#18). Generated applications are unaffected.
+* Normalized the documentation homepage section headings to sentence case (for example, At a glance, Deployment &
+  operations, and Learn the architecture), matching the required sections and the sibling sites; heading anchors are
+  unchanged. The Learning and AsiBackbone related-project cards now use the descriptions those projects publish on
+  their own homepages, and the link to Audit Accountability Integration moves into the statement that neither related
+  project is a template dependency. `scripts/Validate-LandingPage.ps1` now rejects title-case homepage headings and
+  rewritten related-project descriptions (#627). Generated applications are unaffected.
 
 ### Fixed
 
