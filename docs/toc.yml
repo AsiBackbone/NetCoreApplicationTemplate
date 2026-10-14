@@ -1,6 +1,3 @@
-- name: Overview
-  href: index.md
-
 - name: Documentation
   items:
     - name: Template & Operations
@@ -12,11 +9,19 @@
     - name: Test Coverage
       href: coverage/
 
-- name: Resources
+- name: AsiBackbone
   items:
-    - name: Organization Home
+    - name: Organization
       href: https://asibackbone.github.io/
-    - name: Learn the Architecture
+    - name: Learning
       href: https://asibackbone.github.io/Learning/
-    - name: Repository
+    - name: Community
+      href: https://asibackbone.github.io/#community
+    - name: Framework
+      href: https://asibackbone.github.io/AsiBackbone/
+    - name: Template
+      href: index.md
+    - name: GitHub
+      href: https://github.com/AsiBackbone
+    - name: Template Repository
       href: https://github.com/AsiBackbone/NetCoreApplicationTemplate

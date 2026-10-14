@@ -66,6 +66,10 @@ jobs:
       - name: Build DocFX site
         run: dotnet tool run docfx -- docs/docfx.json
 
+      - name: Validate documentation landing page
+        shell: pwsh
+        run: ./scripts/Validate-LandingPage.ps1 -SiteDirectory ./docs/_site
+
       - name: Copy coverage report to DocFX output
         shell: pwsh
         run: |
