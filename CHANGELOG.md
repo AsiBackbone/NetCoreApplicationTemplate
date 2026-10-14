@@ -31,6 +31,11 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+* Resolved the four DocFX link warnings in a clean documentation build. The homepage links to `adr/index.md` and
+  `api/index.md` instead of bare directories, and the homepage and navbar Test Coverage links use the published
+  coverage URL, because the coverage report is copied into the site only after DocFX runs. The offline link check maps
+  that URL to its local placeholder, so the link is still validated on pull requests. The DocFX build now completes
+  with no warnings.
 * Limited DocFX API metadata generation to the production projects under `src/`. The published API reference no longer
   lists the `ProjectTemplate.Web.Tests` and `ProjectTemplate.Web.Tests.TestControllers` namespaces, and ignored
   release scaffolds under `artifacts/` can no longer add namespaces or about a thousand duplicate-member warnings to

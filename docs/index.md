@@ -122,8 +122,8 @@ These references identify the intended growth points and the behavior that shoul
 
 Repository-local design decisions remain first-class NCAT documentation because they explain why this implementation chose its concrete behavior.
 
-- [Architecture Decision Records](adr/)
-- [API Reference](api/)
+- [Architecture Decision Records](adr/index.md)
+- [API Reference](api/index.md)
 
 ## Release & Compatibility
 
@@ -132,7 +132,7 @@ Release and readiness evidence remains available after the core usage and implem
 - [Build Quality and Reproducibility](articles/build-quality.md)
 - [Container Release Publishing](articles/container-publish.md)
 - [GitHub Workflow](articles/github-workflow.md)
-- [Test Coverage](coverage/)
+- [Test Coverage](https://asibackbone.github.io/NetCoreApplicationTemplate/coverage/)
 
 ## Historical Archive
 

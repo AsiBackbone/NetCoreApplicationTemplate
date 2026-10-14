@@ -7,7 +7,7 @@
     - name: API Reference
       href: api/
     - name: Test Coverage
-      href: coverage/
+      href: https://asibackbone.github.io/NetCoreApplicationTemplate/coverage/
 
 - name: AsiBackbone
   items:
