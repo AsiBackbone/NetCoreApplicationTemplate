@@ -58,7 +58,7 @@ Database migrations are handled explicitly through EF Core CLI commands. The app
 
 ```powershell
 dotnet tool restore
-dotnet tool run docfx -- docs/docfx.json
+dotnet tool run docfx -- docs/docfx.json --warningsAsErrors
 dotnet tool run docfx -- serve docs/_site
 ```
 

@@ -140,6 +140,14 @@ jobs:
       - name: Verify formatting
         run: dotnet format ${{ env.SOLUTION_FILE }} --verify-no-changes --verbosity minimal
 
+      - name: Test strict DocFX build validator
+        shell: pwsh
+        run: ./scripts/Validate-DocFxStrictBuild.ps1 -SelfTest
+
+      - name: Validate DocFX builds fail on warnings
+        shell: pwsh
+        run: ./scripts/Validate-DocFxStrictBuild.ps1
+
       - name: Validate template content overlay
         shell: pwsh
         run: ./eng/Validate-TemplateContentOverlay.ps1

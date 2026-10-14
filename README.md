@@ -191,8 +191,10 @@ Build documentation locally:
 
 ```powershell
 dotnet tool restore
-dotnet tool run docfx -- docs/docfx.json
+dotnet tool run docfx -- docs/docfx.json --warningsAsErrors
 ```
+
+CI and publishing build DocFX with `--warningsAsErrors`, so any DocFX warning fails the build. `scripts/Validate-DocFxStrictBuild.ps1` keeps every workflow build strict.
 
 ## Repository and Generated Content
 

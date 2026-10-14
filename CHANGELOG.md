@@ -34,6 +34,11 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
   their own homepages, and the link to Audit Accountability Integration moves into the statement that neither related
   project is a template dependency. `scripts/Validate-LandingPage.ps1` now rejects title-case homepage headings and
   rewritten related-project descriptions (#627). Generated applications are unaffected.
+* The DocFX builds in link validation and documentation publishing now run with `--warningsAsErrors`, so a DocFX
+  warning fails the workflow instead of publishing a site with warnings. The new
+  `scripts/Validate-DocFxStrictBuild.ps1` runs in CI build validation and fails if any workflow DocFX build drops the
+  flag or if either workflow stops building DocFX, and the README, getting-started article, and pull-request template
+  use the same strict command (AsiBackbone/.github#20). Generated applications are unaffected.
 
 ### Fixed
 
