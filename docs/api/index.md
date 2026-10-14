@@ -2,7 +2,7 @@
 
 This section is the generated .NET API reference for NetCoreApplicationTemplate (NCAT).
 
-DocFX builds the type and member pages from the repository's current project metadata. Use the API navigation and search to inspect the public types emitted by the current documentation build.
+DocFX builds the type and member pages from the production projects under `src/`. Test projects and build artifacts are not part of the API reference. Use the API navigation and search to inspect the public types emitted by the current documentation build.
 
 ## Authority and Scope
 

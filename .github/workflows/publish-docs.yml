@@ -70,6 +70,10 @@ jobs:
         shell: pwsh
         run: ./scripts/Validate-LandingPage.ps1 -SiteDirectory ./docs/_site
 
+      - name: Validate generated API reference surface
+        shell: pwsh
+        run: ./scripts/Validate-ApiReference.ps1 -SiteDirectory ./docs/_site
+
       - name: Copy coverage report to DocFX output
         shell: pwsh
         run: |

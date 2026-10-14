@@ -31,6 +31,12 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+* Limited DocFX API metadata generation to the production projects under `src/`. The published API reference no longer
+  lists the `ProjectTemplate.Web.Tests` and `ProjectTemplate.Web.Tests.TestControllers` namespaces, and ignored
+  release scaffolds under `artifacts/` can no longer add namespaces or about a thousand duplicate-member warnings to
+  local documentation builds. `scripts/Validate-ApiReference.ps1` (with `-SelfTest`) now fails link validation and
+  documentation publishing when the API reference contains a namespace that is not declared in `src/` or is missing
+  one that is. Generated applications are unaffected.
 * Fixed the published-HTML metadata script inserting a literal `\n` instead of a line break before `</head>` when the document's line endings differ from the platform's (LF DocFX output processed on Windows). Browsers treated that text as body content, so the injected description meta tags moved into `<body>` and `\n` appeared at the top of the page. The script now matches the document's own line endings, and its self-test covers LF and CRLF documents and rejects any literal `\n`.
 * Ensured every published documentation page has page-specific search and social-preview descriptions when authored metadata is absent, and marked generated coverage reports `noindex` so search engines focus on durable documentation.
 

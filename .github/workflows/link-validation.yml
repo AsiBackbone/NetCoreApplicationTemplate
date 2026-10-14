@@ -10,6 +10,7 @@ on:
       - '**/*.md'
       - 'docs/**'
       - 'scripts/Ensure-PublishedHtmlMetadata.ps1'
+      - 'scripts/Validate-ApiReference.ps1'
       - 'scripts/Validate-LandingPage.ps1'
       - 'lychee.toml'
       - '.github/workflows/link-validation.yml'
@@ -21,6 +22,7 @@ on:
       - '**/*.md'
       - 'docs/**'
       - 'scripts/Ensure-PublishedHtmlMetadata.ps1'
+      - 'scripts/Validate-ApiReference.ps1'
       - 'scripts/Validate-LandingPage.ps1'
       - 'lychee.toml'
       - '.github/workflows/link-validation.yml'
@@ -79,38 +81,13 @@ jobs:
         shell: pwsh
         run: ./scripts/Validate-LandingPage.ps1 -SiteDirectory ./docs/_site
 
+      - name: Test API reference validator
+        shell: pwsh
+        run: ./scripts/Validate-ApiReference.ps1 -SelfTest
+
       - name: Validate generated API reference surface
         shell: pwsh
-        run: |
-          $apiRoot = "./docs/_site/api"
-          $apiIndex = Join-Path $apiRoot "index.html"
-
-          if (-not (Test-Path -LiteralPath $apiIndex -PathType Leaf)) {
-            Write-Error "Generated API landing page was not found: $apiIndex"
-            exit 1
-          }
-
-          $generatedPages = @(Get-ChildItem -LiteralPath $apiRoot -Filter "*.html" -File |
-            Where-Object { $_.Name -ne "index.html" })
-
-          if ($generatedPages.Count -eq 0) {
-            Write-Error "DocFX did not emit any generated API type/reference pages."
-            exit 1
-          }
-
-          $expectedPrefixes = @(
-            "ProjectTemplate.Infrastructure.",
-            "ProjectTemplate.Web."
-          )
-
-          foreach ($prefix in $expectedPrefixes) {
-            if (-not ($generatedPages.Name | Where-Object { $_.StartsWith($prefix, [System.StringComparison]::Ordinal) })) {
-              Write-Error "No generated API pages were found for expected prefix '$prefix'."
-              exit 1
-            }
-          }
-
-          Write-Host "Validated API landing page and $($generatedPages.Count) generated API pages."
+        run: ./scripts/Validate-ApiReference.ps1 -SiteDirectory ./docs/_site
 
       - name: Add coverage publication placeholder
         shell: pwsh
