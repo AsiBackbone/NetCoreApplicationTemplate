@@ -40,6 +40,14 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * Fixed the published-HTML metadata script inserting a literal `\n` instead of a line break before `</head>` when the document's line endings differ from the platform's (LF DocFX output processed on Windows). Browsers treated that text as body content, so the injected description meta tags moved into `<body>` and `\n` appeared at the top of the page. The script now matches the document's own line endings, and its self-test covers LF and CRLF documents and rejects any literal `\n`.
 * Ensured every published documentation page has page-specific search and social-preview descriptions when authored metadata is absent, and marked generated coverage reports `noindex` so search engines focus on durable documentation.
 
+### Security
+
+* Pinned the transitive `System.Security.Cryptography.Pkcs` dependency, which `Microsoft.Data.SqlClient` resolved to
+  9.0.11, to the patched 10.0.13 release for the .NET denial-of-service advisories CVE-2026-70162
+  ([GHSA-2fmv-rv2c-59x7](https://github.com/advisories/GHSA-2fmv-rv2c-59x7)) and CVE-2026-84008
+  ([GHSA-846f-f764-76mx](https://github.com/advisories/GHSA-846f-f764-76mx)). The pin is in the packaged
+  `Directory.Packages.props`, so generated applications restore the patched version and no longer fail NuGet audit.
+
 ## 2.11.2 - 2026-10-10
 
 ### Changed
