@@ -72,6 +72,55 @@ $requiredBuiltSectionIds = @(
     'id="design-philosophy"'
 )
 
+# Site metadata, homepage layout, and accessibility contract (AsiBackbone/.github#21).
+$siteBaseUrl = 'https://asibackbone.github.io/NetCoreApplicationTemplate/'
+$socialImageUrl = 'https://asibackbone.github.io/NetCoreApplicationTemplate/images/social-preview.png'
+$expectedHomepageTitle = 'Secure-by-Default ASP.NET Core Starting Point | .NET Core Application Template'
+$legacyBrandSpelling = 'ASI Backbone'
+$maximumDescriptionLength = 160
+
+$requiredDocFxMetadata = @(
+    '"_lang": "en"'
+    '"_appName": ".NET Core Application Template"'
+    '"_appTitle": ".NET Core Application Template"'
+    "`"_canonicalBaseUrl`": `"$siteBaseUrl`""
+    "`"_socialImageUrl`": `"$socialImageUrl`""
+    '"_socialImageAlt": "'
+    '"_structuredDataSiteName": ".NET Core Application Template"'
+    '"_structuredDataPublisherName": "AsiBackbone"'
+    '"_structuredDataPublisherUrl": "https://github.com/AsiBackbone"'
+)
+
+$requiredLayoutContent = @(
+    '<html {{#_lang}}lang="{{_lang}}"{{/_lang}}>'
+    '{{#_appTitle}} | {{_appTitle}}{{/_appTitle}}</title>'
+    '{{#_canonicalUrl}}<link rel="canonical" href="{{_canonicalUrl}}">{{/_canonicalUrl}}'
+    '<meta property="og:image" content="{{_socialImageUrl}}">'
+    '<script type="application/ld+json">{{{_structuredDataJson}}}</script>'
+    '{{^_disableToc}}<meta name="docfx:tocrel" content="{{_tocRel}}">{{/_disableToc}}'
+    '<a class="skip-link" href="#main-content">Skip to content</a>'
+    '<main class="container-xxl" id="main-content" tabindex="-1">'
+)
+
+$requiredBuiltHomepageMetadata = @(
+    '<html lang="en">'
+    "<title>$expectedHomepageTitle</title>"
+    "<link rel=`"canonical`" href=`"$siteBaseUrl`">"
+    "<meta property=`"og:url`" content=`"$siteBaseUrl`">"
+    "<meta property=`"og:image`" content=`"$socialImageUrl`">"
+    '<meta name="description" content="'
+    '<script type="application/ld+json">'
+    '<a class="skip-link" href="#main-content">Skip to content</a>'
+    '<main class="container-xxl" id="main-content" tabindex="-1">'
+)
+
+# The homepage uses the full content width: no table-of-contents sidebar or its loader.
+$forbiddenBuiltHomepageContent = @(
+    'id="tocOffcanvas"'
+    'name="docfx:tocrel"'
+    $legacyBrandSpelling
+)
+
 function Test-InOrder {
     param(
         [string]$Content,
@@ -141,6 +190,88 @@ function Test-Footer {
     }
 }
 
+function Test-DocFxMetadata {
+    param([string]$Content, [System.Collections.Generic.List[string]]$Errors)
+
+    if ($Content -notmatch '"template"\s*:\s*\[\s*"default"\s*,\s*"modern"\s*,\s*"templates"\s*\]') {
+        $Errors.Add('docs/docfx.json must apply the local "templates" override after "default" and "modern".')
+    }
+
+    foreach ($requiredText in $requiredDocFxMetadata) {
+        if (-not $Content.Contains($requiredText, [StringComparison]::Ordinal)) {
+            $Errors.Add("docs/docfx.json is missing required site metadata: $requiredText")
+        }
+    }
+
+    if ($Content.Contains($legacyBrandSpelling, [StringComparison]::Ordinal)) {
+        $Errors.Add("docs/docfx.json uses the legacy '$legacyBrandSpelling' spelling; use 'AsiBackbone' or the canonical project name.")
+    }
+}
+
+function Test-HomepageFrontMatter {
+    param([string]$Content, [System.Collections.Generic.List[string]]$Errors)
+
+    $frontMatter = [regex]::Match($Content, '\A---\r?\n(?<value>[\s\S]*?)\r?\n---')
+    if (-not $frontMatter.Success) {
+        $Errors.Add('docs/index.md must start with YAML front matter.')
+        return
+    }
+
+    $yaml = $frontMatter.Groups['value'].Value
+    if ($yaml -notmatch '(?m)^title:\s*\S') {
+        $Errors.Add('docs/index.md front matter must set a concise homepage title.')
+    }
+
+    $description = [regex]::Match($yaml, '(?m)^description:\s*(?<value>.+?)\s*$')
+    if (-not $description.Success) {
+        $Errors.Add('docs/index.md front matter must set a homepage description.')
+    }
+    else {
+        $descriptionText = $description.Groups['value'].Value.Trim('"', "'")
+        if ($descriptionText.Length -gt $maximumDescriptionLength) {
+            $Errors.Add("docs/index.md description is $($descriptionText.Length) characters; keep it to $maximumDescriptionLength or fewer.")
+        }
+    }
+
+    if ($yaml -notmatch '(?m)^_disableToc:\s*true\s*$') {
+        $Errors.Add('docs/index.md front matter must set _disableToc: true so the homepage uses the full content width.')
+    }
+}
+
+function Test-LayoutTemplate {
+    param([string]$Content, [string]$PinnedDocFxVersion, [System.Collections.Generic.List[string]]$Errors)
+
+    foreach ($requiredText in $requiredLayoutContent) {
+        if (-not $Content.Contains($requiredText, [StringComparison]::Ordinal)) {
+            $Errors.Add("docs/templates/layout/_master.tmpl is missing required markup: $requiredText")
+        }
+    }
+
+    $templateVersion = [regex]::Match($Content, 'DocFX modern template v(?<version>\d+\.\d+\.\d+)')
+    if (-not $templateVersion.Success) {
+        $Errors.Add('docs/templates/layout/_master.tmpl must name the DocFX modern template version it is based on.')
+    }
+    elseif ($PinnedDocFxVersion -and $templateVersion.Groups['version'].Value -ne $PinnedDocFxVersion) {
+        $Errors.Add("docs/templates/layout/_master.tmpl is based on DocFX v$($templateVersion.Groups['version'].Value) but .config/dotnet-tools.json pins v$PinnedDocFxVersion; re-align the override.")
+    }
+}
+
+function Get-StructuredDataNodes {
+    param([string]$Content)
+
+    $script = [regex]::Match($Content, '<script type="application/ld\+json">(?<value>[\s\S]*?)</script>')
+    if (-not $script.Success) {
+        return $null
+    }
+
+    try {
+        return @((ConvertFrom-Json -InputObject $script.Groups['value'].Value).'@graph')
+    }
+    catch {
+        return $null
+    }
+}
+
 function Test-BuiltHomepage {
     param([string]$Content, [System.Collections.Generic.List[string]]$Errors)
 
@@ -148,13 +279,68 @@ function Test-BuiltHomepage {
     if (-not $Content.Contains($designPhilosophyStatement, [StringComparison]::Ordinal)) {
         $Errors.Add('built index.html does not render the Design Philosophy statement.')
     }
+
+    foreach ($requiredText in $requiredBuiltHomepageMetadata) {
+        if (-not $Content.Contains($requiredText, [StringComparison]::Ordinal)) {
+            $Errors.Add("built index.html is missing required metadata or markup: $requiredText")
+        }
+    }
+
+    foreach ($forbiddenText in $forbiddenBuiltHomepageContent) {
+        if ($Content.Contains($forbiddenText, [StringComparison]::Ordinal)) {
+            $Errors.Add("built index.html must not contain: $forbiddenText")
+        }
+    }
+
+    $skipLinkIndex = $Content.IndexOf('<a class="skip-link"', [StringComparison]::Ordinal)
+    $headerIndex = $Content.IndexOf('<header', [StringComparison]::Ordinal)
+    if ($skipLinkIndex -ge 0 -and $headerIndex -ge 0 -and $skipLinkIndex -gt $headerIndex) {
+        $Errors.Add('built index.html must render the skip link before the header so it is the first focusable element.')
+    }
+
+    if ($Content.Contains('<script type="application/ld+json">', [StringComparison]::Ordinal)) {
+        $nodes = Get-StructuredDataNodes $Content
+        if ($null -eq $nodes) {
+            $Errors.Add('built index.html structured data is not valid JSON with an @graph.')
+        }
+        else {
+            foreach ($type in @('WebSite', 'Organization', 'WebPage')) {
+                $node = $nodes | Where-Object { $_.'@type' -eq $type } | Select-Object -First 1
+                if ($null -eq $node) {
+                    $Errors.Add("built index.html structured data is missing a $type node.")
+                }
+                elseif ($type -ne 'Organization' -and $node.url -ne $siteBaseUrl) {
+                    $Errors.Add("built index.html structured data $type url is '$($node.url)'; expected '$siteBaseUrl'.")
+                }
+            }
+        }
+    }
 }
 
 function Invoke-SelfTest {
     $validHomepage = ($requiredHomepageSections + $requiredHomepageContent) -join "`n"
     $validToc = ($ecosystemNavigation.GetEnumerator() | ForEach-Object { "    - name: $($_.Key)`n      href: $($_.Value)" }) -join "`n"
     $validFooter = '"_appFooter": "' + ($requiredFooterContent -join ' · ') + '",'
-    $validSite = ($requiredBuiltSectionIds + $designPhilosophyStatement) -join "`n"
+    $validStructuredData = '{"@context":"https://schema.org","@graph":[' +
+        "{`"@type`":`"WebSite`",`"@id`":`"$($siteBaseUrl)#website`",`"url`":`"$siteBaseUrl`"}," +
+        "{`"@type`":`"Organization`",`"@id`":`"$($siteBaseUrl)#publisher`",`"name`":`"AsiBackbone`",`"url`":`"https://github.com/AsiBackbone`"}," +
+        "{`"@type`":`"WebPage`",`"@id`":`"$($siteBaseUrl)#webpage`",`"url`":`"$siteBaseUrl`"}]}"
+    $validSite = (@(
+        '<!DOCTYPE html>'
+        '<html lang="en">'
+        "<title>$expectedHomepageTitle</title>"
+        '<meta name="description" content="A concise homepage description.">'
+        "<link rel=`"canonical`" href=`"$siteBaseUrl`">"
+        "<meta property=`"og:url`" content=`"$siteBaseUrl`">"
+        "<meta property=`"og:image`" content=`"$socialImageUrl`">"
+        "<script type=`"application/ld+json`">$validStructuredData</script>"
+        '<a class="skip-link" href="#main-content">Skip to content</a>'
+        '<header class="bg-body border-bottom"></header>'
+        '<main class="container-xxl" id="main-content" tabindex="-1">'
+    ) + $requiredBuiltSectionIds + $designPhilosophyStatement + '</main>') -join "`n"
+    $validDocFx = (@('"template": [ "default", "modern", "templates" ],') + $requiredDocFxMetadata) -join ",`n"
+    $validFrontMatter = "---`ntitle: `"Secure-by-Default ASP.NET Core Starting Point`"`ndescription: A concise homepage description.`n_disableAffix: true`n_disableToc: true`n---`n`n# Home"
+    $validLayout = (@('{{!This file is based on the DocFX modern template v2.81.0.}}') + $requiredLayoutContent) -join "`n"
     $reorderedHomepage = (@($requiredHomepageSections[0..3]) + '## Design philosophy' + '## Related projects' + $requiredHomepageContent) -join "`n"
 
     $cases = @(
@@ -168,6 +354,24 @@ function Invoke-SelfTest {
         @{ Name = 'footer without license'; Check = { param($e) Test-Footer $validFooter.Replace('LICENSE.txt', 'README.md') $e }; Pass = $false }
         @{ Name = 'valid built homepage'; Check = { param($e) Test-BuiltHomepage $validSite $e }; Pass = $true }
         @{ Name = 'built homepage missing section'; Check = { param($e) Test-BuiltHomepage $validSite.Replace('id="related-projects"', '') $e }; Pass = $false }
+        @{ Name = 'built homepage without lang'; Check = { param($e) Test-BuiltHomepage $validSite.Replace('<html lang="en">', '<html>') $e }; Pass = $false }
+        @{ Name = 'built homepage with duplicated title'; Check = { param($e) Test-BuiltHomepage $validSite.Replace("<title>$expectedHomepageTitle</title>", '<title>.NET Core Application Template Documentation | .NET Core Application Template Documentation</title>') $e }; Pass = $false }
+        @{ Name = 'built homepage without canonical'; Check = { param($e) Test-BuiltHomepage $validSite.Replace("<link rel=`"canonical`" href=`"$siteBaseUrl`">", '') $e }; Pass = $false }
+        @{ Name = 'built homepage with wrong structured-data url'; Check = { param($e) Test-BuiltHomepage $validSite.Replace("`"url`":`"$siteBaseUrl`"}]}", '"url":"https://example.com/"}]}') $e }; Pass = $false }
+        @{ Name = 'built homepage with table of contents'; Check = { param($e) Test-BuiltHomepage $validSite.Replace('<!DOCTYPE html>', '<meta name="docfx:tocrel" content="toc.html">') $e }; Pass = $false }
+        @{ Name = 'built homepage with script-only skip link'; Check = { param($e) Test-BuiltHomepage $validSite.Replace('<a class="skip-link" href="#main-content">Skip to content</a>', '') $e }; Pass = $false }
+        @{ Name = 'built homepage with legacy brand'; Check = { param($e) Test-BuiltHomepage $validSite.Replace('A concise homepage description.', "$legacyBrandSpelling documentation.") $e }; Pass = $false }
+        @{ Name = 'valid DocFX metadata'; Check = { param($e) Test-DocFxMetadata $validDocFx $e }; Pass = $true }
+        @{ Name = 'DocFX metadata without lang'; Check = { param($e) Test-DocFxMetadata $validDocFx.Replace('"_lang": "en"', '"_lang": ""') $e }; Pass = $false }
+        @{ Name = 'DocFX metadata without template override'; Check = { param($e) Test-DocFxMetadata $validDocFx.Replace(', "templates"', '') $e }; Pass = $false }
+        @{ Name = 'DocFX metadata with legacy brand'; Check = { param($e) Test-DocFxMetadata ($validDocFx + "`n`"_appTitle`": `"$legacyBrandSpelling Documentation`"") $e }; Pass = $false }
+        @{ Name = 'valid homepage front matter'; Check = { param($e) Test-HomepageFrontMatter $validFrontMatter $e }; Pass = $true }
+        @{ Name = 'front matter keeps table of contents'; Check = { param($e) Test-HomepageFrontMatter $validFrontMatter.Replace("_disableToc: true`n", '') $e }; Pass = $false }
+        @{ Name = 'front matter without title'; Check = { param($e) Test-HomepageFrontMatter $validFrontMatter.Replace("title: `"Secure-by-Default ASP.NET Core Starting Point`"`n", '') $e }; Pass = $false }
+        @{ Name = 'front matter with long description'; Check = { param($e) Test-HomepageFrontMatter $validFrontMatter.Replace('A concise homepage description.', ('x' * ($maximumDescriptionLength + 1))) $e }; Pass = $false }
+        @{ Name = 'valid layout template'; Check = { param($e) Test-LayoutTemplate $validLayout '2.81.0' $e }; Pass = $true }
+        @{ Name = 'layout template without skip link'; Check = { param($e) Test-LayoutTemplate $validLayout.Replace('<a class="skip-link" href="#main-content">Skip to content</a>', '') '2.81.0' $e }; Pass = $false }
+        @{ Name = 'layout template behind pinned DocFX'; Check = { param($e) Test-LayoutTemplate $validLayout '2.82.0' $e }; Pass = $false }
     )
 
     $failures = [System.Collections.Generic.List[string]]::new()
@@ -207,13 +411,28 @@ if ($SelfTest) {
 $errors = [System.Collections.Generic.List[string]]::new()
 
 $homepage = Read-RequiredFile (Join-Path $repoRoot 'docs/index.md') $errors
-if ($null -ne $homepage) { Test-Homepage $homepage $errors }
+if ($null -ne $homepage) {
+    Test-Homepage $homepage $errors
+    Test-HomepageFrontMatter $homepage $errors
+}
 
 $toc = Read-RequiredFile (Join-Path $repoRoot 'docs/toc.yml') $errors
 if ($null -ne $toc) { Test-Navigation $toc $errors }
 
 $docfx = Read-RequiredFile (Join-Path $repoRoot 'docs/docfx.json') $errors
-if ($null -ne $docfx) { Test-Footer $docfx $errors }
+if ($null -ne $docfx) {
+    Test-Footer $docfx $errors
+    Test-DocFxMetadata $docfx $errors
+}
+
+$pinnedDocFxVersion = $null
+$toolManifest = Read-RequiredFile (Join-Path $repoRoot '.config/dotnet-tools.json') $errors
+if ($null -ne $toolManifest) {
+    $pinnedDocFxVersion = [string](ConvertFrom-Json -InputObject $toolManifest).tools.docfx.version
+}
+
+$layout = Read-RequiredFile (Join-Path $repoRoot 'docs/templates/layout/_master.tmpl') $errors
+if ($null -ne $layout) { Test-LayoutTemplate $layout $pinnedDocFxVersion $errors }
 
 if ($SiteDirectory) {
     $siteRoot = if ([System.IO.Path]::IsPathRooted($SiteDirectory)) { $SiteDirectory } else { Join-Path $repoRoot $SiteDirectory }

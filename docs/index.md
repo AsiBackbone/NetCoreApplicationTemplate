@@ -1,6 +1,9 @@
 ---
+title: "Secure-by-Default ASP.NET Core Starting Point"
+description: Start an ASP.NET Core application with authentication, authorization, logging, telemetry, security headers, rate limiting, and EF Core data access in place.
 _disableAffix: true
 _disableBreadcrumb: true
+_disableToc: true
 ---
 
 # .NET Core Application Template Documentation
