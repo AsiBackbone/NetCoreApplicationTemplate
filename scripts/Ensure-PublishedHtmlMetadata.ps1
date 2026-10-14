@@ -136,7 +136,8 @@ function Add-ToHead {
         throw 'HTML page does not contain a closing head element.'
     }
 
-    $newline = if ($Html.Contains([Environment]::NewLine)) { [Environment]::NewLine } else { "\n" }
+    # Match the document's line endings rather than the platform's; DocFX emits LF on every OS.
+    $newline = if ($Html.Contains("`r`n")) { "`r`n" } else { "`n" }
     return $Html.Insert($closingHead.Index, "      $Markup$newline")
 }
 
@@ -258,6 +259,12 @@ function Invoke-SelfTest {
             (Join-Path $testRoot 'toc.html'),
             '<nav>Generated navigation fragment</nav>')
         [System.IO.File]::WriteAllText(
+            (Join-Path $testRoot 'lf.html'),
+            "<!doctype html>`n<html>`n  <head>`n    <title>LF page</title>`n  </head>`n  <body><article><p>Line-ending fixture with enough text to become the description.</p></article></body>`n</html>`n")
+        [System.IO.File]::WriteAllText(
+            (Join-Path $testRoot 'crlf.html'),
+            "<!doctype html>`r`n<html>`r`n  <head>`r`n    <title>CRLF page</title>`r`n  </head>`r`n  <body><article><p>Line-ending fixture with enough text to become the description.</p></article></body>`r`n</html>`r`n")
+        [System.IO.File]::WriteAllText(
             (Join-Path $testRoot 'redirect.html'),
             '<!doctype html><html><head><meta http-equiv="refresh" content="0;URL=''destination.html''"></head><body></body></html>')
 
@@ -296,6 +303,25 @@ function Invoke-SelfTest {
         if ($redirect -notmatch 'name="robots" content="noindex"' -or
             $redirect -notmatch 'content="Redirecting to the canonical documentation page\."') {
             throw 'Redirect metadata was not applied.'
+        }
+
+        $lf = [System.IO.File]::ReadAllText((Join-Path $testRoot 'lf.html'))
+        $crlf = [System.IO.File]::ReadAllText((Join-Path $testRoot 'crlf.html'))
+        foreach ($processed in @($missing, $existing, $coverage, $long, $statusFirst, $redirect, $lf, $crlf)) {
+            if ($processed.Contains('\n', [System.StringComparison]::Ordinal)) {
+                throw 'Inserted metadata contains a literal backslash-n instead of a line break.'
+            }
+        }
+        $lfHead = $lf.Substring(0, $lf.IndexOf('</head>', [System.StringComparison]::OrdinalIgnoreCase))
+        if ($lf.Contains("`r", [System.StringComparison]::Ordinal) -or
+            $lfHead -notmatch 'name="description"' -or
+            $lfHead -notmatch 'property="og:description"' -or
+            $lfHead -notmatch 'name="twitter:description"') {
+            throw 'Metadata for an LF document must stay inside the head and use LF line endings.'
+        }
+        $crlfHead = $crlf.Substring(0, $crlf.IndexOf('</head>', [System.StringComparison]::OrdinalIgnoreCase))
+        if ([regex]::IsMatch($crlf, '(?<!\r)\n') -or $crlfHead -notmatch 'name="description"') {
+            throw 'Metadata for a CRLF document must stay inside the head and use CRLF line endings.'
         }
 
         $beforeSecondRun = Get-FileHash -LiteralPath (Join-Path $testRoot 'missing.html') -Algorithm SHA256

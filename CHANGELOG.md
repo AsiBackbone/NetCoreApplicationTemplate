@@ -16,6 +16,7 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+* Fixed the published-HTML metadata script inserting a literal `\n` instead of a line break before `</head>` when the document's line endings differ from the platform's (LF DocFX output processed on Windows). Browsers treated that text as body content, so the injected description meta tags moved into `<body>` and `\n` appeared at the top of the page. The script now matches the document's own line endings, and its self-test covers LF and CRLF documents and rejects any literal `\n`.
 * Ensured every published documentation page has page-specific search and social-preview descriptions when authored metadata is absent, and marked generated coverage reports `noindex` so search engines focus on durable documentation.
 
 ## 2.11.2 - 2026-10-10
