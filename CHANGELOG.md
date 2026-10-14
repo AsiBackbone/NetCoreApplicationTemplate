@@ -14,6 +14,21 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
   transaction savepoint and isolation paths, error-page status resolution, and request classification. The new
   test files are excluded from generated scaffolds alongside the existing coverage-only tests.
 
+### Changed
+
+* Aligned the documentation homepage with the organization
+  [landing-page standard](https://github.com/AsiBackbone/.github/blob/main/LANDING-PAGE-STANDARD.md) v1.0.0. A hero
+  states what the template provides, why it exists, and when to use it; six Start here cards cover generation, first
+  run, authentication, logging, data access, and deployment; an Is the template a fit? section adds bounded "When this
+  may be unnecessary" guidance pointing to the built-in `dotnet new` templates and selective pattern adoption; and
+  Related projects and Design philosophy close the page, stating that neither Learning nor AsiBackbone is a template
+  dependency. At a Glance facts and every existing reference section are unchanged. The navbar AsiBackbone menu exposes
+  Organization, Learning, Community, Framework, Template, and GitHub, replacing Resources and the redundant Overview
+  item; the footer adds source, community, license, and archive links; every page now has a skip link; and the long
+  product name in the navbar wraps on small screens instead of causing horizontal scrolling.
+  `scripts/Validate-LandingPage.ps1` checks the homepage, navigation, and footer in link validation and documentation
+  publishing (AsiBackbone/.github#18). Generated applications are unaffected.
+
 ### Fixed
 
 * Fixed the published-HTML metadata script inserting a literal `\n` instead of a line break before `</head>` when the document's line endings differ from the platform's (LF DocFX output processed on Windows). Browsers treated that text as body content, so the injected description meta tags moved into `<body>` and `\n` appeared at the top of the page. The script now matches the document's own line endings, and its self-test covers LF and CRLF documents and rejects any literal `\n`.

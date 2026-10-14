@@ -10,6 +10,7 @@ on:
       - '**/*.md'
       - 'docs/**'
       - 'scripts/Ensure-PublishedHtmlMetadata.ps1'
+      - 'scripts/Validate-LandingPage.ps1'
       - 'lychee.toml'
       - '.github/workflows/link-validation.yml'
 
@@ -20,6 +21,7 @@ on:
       - '**/*.md'
       - 'docs/**'
       - 'scripts/Ensure-PublishedHtmlMetadata.ps1'
+      - 'scripts/Validate-LandingPage.ps1'
       - 'lychee.toml'
       - '.github/workflows/link-validation.yml'
 
@@ -68,6 +70,14 @@ jobs:
 
       - name: Build NCAT DocFX site
         run: dotnet tool run docfx -- docs/docfx.json
+
+      - name: Test documentation landing-page validator
+        shell: pwsh
+        run: ./scripts/Validate-LandingPage.ps1 -SelfTest
+
+      - name: Validate documentation landing page
+        shell: pwsh
+        run: ./scripts/Validate-LandingPage.ps1 -SiteDirectory ./docs/_site
 
       - name: Validate generated API reference surface
         shell: pwsh

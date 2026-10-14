@@ -8,3 +8,282 @@
     .navbar-brand img {
         margin-right: 0.5rem !important;
     }
+
+/* Organization landing-page components: AsiBackbone/.github LANDING-PAGE-STANDARD.md v1.0.0.
+   Adapted from AsiBackbone Learning's DocFX homepage; colors use Bootstrap theme variables so light and dark themes both work. */
+
+.skip-link {
+    position: fixed;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 1100;
+    padding: 0.65rem 1rem;
+    border-radius: 0.375rem;
+    background: var(--bs-body-bg);
+    color: var(--bs-link-color);
+    font-weight: 600;
+    box-shadow: 0 0 0 3px var(--bs-link-color);
+    transform: translateY(-150%);
+    transition: transform 120ms ease-in-out;
+}
+
+.skip-link:focus {
+    transform: translateY(0);
+}
+
+.home-hero {
+    margin: 0.75rem 0 2rem;
+    padding: clamp(1.25rem, 4vw, 2.5rem);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 1rem;
+    background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.12), transparent 65%);
+}
+
+.home-kicker {
+    margin-bottom: 0.5rem;
+    color: var(--bs-primary-text-emphasis);
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.045em;
+    text-transform: uppercase;
+}
+
+.home-summary {
+    max-width: 52rem;
+    margin-bottom: 1rem;
+    font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+    line-height: 1.55;
+}
+
+.home-why {
+    max-width: 52rem;
+    margin-bottom: 1.25rem;
+    color: var(--bs-secondary-color);
+}
+
+.home-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.home-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 9rem;
+    min-height: 2.75rem;
+    font-weight: 600;
+}
+
+/* Bootstrap's outline button keeps the light primary color in dark mode; use the theme link color for AA contrast. */
+.home-actions .btn-outline-primary {
+    --bs-btn-color: var(--bs-link-color);
+    --bs-btn-border-color: var(--bs-link-color);
+    --bs-btn-bg: var(--bs-body-bg);
+}
+
+.home-boundary {
+    max-width: 54rem;
+    margin: 1.25rem 0 0;
+    padding-top: 1rem;
+    border-top: 1px solid var(--bs-border-color);
+    font-size: 0.95rem;
+}
+
+.home-actions .btn:focus-visible,
+.entry-point:focus-visible,
+.home-boundary a:focus-visible,
+.project-card a:focus-visible,
+.fit-panel a:focus-visible,
+.philosophy-callout a:focus-visible {
+    outline: 3px solid var(--bs-link-color);
+    outline-offset: 2px;
+}
+
+.entry-point-grid,
+.fit-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 1rem 0 2rem;
+}
+
+.entry-point-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.entry-point {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.75rem;
+    color: var(--bs-body-color);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+    transition: border-color 120ms ease-in-out, box-shadow 120ms ease-in-out, transform 120ms ease-in-out;
+}
+
+.entry-point:hover,
+.entry-point:focus-visible {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0.3rem 0.9rem rgba(var(--bs-primary-rgb), 0.12);
+    color: var(--bs-body-color);
+    transform: translateY(-2px);
+}
+
+.entry-point strong {
+    color: var(--bs-link-color);
+}
+
+.entry-point span {
+    color: var(--bs-secondary-color);
+}
+
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 1rem 0 2rem;
+}
+
+.fit-panel,
+.project-card,
+.philosophy-callout {
+    min-width: 0;
+    padding: 1.25rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.75rem;
+    background: var(--bs-body-bg);
+    overflow-wrap: anywhere;
+}
+
+.fit-panel h3 {
+    margin: 0 0 0.65rem;
+    font-size: 1.1rem;
+}
+
+.fit-panel > :last-child,
+.philosophy-callout > :last-child {
+    margin-bottom: 0;
+}
+
+.fit-panel p + p {
+    color: var(--bs-secondary-color);
+}
+
+.project-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.project-card[aria-current="page"] {
+    border-color: var(--bs-primary);
+    box-shadow: inset 0 0 0 1px var(--bs-primary);
+}
+
+.project-role {
+    align-self: flex-start;
+    margin-bottom: 0.75rem;
+    padding: 0.15rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(var(--bs-primary-rgb), 0.12);
+    color: var(--bs-primary-text-emphasis);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.project-card h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.2rem;
+}
+
+.project-card h3 a {
+    color: var(--bs-body-color);
+    text-decoration: none;
+}
+
+.project-card h3 a:hover {
+    color: var(--bs-link-color);
+    text-decoration: underline;
+}
+
+.current-site {
+    display: inline-block;
+    margin-left: 0.35rem;
+    padding: 0.05rem 0.5rem;
+    border: 1px solid var(--bs-primary);
+    border-radius: 999px;
+    color: var(--bs-primary-text-emphasis);
+    font-size: 0.75rem;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+.project-card p {
+    color: var(--bs-secondary-color);
+}
+
+.project-card .project-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    margin: auto 0 0;
+    font-size: 0.95rem;
+}
+
+.philosophy-callout {
+    margin: 1rem 0 2rem;
+    border-left: 4px solid var(--bs-primary);
+}
+
+.philosophy-statement {
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+@media (max-width: 991.98px) {
+    .entry-point-grid,
+    .project-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 575.98px) {
+    /* Let the long product name wrap beside the logo so the navbar toggle stays on the same row without horizontal scrolling. */
+    .navbar-brand {
+        flex: 1 1 0;
+        min-width: 0;
+        white-space: normal;
+        line-height: 1.2;
+    }
+
+    .home-hero {
+        margin-top: 0.25rem;
+        padding: 1.1rem;
+    }
+
+    .home-actions .btn {
+        width: 100%;
+    }
+
+    .entry-point-grid,
+    .fit-grid,
+    .project-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .skip-link,
+    .entry-point {
+        transition: none;
+    }
+
+    .entry-point:hover,
+    .entry-point:focus-visible {
+        transform: none;
+    }
+}
