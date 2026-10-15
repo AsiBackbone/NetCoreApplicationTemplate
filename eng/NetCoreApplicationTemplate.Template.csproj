@@ -14,8 +14,8 @@
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageReadmeFile>PACKAGE-README.md</PackageReadmeFile>
     <PackageIcon>PACKAGE-ICON.png</PackageIcon>
-    <PackageReleaseNotes>Patch 2.11.2 release of the NetCoreApplicationTemplate dotnet new template. This backward-compatible maintenance release refreshes the pinned .NET SDK and ASP.NET Core container image digests included in generated projects and updates pinned GitHub Actions used by repository automation. The package ID, template identities, short name, supported options, public application surface, and net10.0 target remain unchanged.</PackageReleaseNotes>
-    <VersionPrefix>2.11.2</VersionPrefix>
+    <PackageReleaseNotes>Patch 2.11.3 security servicing release of the NetCoreApplicationTemplate dotnet new template. Generated projects now pin the transitive System.Security.Cryptography.Pkcs dependency to the patched 10.0.13 release for CVE-2026-70162 and CVE-2026-84008, so they restore without NuGet audit failures. The release also routes support questions to AsiBackbone organization Discussions and includes repository-only test, documentation, and citation maintenance. The package ID, template identities, short name, supported options, public application surface, and net10.0 target remain unchanged.</PackageReleaseNotes>
+    <VersionPrefix>2.11.3</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Version>$(VersionPrefix)</Version>
     <PackageType>Template</PackageType>

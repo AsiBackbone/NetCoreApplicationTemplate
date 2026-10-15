@@ -4,7 +4,7 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
-## Unreleased
+## 2.11.3 - 2026-10-15
 
 ### Added
 
@@ -40,6 +40,20 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
   flag or if either workflow stops building DocFX, and the README, getting-started article, and pull-request template
   use the same strict command (AsiBackbone/.github#20). Generated applications are unaffected.
 
+* Routed template support questions to the
+  [AsiBackbone organization Discussions](https://github.com/orgs/AsiBackbone/discussions) in the README, the packaged
+  `PACKAGE-README.md`, the support policy, and the issue-form contact links, and asked project-specific posts to name
+  `AsiBackbone/NetCoreApplicationTemplate` and the affected template version. Reproducible defects and vulnerability
+  reports keep their existing Issues and private-reporting paths.
+* Simplified `PersistenceTimestamp.NormalizeUtc` from a `switch` over `DateTimeKind` to a single conditional, removing
+  an unreachable branch that held its security-critical branch coverage below the threshold. `Local` values are still
+  converted to UTC and `Utc` and `Unspecified` values are still marked as UTC, so generated applications see no
+  behavior change.
+* Added the top-level `doi` field for the Zenodo concept DOI to `CITATION.cff`, alongside the existing DOI identifier,
+  so citation tools that read only the top-level field resolve the archive.
+* Added a GitHub Pages documentation badge to the README, published `docs/public/**` resources with the DocFX site, and
+  added navbar logo spacing to the documentation stylesheet. Generated applications are unaffected.
+
 ### Fixed
 
 * Resolved the four DocFX link warnings in a clean documentation build. The homepage links to `adr/index.md` and
@@ -55,6 +69,8 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
   one that is. Generated applications are unaffected.
 * Fixed the published-HTML metadata script inserting a literal `\n` instead of a line break before `</head>` when the document's line endings differ from the platform's (LF DocFX output processed on Windows). Browsers treated that text as body content, so the injected description meta tags moved into `<body>` and `\n` appeared at the top of the page. The script now matches the document's own line endings, and its self-test covers LF and CRLF documents and rejects any literal `\n`.
 * Ensured every published documentation page has page-specific search and social-preview descriptions when authored metadata is absent, and marked generated coverage reports `noindex` so search engines focus on durable documentation.
+* The support policy now identifies 2.11.2, rather than 2.11.1, as the latest published release while 2.11.3 is being
+  prepared.
 
 ### Security
 
@@ -63,6 +79,17 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
   ([GHSA-2fmv-rv2c-59x7](https://github.com/advisories/GHSA-2fmv-rv2c-59x7)) and CVE-2026-84008
   ([GHSA-846f-f764-76mx](https://github.com/advisories/GHSA-846f-f764-76mx)). The pin is in the packaged
   `Directory.Packages.props`, so generated applications restore the patched version and no longer fail NuGet audit.
+
+### Compatibility
+
+* This is a backward-compatible patch release focused on security servicing, with repository-only test,
+  documentation, and citation maintenance.
+* Applications generated from 2.11.2 or earlier are not modified. Because NuGet audit warnings are errors in generated
+  projects, those applications fail to build with NU1902 or NU1903 until they pin
+  `System.Security.Cryptography.Pkcs` to 10.0.13 or later and refresh their lock files; the 2.11.3 release notes
+  describe the change.
+* The package ID, template identities, short name, supported options, public application surface, container image
+  digests, and `net10.0` target remain unchanged.
 
 ## 2.11.2 - 2026-10-10
 
