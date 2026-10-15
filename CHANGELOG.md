@@ -4,6 +4,15 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
+## Unreleased
+
+### Fixed
+
+* Scoped EF Core migration files under `Data/Migrations` as generated code and suppressed `IDE0005`, `IDE0161`, 
+  and `CA1861` for those files so valid `dotnet ef migrations add` output no longer fails warnings-as-errors builds. 
+  Strict analyzer enforcement remains unchanged for application source code.
+
+
 ## 2.11.4 - 2026-10-15
 
 ### Security
