@@ -268,3 +268,10 @@ generated_code = true
 # None. A future repository-only exception must target paths that cannot match
 # generated application content and must not be added to sibling baselines
 # without review.
+
+[**/Data/Migrations/*.cs]
+generated_code = true
+
+dotnet_diagnostic.IDE0005.severity = none
+dotnet_diagnostic.IDE0161.severity = none
+dotnet_diagnostic.CA1861.severity = none
