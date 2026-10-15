@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it using the metadata below."
 title: "NetCoreApplicationTemplate"
-version: "2.11.3"
+version: "2.11.4"
 date-released: "2026-10-15"
 repository-code: "https://github.com/AsiBackbone/NetCoreApplicationTemplate"
 url: "https://AsiBackbone.github.io/NetCoreApplicationTemplate/"

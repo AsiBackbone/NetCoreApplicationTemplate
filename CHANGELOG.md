@@ -4,6 +4,37 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
+## 2.11.4 - 2026-10-15
+
+### Security
+
+* Refreshed the pinned ASP.NET Core 10.0 runtime image digest included in generated projects to the image that
+  carries the 10.0.13 .NET and ASP.NET Core runtimes. The digest pinned by 2.11.3 still carried the 10.0.12 runtimes,
+  which the release container scan reported with fixed high and critical vulnerabilities: CVE-2026-70188 and
+  CVE-2026-88092 (critical) and CVE-2026-70175, CVE-2026-70181, CVE-2026-70183, CVE-2026-70186, and CVE-2026-96236
+  (high) in the ASP.NET Core runtime, and CVE-2026-58280, CVE-2026-69651, CVE-2026-96225, CVE-2026-96231, and
+  CVE-2026-96233 (high) in the .NET runtime. Every finding is fixed in 10.0.13.
+
+### Changed
+
+* Moved the generated projects' Docker build stage from the pinned .NET SDK 10.0.401 image to the pinned .NET SDK
+  10.0.402 image, the current 10.0.4xx feature-band image.
+
+### Fixed
+
+* The support policy now identifies 2.11.3, rather than 2.11.2, as the latest published release while 2.11.4 is being
+  prepared.
+
+### Compatibility
+
+* This is a backward-compatible patch release limited to container image servicing.
+* 2.11.3 was published to NuGet, but its stable release stopped at the container vulnerability gate, so no signed
+  2.11.3 container image or container release evidence was published. 2.11.4 supersedes it.
+* Applications generated from 2.11.3 or earlier are not modified. They keep their previously pinned image digests
+  until their maintainers update the `FROM` lines; the 2.11.4 release notes give the new digests.
+* The package ID, template identities, short name, supported options, public application surface, and `net10.0`
+  target remain unchanged.
+
 ## 2.11.3 - 2026-10-15
 
 ### Added

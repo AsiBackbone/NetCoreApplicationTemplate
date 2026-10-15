@@ -14,8 +14,8 @@
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageReadmeFile>PACKAGE-README.md</PackageReadmeFile>
     <PackageIcon>PACKAGE-ICON.png</PackageIcon>
-    <PackageReleaseNotes>Patch 2.11.3 security servicing release of the NetCoreApplicationTemplate dotnet new template. Generated projects now pin the transitive System.Security.Cryptography.Pkcs dependency to the patched 10.0.13 release for CVE-2026-70162 and CVE-2026-84008, so they restore without NuGet audit failures. The release also routes support questions to AsiBackbone organization Discussions and includes repository-only test, documentation, and citation maintenance. The package ID, template identities, short name, supported options, public application surface, and net10.0 target remain unchanged.</PackageReleaseNotes>
-    <VersionPrefix>2.11.3</VersionPrefix>
+    <PackageReleaseNotes>Patch 2.11.4 security servicing release of the NetCoreApplicationTemplate dotnet new template. Generated projects now build on the .NET SDK 10.0.402 image and run on an ASP.NET Core 10.0 runtime image that carries the 10.0.13 runtime, which fixes the high and critical .NET and ASP.NET Core runtime vulnerabilities present in the 10.0.12 runtime image pinned by 2.11.3. 2.11.4 supersedes 2.11.3, whose container image was not published. The package ID, template identities, short name, supported options, public application surface, and net10.0 target remain unchanged.</PackageReleaseNotes>
+    <VersionPrefix>2.11.4</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Version>$(VersionPrefix)</Version>
     <PackageType>Template</PackageType>
