@@ -181,6 +181,15 @@ Neither related project is a dependency of the template. Generated applications 
       <a href="https://doi.org/10.5281/zenodo.20546032" aria-label="AsiBackbone archive (DOI)">Archive (DOI)</a>
     </p>
   </article>
+  <article class="project-card">
+    <span class="project-role">Follow the integration</span>
+    <h3><a href="https://asibackbone.github.io/ReferenceApplication/">AsiBackbone Reference Application</a></h3>
+    <p>An NCAT-generated ASP.NET Core host that records the step-by-step integration of AsiBackbone, with host-specific API documentation and runnable governance examples added as the walkthrough progresses.</p>
+    <p class="project-links">
+      <a href="https://asibackbone.github.io/ReferenceApplication/" aria-label="AsiBackbone Reference Application documentation">Documentation</a>
+      <a href="https://github.com/AsiBackbone/ReferenceApplication" aria-label="AsiBackbone Reference Application repository">Repository</a>
+    </p>
+  </article>
 </div>
 
 ## Design philosophy

@@ -1,11 +1,12 @@
 # Documentation Ownership
 
-`AsiBackbone/NetCoreApplicationTemplate` (NCAT) and `AsiBackbone/Learning` have complementary documentation roles. The goal is to keep NCAT precise about the implementation consumers actually run while keeping reusable architecture education in one canonical educational repository.
+`AsiBackbone/NetCoreApplicationTemplate` (NCAT), `AsiBackbone/Learning`, and the downstream `AsiBackbone/ReferenceApplication` have complementary documentation roles. The goal is to keep NCAT precise about the implementation consumers actually run, keep reusable architecture education in one canonical educational repository, and keep the concrete NCAT-to-AsiBackbone integration record separate from both.
 
 ## Ownership Contract
 
 - **ASI Backbone Learning** is the canonical educational source for organization-level software architecture education, ASP.NET Core teaching, terminology lineage, tutorials, tradeoff analysis, architectural comparisons, labs, and general secure-by-default guidance.
 - **NCAT** is authoritative for the concrete template implementation: installation, template options, generated structure, runtime defaults, configuration, authentication and authorization behavior, exact middleware order, data-access implementation, deployment, extensibility, API/reference surface, ADRs, releases, compatibility, migration guidance, and operational behavior.
+- **Reference Application** is authoritative only for its own generated host, host-specific API reference, and ordered walkthrough showing how that host evolves from an NCAT baseline toward AsiBackbone integration. It does not redefine NCAT template/runtime behavior or general architecture guidance.
 
 This separation does not reduce NCAT documentation. NCAT should remain detailed wherever a consumer needs to know **what the template does, what a specific version guarantees, or why this repository made a local architectural choice**.
 
@@ -33,6 +34,8 @@ Learning can explain the broader principle and alternatives, and it can use NCAT
 | Deployment and runtime behavior | NCAT |
 | Repository ADRs documenting local decisions | NCAT |
 | Release, compatibility, migration, and quality evidence | NCAT |
+| Ordered NCAT-to-AsiBackbone integration walkthrough | ReferenceApplication |
+| ReferenceApplication host-specific API and implementation record | ReferenceApplication |
 
 ## How to Handle Topics That Span Both Repositories
 
@@ -40,8 +43,9 @@ Some topics naturally need both a general lesson and an implementation reference
 
 1. **Learning teaches the reusable idea.** Explain the principle, terminology, alternatives, tradeoffs, and cases where another design may be preferable.
 2. **NCAT documents the concrete choice.** State the exact generated behavior, configuration, ordering, defaults, limitations, and operational consequences for this repository.
-3. **Cross-link rather than duplicate.** NCAT can summarize the local rationale and point to Learning for the broader lesson. Learning can point to NCAT as a fuller working specimen.
-4. **Keep runtime authority local.** If an educational explanation and the current NCAT implementation ever diverge, NCAT source, generated output, versioned release artifacts, local ADRs, and NCAT implementation documentation define NCAT behavior.
+3. **ReferenceApplication records the concrete integration.** Use it when the question is how an NCAT-generated host was changed, step by step, to adopt AsiBackbone.
+4. **Cross-link rather than duplicate.** NCAT can summarize the local rationale and point to Learning for the broader lesson or ReferenceApplication for the downstream integration walkthrough. Learning and ReferenceApplication should point back to NCAT for authoritative template behavior.
+5. **Keep runtime authority local.** If an educational or ReferenceApplication explanation and the current NCAT implementation ever diverge, NCAT source, generated output, versioned release artifacts, local ADRs, and NCAT implementation documentation define NCAT behavior.
 
 Examples:
 
@@ -106,5 +110,7 @@ Key NCAT continuity surfaces include the [ADR index](../adr/index.md), [v1.0 mig
 - [ASI Backbone Learning — published educational site](https://asibackbone.github.io/Learning/)
 - [AsiBackbone/Learning — source repository](https://github.com/AsiBackbone/Learning)
 - [NetCoreApplicationTemplate — source repository](https://github.com/AsiBackbone/NetCoreApplicationTemplate)
+- [AsiBackbone Reference Application — integration walkthrough](https://asibackbone.github.io/ReferenceApplication/)
+- [AsiBackbone/ReferenceApplication — source repository](https://github.com/AsiBackbone/ReferenceApplication)
 
 This ownership contract concerns documentation and information architecture only. It does not change NCAT runtime, template, package, public-surface, or release behavior.
