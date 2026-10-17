@@ -4,14 +4,34 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
-## Unreleased
+## 2.11.5 - 2026-10-17
+
+### Changed
+
+* Updated the repository test stack to xUnit.net 4.0.2 and xunit.runner.visualstudio 4.0.1, including the locked
+  dependency graph, without changing generated application dependencies.
+* Updated pinned GitHub Actions used by repository automation, including CodeQL 4.39.0.
+* Added the ReferenceApplication integration walkthrough to the documentation ownership contract, site navigation,
+  and Related projects section. Generated applications are unaffected.
+* Updated 17 centrally managed dependencies and refreshed the Infrastructure, Web, and test-project lock files:
+  .NET, ASP.NET Core, and EF Core servicing packages move from 10.0.12 to 10.0.13;
+  Microsoft.NET.Test.Sdk moves from 18.10.1 to 18.11.0; Microsoft.SourceLink.GitHub moves from 10.0.401 to
+  10.0.402; and the four OpenTelemetry packages move to 1.20.0.
 
 ### Fixed
 
-* Scoped EF Core migration files under `Data/Migrations` as generated code and suppressed `IDE0005`, `IDE0161`, 
-  and `CA1861` for those files so valid `dotnet ef migrations add` output no longer fails warnings-as-errors builds. 
+* Scoped EF Core migration files under `Data/Migrations` as generated code and suppressed `IDE0005`, `IDE0161`,
+  and `CA1861` for those files so valid `dotnet ef migrations add` output no longer fails warnings-as-errors builds.
   Strict analyzer enforcement remains unchanged for application source code.
+* Updated the support policy's published-release marker from 2.11.3 to 2.11.4 while 2.11.5 is being prepared.
 
+### Compatibility
+
+* This is a backward-compatible patch release for the feature-complete 2.x line.
+* Existing generated applications are not modified. Consumers can copy the scoped migration analyzer configuration
+  into an existing application if generated EF Core migrations fail its warnings-as-errors build.
+* The package ID, template identities, short name, supported options, public application surface, and `net10.0`
+  target remain unchanged. Projects generated from 2.11.5 receive the dependency servicing described above.
 
 ## 2.11.4 - 2026-10-15
 
