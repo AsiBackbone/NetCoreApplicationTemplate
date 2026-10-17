@@ -14,8 +14,8 @@
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageReadmeFile>PACKAGE-README.md</PackageReadmeFile>
     <PackageIcon>PACKAGE-ICON.png</PackageIcon>
-    <PackageReleaseNotes>Patch 2.11.4 security servicing release of the NetCoreApplicationTemplate dotnet new template. Generated projects now build on the .NET SDK 10.0.402 image and run on an ASP.NET Core 10.0 runtime image that carries the 10.0.13 runtime, which fixes the high and critical .NET and ASP.NET Core runtime vulnerabilities present in the 10.0.12 runtime image pinned by 2.11.3. 2.11.4 supersedes 2.11.3, whose container image was not published. The package ID, template identities, short name, supported options, public application surface, and net10.0 target remain unchanged.</PackageReleaseNotes>
-    <VersionPrefix>2.11.4</VersionPrefix>
+    <PackageReleaseNotes>Patch 2.11.5 maintenance release of the NetCoreApplicationTemplate dotnet new template. EF Core migration files generated under Data/Migrations are now treated as generated code and no longer fail warnings-as-errors builds on IDE0005, IDE0161, or CA1861. The release also includes test dependency and repository workflow servicing plus documentation links to the ReferenceApplication integration walkthrough. The package ID, template identities, short name, supported options, public application surface, and net10.0 target remain unchanged.</PackageReleaseNotes>
+    <VersionPrefix>2.11.5</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Version>$(VersionPrefix)</Version>
     <PackageType>Template</PackageType>

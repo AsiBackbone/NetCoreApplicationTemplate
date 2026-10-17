@@ -77,6 +77,8 @@
 
 - name: Release & Compatibility
   items:
+    - name: 2.11.5 Release Notes
+      href: release-notes-2115.md
     - name: 2.11.4 Release Notes
       href: release-notes-2114.md
     - name: 2.11.3 Release Notes
