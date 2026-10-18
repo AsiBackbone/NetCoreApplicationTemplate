@@ -100,8 +100,14 @@ The default file sink writes to `Logs/application-web-.log`, rolls daily, keeps 
 The application logs any exceptions that occur during the bootstrapping process or while configuring the middleware pipeline:
 
 ```csharp
-Log.Fatal(ex, "ProjectTemplate.Web application terminated unexpectedly");
+catch (Exception ex) when (ex is not HostAbortedException)
+{
+    Log.Fatal(ex, "ProjectTemplate.Web application terminated unexpectedly");
+    throw;
+}
 ```
+
+The filter excludes `HostAbortedException`, which EF Core design-time commands such as `dotnet ef migrations add` throw on purpose to stop the host after it is built. Those commands therefore do not report a fatal error, while genuine startup failures are still logged as fatal and rethrown.
 
 ## Structured Request Logging
 

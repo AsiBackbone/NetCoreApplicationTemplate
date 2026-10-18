@@ -4,6 +4,21 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
+## Unreleased
+
+### Fixed
+
+* Stopped generated applications from logging a spurious fatal "application terminated unexpectedly" error with a
+  `HostAbortedException` stack trace whenever an EF Core design-time command such as `dotnet ef migrations add`,
+  `dotnet ef migrations list`, or `dotnet ef database update` runs. The bootstrap `catch` in `Program.cs` now excludes
+  `HostAbortedException`, which those commands throw on purpose to stop the host after it is built. Genuine startup
+  failures are still logged as fatal and rethrown.
+
+### Compatibility
+
+* Existing generated applications are not modified. Consumers can apply the same one-line filter,
+  `catch (Exception ex) when (ex is not HostAbortedException)`, to their own `Program.cs`.
+
 ## 2.11.5 - 2026-10-17
 
 ### Changed
