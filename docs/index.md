@@ -152,15 +152,6 @@ Learning provides broader educational context; it does **not** define NCAT runti
 Neither related project is a dependency of the template. Generated applications do not reference any AsiBackbone package. If a host later adopts AsiBackbone, [Audit Accountability Integration](articles/audit-accountability-integration.md) describes the host-owned integration seams.
 
 <div class="project-grid">
-  <article class="project-card" aria-current="page">
-    <span class="project-role">Start a secure application</span>
-    <h3>.NET Core Application Template <span class="current-site">Current site</span></h3>
-    <p>A secure-by-default ASP.NET Core application template with authentication and authorization, structured logging, security headers, rate limiting, EF Core data access, reverse proxy support, and Problem Details error handling.</p>
-    <p class="project-links">
-      <a href="https://github.com/AsiBackbone/NetCoreApplicationTemplate" aria-label=".NET Core Application Template repository">Repository</a>
-      <a href="https://doi.org/10.5281/zenodo.20373042" aria-label=".NET Core Application Template archive (DOI)">Archive (DOI)</a>
-    </p>
-  </article>
   <article class="project-card">
     <span class="project-role">Learn the patterns</span>
     <h3><a href="https://asibackbone.github.io/Learning/">AsiBackbone Learning</a></h3>
@@ -179,6 +170,15 @@ Neither related project is a dependency of the template. Generated applications 
       <a href="https://asibackbone.github.io/AsiBackbone/" aria-label="AsiBackbone documentation">Documentation</a>
       <a href="https://github.com/AsiBackbone/AsiBackbone" aria-label="AsiBackbone repository">Repository</a>
       <a href="https://doi.org/10.5281/zenodo.20546032" aria-label="AsiBackbone archive (DOI)">Archive (DOI)</a>
+    </p>
+  </article>
+  <article class="project-card" aria-current="page">
+    <span class="project-role">Start a secure application</span>
+    <h3>.NET Core Application Template <span class="current-site">Current site</span></h3>
+    <p>A secure-by-default ASP.NET Core application template with authentication and authorization, structured logging, security headers, rate limiting, EF Core data access, reverse proxy support, and Problem Details error handling.</p>
+    <p class="project-links">
+      <a href="https://github.com/AsiBackbone/NetCoreApplicationTemplate" aria-label=".NET Core Application Template repository">Repository</a>
+      <a href="https://doi.org/10.5281/zenodo.20373042" aria-label=".NET Core Application Template archive (DOI)">Archive (DOI)</a>
     </p>
   </article>
   <article class="project-card">
