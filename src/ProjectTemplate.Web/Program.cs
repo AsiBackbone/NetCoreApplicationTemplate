@@ -54,7 +54,7 @@ try
     Log.Information("Running ProjectTemplate.Web application");
     app.Run();
 }
-catch (Exception ex)
+catch (Exception ex) when (ex is not HostAbortedException)
 {
     Log.Fatal(ex, "ProjectTemplate.Web application terminated unexpectedly");
     throw;
