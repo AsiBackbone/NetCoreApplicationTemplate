@@ -11,7 +11,9 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * Scoped EF Core migration files under `Data/Migrations` as generated code and suppressed `IDE0005`, `IDE0161`, 
   and `CA1861` for those files so valid `dotnet ef migrations add` output no longer fails warnings-as-errors builds. 
   Strict analyzer enforcement remains unchanged for application source code.
-
+* Aligned the Development Serilog rolling-file sink with the documented generated-application default,
+  `Logs/application-web-.log`. Freshly scaffolded applications now use the same file name in Development as the base
+  settings, and the Development configuration example matches the generated settings.
 
 ## 2.11.4 - 2026-10-15
 
