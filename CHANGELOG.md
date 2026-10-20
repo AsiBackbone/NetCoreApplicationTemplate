@@ -8,6 +8,9 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+* Aligned the Development Serilog rolling-file sink with the documented generated-application default,
+  `Logs/application-web-.log`. Freshly scaffolded applications now use the same file name in Development as the base
+  settings, and the Development configuration example matches the generated settings.
 * Stopped generated applications from logging a spurious fatal "application terminated unexpectedly" error with a
   `HostAbortedException` stack trace whenever an EF Core design-time command such as `dotnet ef migrations add`,
   `dotnet ef migrations list`, or `dotnet ef database update` runs. The bootstrap `catch` in `Program.cs` now excludes
