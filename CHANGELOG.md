@@ -8,12 +8,48 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
-* Scoped EF Core migration files under `Data/Migrations` as generated code and suppressed `IDE0005`, `IDE0161`, 
-  and `CA1861` for those files so valid `dotnet ef migrations add` output no longer fails warnings-as-errors builds. 
-  Strict analyzer enforcement remains unchanged for application source code.
 * Aligned the Development Serilog rolling-file sink with the documented generated-application default,
   `Logs/application-web-.log`. Freshly scaffolded applications now use the same file name in Development as the base
   settings, and the Development configuration example matches the generated settings.
+* Stopped generated applications from logging a spurious fatal "application terminated unexpectedly" error with a
+  `HostAbortedException` stack trace whenever an EF Core design-time command such as `dotnet ef migrations add`,
+  `dotnet ef migrations list`, or `dotnet ef database update` runs. The bootstrap `catch` in `Program.cs` now excludes
+  `HostAbortedException`, which those commands throw on purpose to stop the host after it is built. Genuine startup
+  failures are still logged as fatal and rethrown.
+
+### Compatibility
+
+* Existing generated applications are not modified. Consumers can apply the same one-line filter,
+  `catch (Exception ex) when (ex is not HostAbortedException)`, to their own `Program.cs`.
+
+## 2.11.5 - 2026-10-17
+
+### Changed
+
+* Updated the repository test stack to xUnit.net 4.0.2 and xunit.runner.visualstudio 4.0.1, including the locked
+  dependency graph, without changing generated application dependencies.
+* Updated pinned GitHub Actions used by repository automation, including CodeQL 4.39.0.
+* Added the ReferenceApplication integration walkthrough to the documentation ownership contract, site navigation,
+  and Related projects section. Generated applications are unaffected.
+* Updated 17 centrally managed dependencies and refreshed the Infrastructure, Web, and test-project lock files:
+  .NET, ASP.NET Core, and EF Core servicing packages move from 10.0.12 to 10.0.13;
+  Microsoft.NET.Test.Sdk moves from 18.10.1 to 18.11.0; Microsoft.SourceLink.GitHub moves from 10.0.401 to
+  10.0.402; and the four OpenTelemetry packages move to 1.20.0.
+
+### Fixed
+
+* Scoped EF Core migration files under `Data/Migrations` as generated code and suppressed `IDE0005`, `IDE0161`,
+  and `CA1861` for those files so valid `dotnet ef migrations add` output no longer fails warnings-as-errors builds.
+  Strict analyzer enforcement remains unchanged for application source code.
+* Updated the support policy's published-release marker from 2.11.3 to 2.11.4 while 2.11.5 is being prepared.
+
+### Compatibility
+
+* This is a backward-compatible patch release for the feature-complete 2.x line.
+* Existing generated applications are not modified. Consumers can copy the scoped migration analyzer configuration
+  into an existing application if generated EF Core migrations fail its warnings-as-errors build.
+* The package ID, template identities, short name, supported options, public application surface, and `net10.0`
+  target remain unchanged. Projects generated from 2.11.5 receive the dependency servicing described above.
 
 ## 2.11.4 - 2026-10-15
 
