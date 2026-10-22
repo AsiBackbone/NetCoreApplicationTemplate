@@ -169,6 +169,42 @@ public sealed class RepositoryLintTests
         Assert.Contains($"$(TemplateRepositoryRoot)/{contentRoot}/**/*.db-wal", excludedPaths);
     }
 
+    /// <summary>
+    /// Verifies that generated template source keeps audit reconciliation opt-in and does not report an empty audit category as healthy.
+    /// </summary>
+    [Fact]
+    public void TemplateSource_AuditIntegrityEndpointRequiresRegisteredAuditCheck()
+    {
+        string solutionRoot = GetSolutionRoot();
+        string healthCheckExtensionsPath = Path.Combine(
+            solutionRoot,
+            "src",
+            "ProjectTemplate.Web",
+            "Extensions",
+            "HealthCheckExtensions.cs");
+        string programPath = Path.Combine(
+            solutionRoot,
+            "src",
+            "ProjectTemplate.Web",
+            "Program.cs");
+
+        string healthCheckExtensions = File.ReadAllText(healthCheckExtensionsPath);
+        string program = File.ReadAllText(programPath);
+
+        Assert.Contains(
+            "HealthCheckServiceOptions",
+            healthCheckExtensions,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "NotConfigured",
+            healthCheckExtensions,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "AddApplicationAuditReconciliation(",
+            program,
+            StringComparison.Ordinal);
+    }
+
     private static string GetSolutionRoot()
     {
         DirectoryInfo? directory = new(AppContext.BaseDirectory);

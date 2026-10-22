@@ -4,6 +4,10 @@ NCAT can optionally reconcile retained `AuditRecord` batches with durable audit-
 
 Reconciliation is an operational control, not a replacement for transactional persistence. It detects evidence relationships that are missing, inconsistent, altered, or stalled after the original transaction has completed.
 
+Reconciliation is not registered by the default application composition. The `/health/audit-integrity` route is still mapped so its operational URL remains stable, but when no `audit`-tagged health check is registered it returns HTTP `503` with the body `NotConfigured`. This prevents an empty health-check selection from being interpreted as proof that audit evidence is healthy.
+
+Registering reconciliation replaces that not-configured response with the normal audit-integrity health evaluation. Registration remains application-owned and does not occur automatically merely to make the endpoint available.
+
 ## Registration
 
 Register the durable audit-completion outbox before reconciliation when the application uses local completion delivery:
@@ -63,7 +67,10 @@ Finding keys are deterministic for a reason, mutation batch, and destination. Re
 
 ## Health checks
 
-Registration adds `application-audit-integrity` with the tags `audit` and `integrity`. The `/health/audit-integrity` endpoint runs the check, and `/health` includes it with every other registered check. It is deliberately not tagged `ready`: an integrity finding needs operator review, and a readiness failure would take every replica out of load balancing at the same time. Alert on `/health/audit-integrity` rather than routing traffic on it.
+Registration adds `application-audit-integrity` with the tags `audit` and `integrity`. The `/health/audit-integrity` endpoint runs the check, and `/health` includes it with every other registered check.
+
+If reconciliation, or another `audit`-tagged health check, has not been registered, `/health/audit-integrity` returns HTTP `503` with `NotConfigured`. This state means no audit-integrity evaluation ran; it must not be interpreted as either a successful or failed reconciliation result. Once an audit-tagged check is registered, the endpoint reports its normal health status. The audit check is deliberately not tagged `ready`: an integrity finding needs operator review, and a readiness failure would take every replica out of load balancing at the same time. Alert on `/health/audit-integrity` rather than routing traffic on it.
+
 
 The check returns:
 

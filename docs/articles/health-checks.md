@@ -31,7 +31,7 @@ app.MapApplicationHealthChecks();
 | `/health` | General application health endpoint. |
 | `/health/ready` | Readiness endpoint intended for dependency-aware checks such as database, cache, or external service availability. |
 | `/health/live` | Liveness endpoint intended to verify that the application process can respond. |
-| `/health/audit-integrity` | Audit integrity endpoint. Runs only checks tagged `audit`, such as the optional audit reconciliation check. |
+| `/health/audit-integrity` | Audit integrity endpoint. Runs checks tagged `audit`; returns `503 NotConfigured` when no audit-tagged check is registered. |
 
 When EF Core data access is enabled, readiness includes the `application-database` check, which reports whether the application database accepts connections. The check is tagged `ready` and `database` and is registered only when the data access provider is not `None`. For file-backed SQLite, the check verifies that the configured database file already exists before opening the connection; it never creates a missing database as a side effect of readiness. Apply migrations before expecting a local instance to report ready.
 
@@ -47,7 +47,12 @@ The database readiness check can be turned off when another component already ow
 
 The template does not add cache, queue, or external-service readiness checks. Consuming applications must register any additional tagged dependency checks that define production readiness for their service.
 
-Audit integrity is intentionally kept out of readiness. An integrity finding needs operator review, but it does not stop an instance from serving traffic, and a failing readiness check would remove every replica from load balancing at the same moment. Alert on `/health/audit-integrity` instead. That endpoint returns `200` for `Healthy` and `Degraded` and `503` for `Unhealthy`. Because `/health` runs every registered check, it also reflects audit integrity; do not use `/health` as a load-balancer readiness probe.
+Audit integrity is intentionally kept out of readiness. An integrity finding needs operator review, but it does not stop an instance from serving traffic, and a failing readiness check would remove every replica from load balancing at the same moment.
+
+Audit reconciliation is optional and application-owned. A default generated application does not register an audit-integrity health check. The `/health/audit-integrity` route remains stable in that case, but returns HTTP `503` with the response body `NotConfigured` rather than reporting `Healthy` without evaluating audit integrity.
+
+After an application registers an audit-tagged check, such as by calling `AddApplicationAuditReconciliation(...)`, `/health/audit-integrity` uses the normal health-check contract: `200` for `Healthy` and `Degraded`, and `503` for `Unhealthy`. Alert on this endpoint rather than routing normal traffic on it. Because `/health` runs every registered check, it also reflects audit integrity once one is registered; do not use `/health` as a load-balancer readiness probe.
+
 
 ## Access and Deployment Boundary
 
