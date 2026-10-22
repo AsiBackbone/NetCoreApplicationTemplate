@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
 using ProjectTemplate.Web.HealthChecks;
 
 namespace ProjectTemplate.Web.Extensions;
@@ -41,11 +43,26 @@ public static class HealthCheckExtensions
         })
         .AllowAnonymous();
 
-        app.MapHealthChecks("/health/audit-integrity", new HealthCheckOptions
+        HealthCheckServiceOptions healthCheckServiceOptions =
+            app.Services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value;
+        bool hasAuditChecks = healthCheckServiceOptions.Registrations
+            .Any(registration => registration.Tags.Contains(ApplicationHealthCheckTags.Audit));
+
+        if (hasAuditChecks)
         {
-            Predicate = healthCheck => healthCheck.Tags.Contains(ApplicationHealthCheckTags.Audit)
-        })
-        .AllowAnonymous();
+            app.MapHealthChecks("/health/audit-integrity", new HealthCheckOptions
+            {
+                Predicate = healthCheck => healthCheck.Tags.Contains(ApplicationHealthCheckTags.Audit)
+            })
+            .AllowAnonymous();
+        }
+        else
+        {
+            app.MapGet(
+                "/health/audit-integrity",
+                () => Results.Text("NotConfigured", statusCode: StatusCodes.Status503ServiceUnavailable))
+                .AllowAnonymous();
+        }
 
         app.MapHealthChecks("/health/live", new HealthCheckOptions
         {

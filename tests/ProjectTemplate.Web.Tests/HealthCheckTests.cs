@@ -105,14 +105,40 @@ public sealed class HealthCheckTests
     }
 
     /// <summary>
-    /// Verifies that the audit health endpoint is mapped and reports healthy when no audit checks are registered.
+    /// Verifies that the audit health endpoint reports an explicit unavailable state when no audit checks are registered.
     /// </summary>
     /// <returns>A task that represents the asynchronous test operation.</returns>
     [Fact]
-    public async Task HealthAuditEndpoint_WithoutAuditChecks_ReturnsHealthy()
+    public async Task HealthAuditEndpoint_WithoutAuditChecks_ReturnsNotConfigured()
     {
         using ApplicationWebApplicationFactory factory = CreateFactory();
         using HttpClient client = factory.CreateHttpsClient();
+
+        using HttpResponseMessage response = await client.GetAsync("/health/audit-integrity", TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+
+        string body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal("NotConfigured", body);
+    }
+
+    /// <summary>
+    /// Verifies that a registered healthy audit-tagged check restores the normal health-check contract.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous test operation.</returns>
+    [Fact]
+    public async Task HealthAuditEndpoint_WithHealthyAuditCheck_ReturnsHealthy()
+    {
+        using ApplicationWebApplicationFactory factory = CreateFactory();
+        using WebApplicationFactory<Program> taggedFactory = factory.WithWebHostBuilder(builder =>
+            builder.ConfigureServices(services => services
+                .AddHealthChecks()
+                .AddCheck(
+                    "test-audit-healthy",
+                    () => HealthCheckResult.Healthy(),
+                    tags: [ApplicationHealthCheckTags.Audit])));
+        using HttpClient client = taggedFactory.CreateHttpsClient();
 
         using HttpResponseMessage response = await client.GetAsync("/health/audit-integrity", TestContext.Current.CancellationToken);
 
@@ -136,7 +162,7 @@ public sealed class HealthCheckTests
 
         using HttpResponseMessage response = await client.GetAsync("/health/audit-integrity", TestContext.Current.CancellationToken);
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
         Assert.True(response.Headers.Contains("X-Content-Type-Options"));
         Assert.False(response.Headers.Contains("X-Frame-Options"));
         Assert.False(response.Headers.Contains("Content-Security-Policy"));
@@ -152,7 +178,7 @@ public sealed class HealthCheckTests
     /// <param name="auditIntegrityStatusCode">The expected <c>/health/audit-integrity</c> status code.</param>
     /// <returns>A task that represents the asynchronous test operation.</returns>
     [Theory]
-    [InlineData(ApplicationHealthCheckTags.Ready, HttpStatusCode.ServiceUnavailable, HttpStatusCode.OK)]
+    [InlineData(ApplicationHealthCheckTags.Ready, HttpStatusCode.ServiceUnavailable, HttpStatusCode.ServiceUnavailable)]
     [InlineData(ApplicationHealthCheckTags.Audit, HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable)]
     public async Task TaggedHealthEndpoints_RunOnlyChecksWithTheirTag(
         string unhealthyCheckTag,
