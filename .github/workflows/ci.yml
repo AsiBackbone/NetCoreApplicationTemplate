@@ -109,7 +109,7 @@ jobs:
 
     steps:
       - name: Harden the runner
-        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
         with:
           egress-policy: ${{ env.EGRESS_POLICY }}
           allowed-endpoints: ${{ env.ALLOWED_ENDPOINTS_DOTNET }}
@@ -243,7 +243,7 @@ jobs:
 
     steps:
       - name: Harden the runner
-        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
         with:
           egress-policy: ${{ env.EGRESS_POLICY }}
           allowed-endpoints: ${{ env.ALLOWED_ENDPOINTS_SMOKE }}
@@ -424,7 +424,7 @@ jobs:
 
     steps:
       - name: Harden the runner
-        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
         with:
           egress-policy: ${{ env.EGRESS_POLICY }}
           allowed-endpoints: ${{ env.ALLOWED_ENDPOINTS_DOTNET }}
@@ -516,13 +516,13 @@ jobs:
 
       # GitHub Actions is interpreted by CodeQL directly and does not use a repository build.
       - name: Initialize CodeQL for GitHub Actions
-        uses: github/codeql-action/init@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
+        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         with:
           languages: actions
           build-mode: none
 
       - name: Perform CodeQL Actions analysis
-        uses: github/codeql-action/analyze@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
+        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
 
   codeql-analysis:
     name: CodeQL analysis
@@ -553,7 +553,7 @@ jobs:
       # C# uses manual extraction so the controlled locked restore and solution build below
       # are the build CodeQL observes rather than redundant work after buildless extraction.
       - name: Initialize CodeQL for C#
-        uses: github/codeql-action/init@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
+        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         with:
           languages: csharp
           build-mode: manual
@@ -565,7 +565,7 @@ jobs:
         run: dotnet build ${{ env.SOLUTION_FILE }} --configuration ${{ env.CONFIGURATION }} --no-restore /p:ContinuousIntegrationBuild=true
 
       - name: Perform CodeQL C# analysis
-        uses: github/codeql-action/analyze@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
+        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
 
       - name: Report CodeQL C# runtime
         if: always()
