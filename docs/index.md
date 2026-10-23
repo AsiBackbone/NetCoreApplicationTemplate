@@ -1,6 +1,6 @@
 ---
-title: "Secure-by-Default ASP.NET Core Starting Point"
-description: Start an ASP.NET Core application with authentication, authorization, logging, telemetry, security headers, rate limiting, and EF Core data access in place.
+title: "Production-Oriented ASP.NET Core Baseline"
+description: A reusable, production-oriented ASP.NET Core baseline with authentication, authorization, logging, security headers, rate limiting, and EF Core data access.
 _disableAffix: true
 _disableBreadcrumb: true
 _disableToc: true
@@ -9,9 +9,9 @@ _disableToc: true
 # .NET Core Application Template Documentation
 
 <div class="home-hero">
-  <p class="home-kicker">Secure-by-default ASP.NET Core starting point</p>
+  <p class="home-kicker">Reusable, production-oriented ASP.NET Core baseline</p>
   <p class="home-summary">Start an ASP.NET Core application with authentication, authorization, structured logging, telemetry, security headers, rate limiting, health checks, and EF Core data access already implemented and tested.</p>
-  <p class="home-why">The .NET Core Application Template (NCAT) exists so teams do not rebuild the same security and operational foundations for every application. Use it when you are starting a long-lived, team-maintained ASP.NET Core web application or API that needs those foundations from the first commit.</p>
+  <p class="home-why">The .NET Core Application Template (NCAT) exists so teams do not rebuild the same security and operational foundations for every application. Use it when you are starting a long-lived, team-maintained ASP.NET Core web application or API that needs those foundations from the first commit. NCAT is a baseline, not a finished, penetration-tested, or certified application: each generated application still needs its own configuration, threat analysis, deployment controls, testing, and security review.</p>
   <div class="home-actions" role="group" aria-label="Start with the template">
     <a class="btn btn-primary" href="articles/template-packaging.md">Get Started</a>
     <a class="btn btn-outline-primary" href="#is-the-template-a-fit">Is It a Fit?</a>

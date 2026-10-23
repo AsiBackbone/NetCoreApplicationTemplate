@@ -61,14 +61,14 @@
       "_enableSearch": true,
       "_canonicalBaseUrl": "https://asibackbone.github.io/NetCoreApplicationTemplate/",
       "_structuredDataSiteName": ".NET Core Application Template",
-      "_structuredDataSiteDescription": "Documentation for the .NET Core Application Template, a secure-by-default ASP.NET Core application scaffold.",
+      "_structuredDataSiteDescription": "Documentation for the .NET Core Application Template, a reusable production-oriented ASP.NET Core baseline.",
       "_structuredDataPublisherName": "AsiBackbone",
       "_structuredDataPublisherUrl": "https://github.com/AsiBackbone",
       "_socialImageUrl": "https://asibackbone.github.io/NetCoreApplicationTemplate/images/social-preview.png",
       "_socialImageType": "image/png",
       "_socialImageWidth": "640",
       "_socialImageHeight": "320",
-      "_socialImageAlt": ".NET Core Application Template — a secure-by-default ASP.NET Core starting point"
+      "_socialImageAlt": ".NET Core Application Template — a reusable production-oriented ASP.NET Core baseline"
     }
   }
 }

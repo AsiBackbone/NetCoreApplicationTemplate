@@ -16,7 +16,7 @@ authors:
   - family-names: "Cavell"
     given-names: "Christopher D."
     orcid: "https://orcid.org/0009-0002-2113-0245"
-abstract: "NetCoreApplicationTemplate is a reusable ASP.NET Core application template for secure, maintainable, production-oriented .NET applications."
+abstract: "NetCoreApplicationTemplate is a reusable, production-oriented ASP.NET Core baseline, distributed as a dotnet new template, for secure and maintainable .NET applications."
 keywords:
   - aspnetcore
   - dotnet

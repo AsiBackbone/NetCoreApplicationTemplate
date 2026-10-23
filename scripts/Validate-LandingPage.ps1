@@ -85,7 +85,7 @@ $requiredBuiltSectionIds = @(
 # Site metadata, homepage layout, and accessibility contract (AsiBackbone/.github#21).
 $siteBaseUrl = 'https://asibackbone.github.io/NetCoreApplicationTemplate/'
 $socialImageUrl = 'https://asibackbone.github.io/NetCoreApplicationTemplate/images/social-preview.png'
-$expectedHomepageTitle = 'Secure-by-Default ASP.NET Core Starting Point | .NET Core Application Template'
+$expectedHomepageTitle = 'Production-Oriented ASP.NET Core Baseline | .NET Core Application Template'
 $legacyBrandSpelling = 'ASI Backbone'
 $maximumDescriptionLength = 160
 
@@ -365,7 +365,7 @@ function Invoke-SelfTest {
         '<main class="container-xxl" id="main-content" tabindex="-1">'
     ) + $requiredBuiltSectionIds + $designPhilosophyStatement + '</main>') -join "`n"
     $validDocFx = (@('"template": [ "default", "modern", "templates" ],') + $requiredDocFxMetadata) -join ",`n"
-    $validFrontMatter = "---`ntitle: `"Secure-by-Default ASP.NET Core Starting Point`"`ndescription: A concise homepage description.`n_disableAffix: true`n_disableToc: true`n---`n`n# Home"
+    $validFrontMatter = "---`ntitle: `"Production-Oriented ASP.NET Core Baseline`"`ndescription: A concise homepage description.`n_disableAffix: true`n_disableToc: true`n---`n`n# Home"
     $validLayout = (@('{{!This file is based on the DocFX modern template v2.81.0.}}') + $requiredLayoutContent) -join "`n"
     $reorderedHomepage = (@($requiredHomepageSections[0..3]) + '## Design philosophy' + '## Related projects' + $requiredHomepageContent) -join "`n"
 
@@ -396,7 +396,7 @@ function Invoke-SelfTest {
         @{ Name = 'DocFX metadata with legacy brand'; Check = { param($e) Test-DocFxMetadata ($validDocFx + "`n`"_appTitle`": `"$legacyBrandSpelling Documentation`"") $e }; Pass = $false }
         @{ Name = 'valid homepage front matter'; Check = { param($e) Test-HomepageFrontMatter $validFrontMatter $e }; Pass = $true }
         @{ Name = 'front matter keeps table of contents'; Check = { param($e) Test-HomepageFrontMatter $validFrontMatter.Replace("_disableToc: true`n", '') $e }; Pass = $false }
-        @{ Name = 'front matter without title'; Check = { param($e) Test-HomepageFrontMatter $validFrontMatter.Replace("title: `"Secure-by-Default ASP.NET Core Starting Point`"`n", '') $e }; Pass = $false }
+        @{ Name = 'front matter without title'; Check = { param($e) Test-HomepageFrontMatter $validFrontMatter.Replace("title: `"Production-Oriented ASP.NET Core Baseline`"`n", '') $e }; Pass = $false }
         @{ Name = 'front matter with long description'; Check = { param($e) Test-HomepageFrontMatter $validFrontMatter.Replace('A concise homepage description.', ('x' * ($maximumDescriptionLength + 1))) $e }; Pass = $false }
         @{ Name = 'valid layout template'; Check = { param($e) Test-LayoutTemplate $validLayout '2.81.0' $e }; Pass = $true }
         @{ Name = 'layout template without skip link'; Check = { param($e) Test-LayoutTemplate $validLayout.Replace('<a class="skip-link" href="#main-content">Skip to content</a>', '') '2.81.0' $e }; Pass = $false }

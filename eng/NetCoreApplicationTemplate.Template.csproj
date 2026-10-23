@@ -6,7 +6,7 @@
     <PackageId>NetCoreApplicationTemplate</PackageId>
     <Title>.NET Core Application Template</Title>
     <Authors>Christopher D. Cavell</Authors>
-    <Description>Production-oriented ASP.NET Core application template with structured logging, security headers, forwarded headers, rate limiting, centralized error handling, cookie authentication, authenticated-by-default routed endpoints, policy-based authorization, and EF Core-ready structure.</Description>
+    <Description>Reusable, production-oriented ASP.NET Core baseline template with structured logging, security headers, forwarded headers, rate limiting, centralized error handling, cookie authentication, authenticated-by-default routed endpoints, policy-based authorization, and EF Core-ready structure. Generated applications still require application-specific configuration, deployment controls, testing, and security review.</Description>
     <PackageTags>dotnet-new;templates;aspnetcore;mvc;web;enterprise;security</PackageTags>
     <PackageProjectUrl>https://asibackbone.github.io/NetCoreApplicationTemplate/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/AsiBackbone/NetCoreApplicationTemplate</RepositoryUrl>

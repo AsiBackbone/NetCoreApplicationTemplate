@@ -4,6 +4,8 @@
 
 A reusable `dotnet new` template for creating a production-oriented ASP.NET Core application baseline with structured logging, security headers, forwarded headers, rate limiting, centralized error handling, cookie authentication, authenticated-by-default routed endpoints, policy-based authorization, and EF Core-ready structure.
 
+The template is a baseline, not a finished, penetration-tested, or certified application: each generated application still needs its own configuration, threat analysis, deployment controls, testing, and security review.
+
 This README is intended for NuGet package consumers. The full repository README and documentation site provide deeper implementation and maintainer guidance.
 
 ## Template identity
