@@ -22,6 +22,12 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ### Fixed
 
+* Made first-contact descriptions consistently present NCAT as a reusable, production-oriented ASP.NET Core baseline.
+  The documentation homepage title, hero, search description, and site metadata no longer lead with "secure-by-default
+  starting point", and the root README, NuGet package README and description, Zenodo description, and citation
+  abstract use the same wording. Each now states nearby that NCAT is not a finished, penetration-tested, or certified
+  application and that generated applications still need application-specific configuration, threat analysis,
+  deployment controls, testing, and security review. Template behavior and generated output are unchanged.
 * Corrected the Repository Security Profile's required-check baseline to the 12 checks the `main` ruleset enforces, and
   explained why path-filtered checks cannot be required. Corrected the security, release, and container publishing
   documentation that still described a separate `container-publish` approval: container publication runs only after

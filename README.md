@@ -14,12 +14,18 @@
 [![NuGet Downloads](https://img.shields.io/nuget/dt/NetCoreApplicationTemplate?label=downloads)](https://www.nuget.org/packages/NetCoreApplicationTemplate)
 [![Zenodo DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20373042-blue)](https://doi.org/10.5281/zenodo.20373042)
 
-A production-oriented ASP.NET Core application template for .NET 10. Routed
-endpoints require an authenticated user by default, anonymous access is explicit
-and regression-tested, and the generated scaffold ships with structured logging,
-security headers, forwarded-header validation, rate limiting, centralized
-Problem Details error handling, EF Core data access and auditing patterns, health
-checks, telemetry, and CI validation.
+A reusable, production-oriented ASP.NET Core baseline for .NET 10, distributed
+as a `dotnet new` template. Routed endpoints require an authenticated user by
+default, anonymous access is explicit and regression-tested, and the generated
+scaffold ships with structured logging, security headers, forwarded-header
+validation, rate limiting, centralized Problem Details error handling, EF Core
+data access and auditing patterns, health checks, telemetry, and CI validation.
+
+NCAT is a baseline, not a finished, penetration-tested, or certified
+application. Each generated application still needs its own configuration,
+threat analysis, deployment controls, testing, and security review; see
+[What This Template Secures by Default](#what-this-template-secures-by-default)
+and the [Security Policy](SECURITY.md).
 
 Install it:
 
