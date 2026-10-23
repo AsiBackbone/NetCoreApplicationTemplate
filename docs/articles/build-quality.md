@@ -135,7 +135,7 @@ Every matrix entry:
 - Restores with locked mode, builds in Release configuration, and runs the generated tests.
 
 The supported combinations and their option-specific expectations are defined in
-[`eng/template-option-matrix.json`](../../eng/template-option-matrix.json) and published in the [Template Option Support Matrix](template-option-matrix.md).
+`eng/template-option-matrix.json` and published in the [Template Option Support Matrix](template-option-matrix.md).
 
 The matrix is intentionally Linux-only because the default `cookie` + `sqlite` scaffold already retains Linux, Windows, and macOS coverage. Runtime-heavy Docker build, Compose, and health-probe validation also remains on that representative default Linux smoke path rather than running for every option combination.
 
