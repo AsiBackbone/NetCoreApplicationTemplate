@@ -12,7 +12,7 @@ The release workflow publishes the repository image to GitHub Container Registry
 ghcr.io/asibackbone/netcoreapplicationtemplate
 ```
 
-A tag push matching `v*.*.*` starts the container release workflow.
+A tag push matching `v*.*.*` starts the `Publish Stable Release` workflow, which runs the container release workflow after the template package job succeeds.
 
 Stable semantic version tags publish:
 
@@ -26,13 +26,15 @@ Prerelease tags publish the full version tag only and do not update `latest` or 
 
 ## Release Safety Gate
 
-The publish job targets the `container-publish` GitHub environment. The environment is an ongoing publication boundary, not a one-time bootstrap step. Keep deliberate maintainer approval enabled so every production GHCR publication has a manual approval gate.
+Container publication has no GitHub environment of its own. `Publish Stable Release` calls it only after the template package job succeeds, and that job targets the `template-package-publish` environment. The single maintainer approval on that environment therefore gates both NuGet and GHCR publication for a release tag.
 
-Recommended environment settings:
+The `template-package-publish` environment is an ongoing publication boundary, not a one-time bootstrap step. Keep deliberate maintainer approval enabled so every production release has a manual approval gate:
 
-- Environment name: `container-publish`
+- Environment name: `template-package-publish`
 - Required reviewers: repository owner or maintainer
 - Deployment branches and tags: allow release tags created from the protected `main` release commit
+
+The [repository-control drift audit](repository-security-profile.md#drift-audit) checks that this environment exists and still requires reviewers.
 
 ## Build and Scan Flow
 
@@ -40,9 +42,9 @@ The workflow builds the Docker image from the repository Dockerfile, exports it 
 
 Scanning runs through `aquasecurity/trivy-action`, pinned by commit SHA like every other action in this repository. Two properties follow from that. The scanner reads the exported archive rather than querying the Docker daemon, so no step mounts `/var/run/docker.sock` into a scanner container. And the Trivy version comes from the pinned action rather than a mutable image tag, so Dependabot's `github-actions` ecosystem proposes scanner updates alongside every other action.
 
-The two tag-driven publish workflows cooperate to produce one durable release evidence set. The template-package workflow publishes the exact `.nupkg`, generates its SPDX SBOM and provenance, and attaches its evidence. The container workflow publishes and signs the OCI digest, waits for the package evidence, assembles the unified manifest, attaches the complete set, and fails if any required asset is absent.
+The two tag-driven publish workflows cooperate to produce one durable release evidence set. The template-package workflow publishes the exact `.nupkg`, generates its SPDX SBOM and provenance, and attaches its evidence. The container workflow publishes and signs the OCI digest, downloads the package evidence from the GitHub Release, assembles the unified manifest, attaches the complete set, and fails if any required asset is absent.
 
-Approve both `template-package-publish` and `container-publish` environments promptly after reviewing their inputs. The container workflow waits up to 30 minutes for the package evidence; an approval that arrives after that window leaves the public release visibly failed and requires rerunning the failed workflow after confirming the expected artifacts.
+Review and approve the `template-package-publish` deployment for the release tag. Container publication starts automatically after the approved package job succeeds. If the package job fails or is rejected, the container job does not run; if the container job fails after the package was published, rerun the failed job after confirming the expected artifacts rather than publishing a new tag.
 
 Release evidence includes:
 
@@ -174,7 +176,7 @@ Release `v2.9.0` was backfilled from its retained original container evidence an
 
 ```text
 [ ] Confirm the release tag follows semantic versioning and resolves to the release commit already merged into `main`.
-[ ] Confirm the `container-publish` environment still requires deliberate maintainer approval.
+[ ] Confirm the `template-package-publish` environment still requires deliberate maintainer approval, which also gates container publication.
 [ ] Confirm CI and template smoke tests are passing.
 [ ] Confirm Docker build succeeds locally or in CI.
 [ ] Confirm Trivy scan has no unaccepted Critical or High findings.

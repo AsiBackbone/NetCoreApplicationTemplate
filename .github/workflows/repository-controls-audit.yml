@@ -1,0 +1,66 @@
+name: Repository Controls Audit
+
+# Read-only drift audit of GitHub-hosted repository controls against
+# eng/repository-controls. The job token is read-only, so controls that need
+# administrator access are reported as unavailable rather than compliant.
+# Release readiness reruns the same script locally with an administrator gh
+# login and -FailOnUnavailable; see docs/articles/repository-security-profile.md.
+
+on:
+  workflow_dispatch:
+
+  # Every Sunday morning, after the other weekly security workflows.
+  schedule:
+    - cron: '45 9 * * 0'
+
+  pull_request:
+    paths:
+      - 'eng/repository-controls/**'
+      - 'scripts/Test-RepositorySecurityControls.ps1'
+      - '.github/workflows/repository-controls-audit.yml'
+
+# Deny all token permissions unless granted by a job.
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: Audit repository security controls
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    permissions:
+      contents: read # Read the committed manifest and audit script.
+      actions: read # Read deployment environments and their protection rules.
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Test audit logic
+        shell: pwsh
+        run: ./scripts/Test-RepositorySecurityControls.ps1 -SelfTest
+
+      - name: Audit live repository controls
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AUDIT_REPOSITORY: ${{ github.repository }}
+        run: >
+          ./scripts/Test-RepositorySecurityControls.ps1
+          -Repository $env:AUDIT_REPOSITORY
+          -SummaryPath ./artifacts/repository-controls/repository-controls-audit.md
+
+      - name: Upload drift evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: repository-controls-audit
+          path: ./artifacts/repository-controls
+          if-no-files-found: warn
+          retention-days: 90

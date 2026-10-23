@@ -4,7 +4,7 @@ This page defines the repository governance and publishing controls for the curr
 
 It supersedes the earlier transitional profile that treated the first automated NuGet or container publication as a future trigger. Automated NuGet and GHCR publication now exist and are part of the normal operating model.
 
-GitHub repository, branch-protection, security-analysis, and environment settings are not stored in git. Treat the values below as the required repository state and verify them in GitHub whenever permissions, publication workflows, maintainership, or release policy change.
+GitHub repository, branch-protection, security-analysis, and environment settings are not stored in git. Treat the values below as the required repository state. The machine-readable desired state is versioned in [`eng/repository-controls`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/eng/repository-controls/README.md), and a read-only [drift audit](#drift-audit) compares it with the live repository. Verify the live state whenever permissions, publication workflows, maintainership, or release policy change.
 
 ## v2.x Control Matrix
 
@@ -24,21 +24,16 @@ GitHub repository, branch-protection, security-analysis, and environment setting
 | Force pushes / branch deletion on `main` | Disabled | Preserve protected history and the stable integration branch. |
 | `release/*` branches | Short-lived preparation branches | They do not carry independent publishing authority; production tags come from the release commit merged into `main`. |
 | Merged head-branch cleanup | Automatic deletion enabled | Keep `main` as the only permanent branch; tags, releases, artifacts, and merged commits preserve release evidence. |
-| `template-package-publish` environment | Deliberate maintainer approval required | Protect NuGet publication and Trusted Publishing OIDC use. |
-| `container-publish` environment | Deliberate maintainer approval required | Protect GHCR publication, signing, provenance, and release-evidence writes. |
+| `template-package-publish` environment | Deliberate maintainer approval required | Protect NuGet publication and Trusted Publishing OIDC use. This approval is the single human gate for a stable release. |
+| Container publication | Runs only after the approved package job | `Publish Container` is called by `Publish Stable Release` after the package job succeeds, so GHCR publication, signing, provenance, and release-evidence writes inherit the `template-package-publish` approval. It has no environment of its own. |
 
 ## Required Status Check Baseline
 
-The `main` branch requires the following 17 check contexts. The first eight are repository-wide build, security, version, and documentation controls:
+The `main` branch requires the following 12 check contexts. The authoritative list is [`main-branch-ruleset.json`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/eng/repository-controls/main-branch-ruleset.json). The first three are repository-wide build and security controls:
 
 - `CodeQL analysis`
 - `Build validation`
 - `Dependency review`
-- `Validate workflows with actionlint`
-- `Analyze workflows with zizmor`
-- `Analyze dependencies with OWASP Dependency-Check`
-- `Validate version consistency`
-- `Validate documentation links`
 
 The remaining nine checks validate the template's cross-platform and generated-option surface and must not be removed when the shared controls change:
 
@@ -52,7 +47,9 @@ The remaining nine checks validate the template's cross-platform and generated-o
 - `Template options (none + sqlite)`
 - `Template options (none + sqlserver)`
 
-These names are GitHub check contexts and must match their workflow job names exactly. Adding, removing, or renaming a required workflow job requires a coordinated branch-protection update so pull requests remain correctly gated.
+These names are GitHub check contexts and must match their workflow job names exactly. Adding, removing, or renaming a required workflow job requires a coordinated update to the live ruleset, `main-branch-ruleset.json`, and this list so pull requests remain correctly gated.
+
+Some checks run on pull requests but are intentionally not required. `Validate workflows with actionlint`, `Analyze workflows with zizmor`, `Analyze dependencies with OWASP Dependency-Check`, and `Validate documentation links` run only when a pull request changes the paths they cover. A required check that never reports blocks the pull request, so path-filtered checks cannot be required. They still run and report results on the pull requests they apply to, and they also run on their weekly schedules. `Validate version consistency` runs on every pull request but is not currently a required check.
 
 ## Solo-Maintainer Review and Bypass Model
 
@@ -92,7 +89,7 @@ protected main
     -> release pull request and validation
     -> merge back to protected main
     -> create vMAJOR.MINOR.PATCH tag on that merged main commit
-    -> protected package/container publishing environments
+    -> protected template-package-publish environment, then container publication
 ```
 
 If a release branch becomes long-lived, accepts independent changes, or is used as a direct publication source, protect it equivalently to `main` before using that model.
@@ -118,7 +115,7 @@ Long-lived publishing credentials should not be introduced where federated or sc
 The v2.x profile is designed to preserve the existing release workflows rather than add protection that makes them bypass-only:
 
 - `Publish Template Package` keeps `id-token: write` on the publish job for NuGet Trusted Publishing and uses the `template-package-publish` environment.
-- `Publish Container` keeps write permissions isolated to the publish job, uses the `container-publish` environment, signs the pushed digest with cosign keyless signing, and emits provenance/attestation evidence.
+- `Publish Container` keeps write permissions isolated to the publish job, signs the pushed digest with cosign keyless signing, and emits provenance/attestation evidence. `Publish Stable Release` runs it only after the approved package job succeeds, so it needs no environment or approval of its own.
 - Release tags that trigger these workflows must point to the release commit already merged into `main`.
 - Environment approval remains the human publication gate after the tag is created.
 
@@ -144,22 +141,54 @@ At that transition, explicitly review:
 - Moving repeated branch-protection decisions into organization/repository rulesets when that improves consistency.
 - Expanding CODEOWNERS to the new maintainer or review groups.
 
+## Drift Audit
+
+The desired state for the controls GitHub's API exposes is versioned in [`eng/repository-controls`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/eng/repository-controls/README.md):
+
+- `main-branch-ruleset.json` records the `main` ruleset: deletion and force-push protection, linear history, pull-request requirements and allowed merge methods, the required status checks, the CodeQL code-scanning thresholds, Copilot code review, and bypass actors.
+- `repository-settings.json` records secret scanning, push protection, Dependabot security updates, secret validity checks (preferred), merged-branch cleanup, and the `template-package-publish` reviewer requirement.
+
+[`scripts/Test-RepositorySecurityControls.ps1`](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/scripts/Test-RepositorySecurityControls.ps1) compares the live repository with that manifest. It is read-only: it sends only GET requests, has no apply mode, and its self-test checks both by inspecting its own source. Each control reports `Match`, `Drift`, `Missing`, or `Unavailable`. `Unavailable` means GitHub did not return the value to the current token. Such a control is unverified, never assumed compliant.
+
+Required drift or a missing control exits nonzero. Drift on a preferred control is a warning. Unavailable controls fail the audit only with `-FailOnUnavailable`.
+
+The [Repository Controls Audit](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/.github/workflows/repository-controls-audit.yml) workflow runs the audit weekly, on demand, and on pull requests that change the manifest or audit. It uses the read-only job token. The ruleset, its required checks and merge methods, and the publishing environment are verified there. Administrator-only controls, such as security-analysis features, branch cleanup, and ruleset bypass actors, are reported as `Unavailable`. The result table is written to the job summary and uploaded as the `repository-controls-audit` artifact. No credential appears in the output.
+
+Before each stable release, run the audit locally with a repository-administrator `gh` login so every control is verified:
+
+```powershell
+gh auth status
+./scripts/Test-RepositorySecurityControls.ps1 -FailOnUnavailable -SummaryPath ./artifacts/repository-controls/repository-controls-audit.md
+```
+
+The audit never changes GitHub settings. When a control should change, update this profile and the manifest in the same pull request, change the live setting deliberately in GitHub, and rerun the administrator audit.
+
 ## Verification Checklist
 
-Verify this non-versioned repository state before each stable release and after material governance changes:
+Verify this non-versioned repository state before each stable release and after material governance changes.
+
+The administrator drift audit verifies these items:
 
 ```text
+[ ] ./scripts/Test-RepositorySecurityControls.ps1 -FailOnUnavailable passes with an administrator gh login.
 [ ] Secret scanning is enabled.
 [ ] Secret-scanning push protection is enabled.
 [ ] Dependabot security updates are enabled.
-[ ] main requires pull-request flow and all 17 status checks listed in the required-check baseline.
+[ ] main requires pull-request flow and all 12 status checks listed in the required-check baseline.
+[ ] Force pushes and deletion of main remain blocked, and only squash merges are allowed.
 [ ] Code Owner review and stale-approval behavior match the solo-maintainer model.
 [ ] General approval count remains 0 until an independent reviewer exists.
 [ ] Most-recent-push approval remains disabled until an independent reviewer exists.
+[ ] Ruleset bypass actors match the committed manifest.
+[ ] template-package-publish requires deliberate maintainer approval.
+[ ] Merged head branches are deleted automatically.
+```
+
+These items remain manual because the audit cannot read them:
+
+```text
 [ ] Signed-commit enforcement remains intentionally deferred or has a documented replacement policy.
 [ ] Administrator bypass has not become a routine direct-push path.
-[ ] template-package-publish requires deliberate maintainer approval.
-[ ] container-publish requires deliberate maintainer approval.
 [ ] NuGet Trusted Publishing identity still matches this repository/workflow/environment.
 [ ] Production release tags point to the release commit already merged into main.
 ```

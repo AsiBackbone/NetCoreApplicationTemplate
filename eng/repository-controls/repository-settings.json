@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "repository": "AsiBackbone/NetCoreApplicationTemplate",
+  "rulesetFile": "main-branch-ruleset.json",
+  "securityAndAnalysis": {
+    "required": {
+      "secret_scanning": "enabled",
+      "secret_scanning_push_protection": "enabled",
+      "dependabot_security_updates": "enabled"
+    },
+    "preferred": {
+      "secret_scanning_validity_checks": "enabled"
+    }
+  },
+  "repositorySettings": {
+    "required": {
+      "delete_branch_on_merge": true
+    }
+  },
+  "environments": [
+    {
+      "name": "template-package-publish",
+      "level": "Required",
+      "requireReviewers": true
+    }
+  ]
+}

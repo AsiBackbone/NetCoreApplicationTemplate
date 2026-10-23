@@ -6,7 +6,26 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+### Added
+
+* Added a versioned desired-state manifest for NCAT's GitHub-hosted repository controls in `eng/repository-controls`,
+  covering the `main` ruleset, required status checks, merge methods, force-push and deletion protection, code-scanning
+  thresholds, secret scanning and push protection, merged-branch cleanup, and the `template-package-publish` reviewer
+  requirement.
+* Added `scripts/Test-RepositorySecurityControls.ps1`, a read-only drift audit that compares the live repository with
+  that manifest and exits nonzero on material drift. Controls the current token cannot read are reported as
+  unavailable rather than compliant, and `-FailOnUnavailable` makes them blocking for release readiness. The script has
+  no apply mode, and its self-test, which runs in CI, verifies that it sends only GET requests.
+* Added the weekly and on-demand `Repository Controls Audit` workflow, which runs the audit with the read-only job
+  token, writes the result table to the job summary, and uploads it as drift evidence. Template packages and generated
+  applications are unaffected.
+
 ### Fixed
+
+* Corrected the Repository Security Profile's required-check baseline to the 12 checks the `main` ruleset enforces, and
+  explained why path-filtered checks cannot be required. Corrected the security, release, and container publishing
+  documentation that still described a separate `container-publish` approval: container publication runs only after
+  the approved `template-package-publish` job.
 
 * Aligned the Development Serilog rolling-file sink with the documented generated-application default,
   `Logs/application-web-.log`. Freshly scaffolded applications now use the same file name in Development as the base

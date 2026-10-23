@@ -27,7 +27,8 @@ git checkout -b release/vMAJOR.MINOR.PATCH
 
 Complete these checks before tagging a stable release:
 
-- Confirm the [Repository Security Profile](../docs/articles/repository-security-profile.md) still matches effective GitHub settings, including secret-scanning push protection, `main` branch protection, and required reviewers on `template-package-publish` and `container-publish`.
+- Run `./scripts/Test-RepositorySecurityControls.ps1 -FailOnUnavailable` with a repository-administrator `gh` login and confirm it passes. The audit is read-only and verifies secret scanning, push protection, the `main` ruleset and its required checks, and required reviewers on `template-package-publish` against [`eng/repository-controls`](../eng/repository-controls/README.md).
+- Complete the manual items in the [Repository Security Profile](../docs/articles/repository-security-profile.md#verification-checklist) verification checklist.
 - Confirm the production release tag will point to the release commit after it is merged into `main`, not to an unmerged release branch commit.
 - Confirm CI passes on the release branch.
 - Confirm CodeQL/security scanning passes.
@@ -80,7 +81,7 @@ Current NuGet.org publication uses NuGet Trusted Publishing through GitHub Actio
 Recommended order:
 
 1. Confirm NuGet Trusted Publishing is configured for the current package identity.
-2. Confirm the `template-package-publish` GitHub environment requires deliberate maintainer approval.
+2. Confirm the `template-package-publish` GitHub environment requires deliberate maintainer approval. This approval also gates container publication, which runs only after the package job succeeds.
 3. Run the `Publish Template Package` workflow manually with `skip_publish` enabled to confirm packing and artifact generation.
 4. Review generated `.nupkg` metadata before publishing to NuGet.org.
 5. Publish only after manual approval.
