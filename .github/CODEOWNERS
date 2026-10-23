@@ -7,9 +7,9 @@
 #
 # Branch protection uses Code Owner review for owned-path changes. External or
 # automation-authored pull requests must receive maintainer review. A sole Code Owner
-# cannot independently approve their own pull request, so any administrative bypass
-# is constrained by docs/articles/repository-security-profile.md and is not a routine
-# direct-push path. Stale approvals are dismissed after reviewable changes.
+# cannot independently approve their own pull request. The main ruleset has no
+# bypass actors; see docs/articles/repository-security-profile.md for the review
+# model and recovery path. Stale approvals are dismissed after reviewable changes.
 
 * @cdcavell
 

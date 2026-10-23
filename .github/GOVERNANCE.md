@@ -45,7 +45,7 @@ Bug fixes, documentation corrections, dependency updates, tests, and other chang
 - A Core Maintainer confirms scope, compatibility, and release impact.
 - Code Owner review is obtained when GitHub can obtain an independent approval.
 
-For a self-authored pull request under the bootstrap solo-maintainer model, the maintainer reviews the final diff and evidence and follows the constrained merge path in [Repository Security Profile](../docs/articles/repository-security-profile.md). The bootstrap path is not permission for routine direct pushes to `main`.
+For a self-authored pull request under the bootstrap solo-maintainer model, the maintainer reviews the final diff and evidence and merges through the pull-request path in [Repository Security Profile](../docs/articles/repository-security-profile.md). The bootstrap path is not permission for routine direct pushes to `main`.
 
 ### Significant Decisions
 
