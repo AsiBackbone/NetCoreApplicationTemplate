@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "authProviders": [
+    "cookie",
+    "none"
+  ],
+  "dbProviders": [
+    "sqlite",
+    "sqlserver",
+    "none"
+  ],
+  "combinations": [
+    {
+      "authProvider": "cookie",
+      "dbProvider": "sqlite",
+      "authenticationEnabled": true,
+      "authenticatedFallback": true,
+      "dataProvider": "Sqlite",
+      "connectionStringName": "ApplicationDatabase",
+      "migrationMode": "included"
+    },
+    {
+      "authProvider": "cookie",
+      "dbProvider": "sqlserver",
+      "authenticationEnabled": true,
+      "authenticatedFallback": true,
+      "dataProvider": "SqlServer",
+      "connectionStringName": "ApplicationSqlServer",
+      "migrationMode": "excluded"
+    },
+    {
+      "authProvider": "cookie",
+      "dbProvider": "none",
+      "authenticationEnabled": true,
+      "authenticatedFallback": true,
+      "dataProvider": "None",
+      "connectionStringName": "",
+      "migrationMode": "configuration-disabled"
+    },
+    {
+      "authProvider": "none",
+      "dbProvider": "sqlite",
+      "authenticationEnabled": false,
+      "authenticatedFallback": false,
+      "dataProvider": "Sqlite",
+      "connectionStringName": "ApplicationDatabase",
+      "migrationMode": "included"
+    },
+    {
+      "authProvider": "none",
+      "dbProvider": "sqlserver",
+      "authenticationEnabled": false,
+      "authenticatedFallback": false,
+      "dataProvider": "SqlServer",
+      "connectionStringName": "ApplicationSqlServer",
+      "migrationMode": "excluded"
+    },
+    {
+      "authProvider": "none",
+      "dbProvider": "none",
+      "authenticationEnabled": false,
+      "authenticatedFallback": false,
+      "dataProvider": "None",
+      "connectionStringName": "",
+      "migrationMode": "configuration-disabled"
+    }
+  ]
+}

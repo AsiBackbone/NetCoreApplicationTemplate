@@ -152,6 +152,10 @@ jobs:
         shell: pwsh
         run: ./eng/Validate-TemplateContentOverlay.ps1
 
+      - name: Validate template option matrix contract
+        shell: pwsh
+        run: ./eng/Test-TemplateOptionMatrix.ps1
+
       - name: Test durable release evidence generation
         shell: pwsh
         run: ./scripts/Test-ReleaseEvidence.ps1
@@ -377,8 +381,30 @@ jobs:
         shell: pwsh
         run: dotnet new uninstall NetCoreApplicationTemplate
 
+  template-option-matrix-definition:
+    name: Template option matrix definition
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Validate and emit matrix
+        id: matrix
+        shell: pwsh
+        run: |
+          $matrix = ./eng/Test-TemplateOptionMatrix.ps1 -EmitGitHubMatrix
+          "matrix=$matrix" >> $env:GITHUB_OUTPUT
+
   template-option-matrix:
     name: Template options (${{ matrix.authProvider }} + ${{ matrix.dbProvider }})
+    needs: template-option-matrix-definition
     runs-on: ubuntu-24.04
     timeout-minutes: 20
 
@@ -386,13 +412,7 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix:
-        authProvider:
-          - cookie
-          - none
-        dbProvider:
-          - sqlite
-          - sqlserver
-          - none
+        include: ${{ fromJSON(needs.template-option-matrix-definition.outputs.matrix) }}
 
     env:
       AUTH_PROVIDER: ${{ matrix.authProvider }}
