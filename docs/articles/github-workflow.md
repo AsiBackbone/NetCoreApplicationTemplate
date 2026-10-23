@@ -128,13 +128,13 @@ The publish job uses the `template-package-publish` GitHub environment. Keep del
 
 ## Container Publishing
 
-The Publish Container workflow runs on tag pushes matching:
+The Publish Container workflow runs as part of `Publish Stable Release`, which starts on tag pushes matching:
 
 ```text
 v*.*.*
 ```
 
-The workflow builds the Docker image, scans it with Trivy, uploads SARIF results, generates a container SPDX SBOM, publishes the image to GitHub Container Registry, signs the pushed digest with Cosign keyless signing, and generates build provenance attestation metadata. It then waits for the package workflow's evidence, creates the unified release evidence manifest, uploads the complete durable asset set, and verifies that the public release contains every required asset.
+The workflow builds the Docker image, scans it with Trivy, uploads SARIF results, generates a container SPDX SBOM, publishes the image to GitHub Container Registry, signs the pushed digest with Cosign keyless signing, and generates build provenance attestation metadata. It then downloads the package workflow's evidence from the GitHub Release, creates the unified release evidence manifest, uploads the complete durable asset set, and verifies that the public release contains every required asset.
 
 The published image is:
 
@@ -144,7 +144,7 @@ ghcr.io/asibackbone/netcoreapplicationtemplate
 
 Stable tags publish the full version tag, the major tag, and `latest`. Prerelease tags publish only the full version tag.
 
-The publish job uses the `container-publish` GitHub environment. Keep deliberate maintainer approval on that environment so every production GHCR publication retains a manual approval gate. Approve both protected publish jobs within their documented coordination window so the evidence set can be completed.
+Container publication has no environment of its own. `Publish Stable Release` runs it only after the package job succeeds, so the deliberate maintainer approval on `template-package-publish` is the single manual gate for both NuGet and GHCR publication.
 
 See [Container Release Publishing](container-publish.md) for details.
 

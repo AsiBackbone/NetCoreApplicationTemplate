@@ -1,0 +1,125 @@
+{
+  "name": "Main branch security baseline",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "include": [
+        "refs/heads/main"
+      ],
+      "exclude": []
+    }
+  },
+  "bypass_actors": [],
+  "rules": [
+    {
+      "type": "deletion"
+    },
+    {
+      "type": "non_fast_forward"
+    },
+    {
+      "type": "required_linear_history"
+    },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 0,
+        "dismiss_stale_reviews_on_push": true,
+        "required_reviewers": [],
+        "require_code_owner_review": true,
+        "dismissal_restriction": {
+          "enabled": true,
+          "allowed_actors": [
+            {
+              "id": 5,
+              "type": "RepositoryRole"
+            }
+          ]
+        },
+        "require_last_push_approval": false,
+        "required_review_thread_resolution": true,
+        "require_extra_approval_for_unattributed_changes": true,
+        "allowed_merge_methods": [
+          "squash"
+        ]
+      }
+    },
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "strict_required_status_checks_policy": true,
+        "do_not_enforce_on_create": false,
+        "required_status_checks": [
+          {
+            "context": "CodeQL analysis",
+            "integration_id": 15368
+          },
+          {
+            "context": "Build validation",
+            "integration_id": 15368
+          },
+          {
+            "context": "Dependency review",
+            "integration_id": 15368
+          },
+          {
+            "context": "Template smoke test (ubuntu-latest)",
+            "integration_id": 15368
+          },
+          {
+            "context": "Template smoke test (windows-latest)",
+            "integration_id": 15368
+          },
+          {
+            "context": "Template smoke test (macos-latest)",
+            "integration_id": 15368
+          },
+          {
+            "context": "Template options (cookie + none)",
+            "integration_id": 15368
+          },
+          {
+            "context": "Template options (cookie + sqlite)",
+            "integration_id": 15368
+          },
+          {
+            "context": "Template options (cookie + sqlserver)",
+            "integration_id": 15368
+          },
+          {
+            "context": "Template options (none + none)",
+            "integration_id": 15368
+          },
+          {
+            "context": "Template options (none + sqlite)",
+            "integration_id": 15368
+          },
+          {
+            "context": "Template options (none + sqlserver)",
+            "integration_id": 15368
+          }
+        ]
+      }
+    },
+    {
+      "type": "code_scanning",
+      "parameters": {
+        "code_scanning_tools": [
+          {
+            "tool": "CodeQL",
+            "security_alerts_threshold": "medium_or_higher",
+            "alerts_threshold": "errors_and_warnings"
+          }
+        ]
+      }
+    },
+    {
+      "type": "copilot_code_review",
+      "parameters": {
+        "review_on_push": true,
+        "review_draft_pull_requests": false
+      }
+    }
+  ]
+}

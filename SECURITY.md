@@ -81,11 +81,13 @@ The phrase **secure baseline** in this project refers to concrete controls: clos
 
 Repository-host protections are treated as part of the project's supply-chain boundary rather than as an implicit GitHub administrator default. The required state is documented in [Repository Security Profile](docs/articles/repository-security-profile.md).
 
-The maintained posture requires secret scanning and secret-scanning push protection, Dependabot security updates, pull-request flow and the documented required status checks on `main`, disabled force pushes and branch deletion on `main`, and deliberate maintainer approval for the `template-package-publish` and `container-publish` environments.
+The maintained posture requires secret scanning and secret-scanning push protection, Dependabot security updates, pull-request flow and the documented required status checks on `main`, disabled force pushes and branch deletion on `main`, and deliberate maintainer approval for the `template-package-publish` environment. That approval gates both NuGet and container publication for a release tag.
 
-These controls are GitHub repository, branch-protection, security-analysis, and environment settings. They are not stored in git, their state cannot be inferred from committed workflow YAML, and no build, container, or package release workflow changes them. This repository does not currently include a version-controlled ruleset or an automated settings-audit script, so these controls are verified manually.
+These controls are GitHub repository, branch-protection, security-analysis, and environment settings. They are not stored in git, their state cannot be inferred from committed workflow YAML, and no build, container, or package release workflow changes them.
 
-Verify the live GitHub settings against the verification checklist in the [Repository Security Profile](docs/articles/repository-security-profile.md) before each stable release and after material permission, publishing, or maintainership changes.
+Their desired state is versioned in [`eng/repository-controls`](eng/repository-controls/README.md). The read-only [`scripts/Test-RepositorySecurityControls.ps1`](scripts/Test-RepositorySecurityControls.ps1) audit compares it with the live repository and exits nonzero on drift. It never changes repository settings, and it reports controls the current token cannot read as unavailable rather than compliant. The [Repository Controls Audit](.github/workflows/repository-controls-audit.yml) workflow runs it weekly and on demand with the read-only job token.
+
+Before each stable release and after material permission, publishing, or maintainership changes, run the audit with a repository-administrator `gh` login and `-FailOnUnavailable`, then complete the manual items in the verification checklist in the [Repository Security Profile](docs/articles/repository-security-profile.md#verification-checklist).
 
 ## Repository Secret-Scanning Controls
 

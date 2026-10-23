@@ -160,6 +160,10 @@ jobs:
         shell: pwsh
         run: ./scripts/Test-ReleaseEvidence.ps1
 
+      - name: Test repository security-control audit
+        shell: pwsh
+        run: ./scripts/Test-RepositorySecurityControls.ps1 -SelfTest
+
       - name: Run tests
         shell: pwsh
         run: >
