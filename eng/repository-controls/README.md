@@ -8,7 +8,7 @@ These files are maintainer-only. They are not packed into the template package a
 
 | File | Purpose |
 |:---|:---|
-| `main-branch-ruleset.json` | The `Main branch security baseline` ruleset for `refs/heads/main`: deletion and force-push protection, linear history, pull-request requirements and allowed merge methods, the 12 required status checks, the CodeQL code-scanning thresholds, Copilot code review, and the bypass-actor list. It uses the GitHub ruleset payload shape without live-only fields such as `id`, `source`, or `_links`. |
+| `main-branch-ruleset.json` | The `Main branch security baseline` ruleset for `refs/heads/main`: deletion and force-push protection, linear history, pull-request requirements and allowed merge methods, the 12 required status checks, the CodeQL code-scanning thresholds, Copilot code review, and the bypass-actor list, which is deliberately empty because no actor may bypass the ruleset. It uses the GitHub ruleset payload shape without live-only fields such as `id`, `source`, or `_links`. |
 | `repository-settings.json` | Security-analysis features, the merged-branch cleanup setting, and the publishing environment that must require reviewers. Each control is either `required` (drift fails the audit) or `preferred` (drift is a warning). |
 
 ## Audit

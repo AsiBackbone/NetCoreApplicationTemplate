@@ -67,10 +67,10 @@ Expected `main` branch controls include:
 - Required signed commits remain deferred until a repository-wide signing policy is practical.
 - Force pushes and branch deletion remain disabled for `main`.
 - Linear history or squash/rebase merge strategy is preserved according to repository settings.
-- Administrator bypass is retained only for the solo-maintainer self-authored PR path and documented emergencies; it is not a routine direct-push path.
+- The `main` ruleset has no bypass actors, so no maintainer or administrator can push directly to `main` or merge around the ruleset.
 - Workflow, release, security, package, and governance changes receive deliberate maintainer review.
 
-The authoritative rationale and emergency procedure are documented in [Repository Security Profile](../docs/articles/repository-security-profile.md).
+The authoritative rationale and the recovery and escalation path are documented in [Repository Security Profile](../docs/articles/repository-security-profile.md).
 
 Short-lived `release/*` branches do not carry independent publishing authority. They are created from `main`, validated, merged back through protected `main`, and only then may the merged `main` commit be tagged for publication. Protect any release branch equivalently to `main` if it becomes long-lived or begins accepting independent changes.
 
@@ -81,7 +81,7 @@ Maintainer appointments follow [GOVERNANCE.md](GOVERNANCE.md). Before expanding 
 - Repository permissions and the documented v2.x security profile.
 - Branch protection rules, including enabling independent approval requirements where appropriate.
 - Whether approval of the most recent reviewable push should now be required.
-- Whether administrator bypass can be removed or narrowed.
+- Whether the ruleset should remain free of bypass actors, recording any justified actor in the manifest and security profile.
 - Whether required signed commits should now be enabled.
 - Environment protection rules.
 - NuGet and GitHub Packages publishing permissions.

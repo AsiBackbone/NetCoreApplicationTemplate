@@ -51,7 +51,7 @@ Prefer small, focused pull requests. Documentation-only, dependency-only, and ru
 
 The `main` branch is the stable integration and publishing source branch. The authoritative v2.x control decisions are documented in [Repository Security Profile](repository-security-profile.md).
 
-Current solo-maintainer behavior is intentionally asymmetric: external or automation-authored changes to owned paths require maintainer Code Owner review, while maintainer-authored pull requests cannot obtain independent self-approval. General required approvals therefore remain at zero, approval of the most recent reviewable push remains disabled, and required signed commits remain deferred. Administrator bypass is retained only for the documented self-authored PR path and emergencies; routine direct pushes to `main` are not part of the workflow.
+Current solo-maintainer behavior is intentionally asymmetric: external or automation-authored changes to owned paths require maintainer Code Owner review, while maintainer-authored pull requests cannot obtain independent self-approval. General required approvals therefore remain at zero, approval of the most recent reviewable push remains disabled, and required signed commits remain deferred. The `main` ruleset has no bypass actors, so maintainer-authored pull requests reach `main` only by satisfying the ruleset, and neither the maintainer nor a repository administrator can push directly to `main`. When the normal path cannot proceed, follow the [recovery and escalation path](repository-security-profile.md#recovery-and-escalation).
 
 Before merging, review that:
 

@@ -26,6 +26,11 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
   explained why path-filtered checks cannot be required. Corrected the security, release, and container publishing
   documentation that still described a separate `container-publish` approval: container publication runs only after
   the approved `template-package-publish` job.
+* Aligned the Repository Security Profile, GitHub workflow guide, contributing guide, maintainer, governance, and
+  CODEOWNERS documentation with the live `main` ruleset, which has no bypass actors. They no longer describe a retained
+  administrator bypass, the repository-controls manifest documents its empty `bypass_actors` list as deliberate, and
+  the emergency-bypass procedure is replaced by a recovery and escalation path built on temporary, audited ruleset
+  changes.
 
 * Aligned the Development Serilog rolling-file sink with the documented generated-application default,
   `Logs/application-web-.log`. Freshly scaffolded applications now use the same file name in Development as the base

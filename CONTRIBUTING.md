@@ -221,13 +221,13 @@ The current `2.x` line operates under a solo-maintainer security profile with au
 
 The profile requires protected pull-request flow for `main`, required status checks, Code Owner review for owned-path changes where GitHub can enforce it, stale-approval dismissal, secret scanning, secret-scanning push protection, Dependabot security updates, least-privilege workflow permissions, and protected publishing environments.
 
-Because there is only one maintainer, the profile deliberately keeps the general required approval count at zero, keeps approval of the most recent reviewable push disabled, and defers required signed commits. Those controls require either an independent reviewer or a repository-wide signing policy and would otherwise force routine bypasses. Administrator bypass remains available only for the documented solo-maintainer merge path and emergencies; it is not permission for routine direct pushes to `main`.
+Because there is only one maintainer, the profile deliberately keeps the general required approval count at zero, keeps approval of the most recent reviewable push disabled, and defers required signed commits. Those controls require either an independent reviewer or a repository-wide signing policy and would otherwise block routine maintainer work. The `main` ruleset has no bypass actors: every change, including the maintainer's, reaches `main` through a pull request that satisfies the ruleset, and direct pushes to `main` are blocked for everyone.
 
 Short-lived `release/*` branches are preparation branches rather than a separate trust boundary. Release changes must merge through protected `main`, and release tags that trigger package or container publication must point to the merged `main` commit.
 
-The complete control matrix, secret-pattern policy, emergency bypass rules, publishing boundaries, and transition criteria are documented in [Repository Security Profile](docs/articles/repository-security-profile.md).
+The complete control matrix, secret-pattern policy, recovery and escalation path, publishing boundaries, and transition criteria are documented in [Repository Security Profile](docs/articles/repository-security-profile.md).
 
-Move beyond the solo-maintainer profile when another maintainer receives write-or-higher repository access, independent review becomes routinely available, publication authority expands, organizational policy requires two-person controls, or a security incident shows that the current bypass model is insufficient.
+Move beyond the solo-maintainer profile when another maintainer receives write-or-higher repository access, independent review becomes routinely available, publication authority expands, organizational policy requires two-person controls, or a security or recovery incident shows that the current model is insufficient.
 
 ## GitHub Actions Supply-Chain Policy
 

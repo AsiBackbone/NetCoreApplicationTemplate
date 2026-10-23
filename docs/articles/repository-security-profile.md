@@ -17,10 +17,10 @@ GitHub repository, branch-protection, security-analysis, and environment setting
 | Required status checks | Enabled | CI/security checks required by branch protection must pass before merge. |
 | Code Owner review | Enabled for owned-path changes | External or automation-authored changes require maintainer review. |
 | Dismiss stale approvals | Enabled | New reviewable commits invalidate earlier approvals. |
-| General required approval count | `0` while solo-maintained | A one-maintainer repository has no independent reviewer; requiring one would make normal maintainer PRs bypass-only. |
+| General required approval count | `0` while solo-maintained | A one-maintainer repository has no independent reviewer; requiring one would block every maintainer-authored pull request. |
 | Approval of most recent reviewable push | Disabled while solo-maintained | The control requires another authorized reviewer and becomes meaningful when independent review exists. |
 | Required signed commits | Deferred | Enabling branch-level signature enforcement without a repository-wide signing policy can block unsigned commits introduced by maintainer, automation, or contributor branches. |
-| Administrator bypass | Retained but constrained | Used only for the documented solo-maintainer self-authored PR path or an emergency; never as a routine direct-push workflow. |
+| Ruleset bypass actors | None configured | No administrator, role, team, or app can bypass the `main` ruleset. Every change, including maintainer-authored work, reaches `main` only by satisfying it. The manifest records an empty `bypass_actors` list, and the drift audit reports any added actor as drift. |
 | Force pushes / branch deletion on `main` | Disabled | Preserve protected history and the stable integration branch. |
 | `release/*` branches | Short-lived preparation branches | They do not carry independent publishing authority; production tags come from the release commit merged into `main`. |
 | Merged head-branch cleanup | Automatic deletion enabled | Keep `main` as the only permanent branch; tags, releases, artifacts, and merged commits preserve release evidence. |
@@ -51,7 +51,7 @@ These names are GitHub check contexts and must match their workflow job names ex
 
 Some checks run on pull requests but are intentionally not required. `Validate workflows with actionlint`, `Analyze workflows with zizmor`, `Analyze dependencies with OWASP Dependency-Check`, and `Validate documentation links` run only when a pull request changes the paths they cover. A required check that never reports blocks the pull request, so path-filtered checks cannot be required. They still run and report results on the pull requests they apply to, and they also run on their weekly schedules. `Validate version consistency` runs on every pull request but is not currently a required check.
 
-## Solo-Maintainer Review and Bypass Model
+## Solo-Maintainer Review Model
 
 CODEOWNERS remains useful even with one maintainer because external or automation-authored pull requests that change owned paths must be reviewed by the maintainer before merge.
 
@@ -60,22 +60,27 @@ A sole Code Owner cannot provide independent approval for their own pull request
 1. Open a pull request to `main`.
 2. Allow the required CI and security checks to complete.
 3. Review the final diff and release/security impact.
-4. Use administrative bypass only when GitHub's self-review constraint would otherwise block the checked pull request.
-5. Merge through GitHub so the pull request, checks, and review context remain part of the audit trail.
+4. Merge through GitHub once the ruleset is satisfied, so the pull request, checks, and review context remain part of the audit trail.
 
-Administrative bypass is not a standing exception for routine direct pushes to `main`.
+The `main` ruleset has no bypass actors. Neither the maintainer nor a repository administrator can push directly to `main` or merge a pull request the ruleset has not passed. There is no standing exception to this path.
 
-### Emergency Bypass
+### Recovery and Escalation
 
-A direct administrative bypass is reserved for a situation where the normal pull-request path cannot safely restore repository operation, such as repairing a broken protection/workflow state or containing an active credential or publishing incident.
+Occasionally the normal pull-request path cannot proceed, for example when a required check is broken or no longer reports, a workflow or protection change has left `main` unmergeable, or an active credential or publishing incident must be contained faster than a full check run allows.
 
-After an emergency bypass:
+Because no bypass actor exists, recovery is a deliberate, temporary change to the live ruleset made by a repository administrator, never a standing exception:
 
-1. Open or update an issue describing why the bypass was necessary without exposing sensitive values.
-2. Run the normal CI, security, version-consistency, and release checks against the resulting `main` state.
-3. Reconcile any temporary branch, workflow, environment, or permission change back to the documented profile.
-4. Rotate or revoke credentials when the event involved possible secret exposure.
-5. Do not publish a stable package or container from the bypassed state until the release evidence is complete.
+1. Open or update an issue describing what is blocked and why the normal path cannot proceed, without exposing sensitive values.
+2. Make the narrowest live change that unblocks the fix. Prefer removing or correcting the single failing requirement over adding a bypass actor. If a bypass actor is unavoidable, add it only for the duration of the fix, prefer the `pull_request` bypass mode so the change still lands through a pull request, and avoid disabling the whole ruleset.
+3. Land the fix through a pull request wherever the temporary change allows it.
+4. Restore the live ruleset to the committed manifest, then rerun the administrator drift audit and confirm every required control, including `Ruleset bypass actors`, reports `Match`.
+5. Run the normal CI, security, version-consistency, and release checks against the resulting `main` state.
+6. Reconcile any other temporary branch, workflow, environment, or permission change back to the documented profile.
+7. Rotate or revoke credentials when the event involved possible secret exposure.
+8. Do not publish a stable package or container until the audit is clean and the release evidence is complete.
+9. Record the temporary change, its duration, and the restoring audit result in the issue before closing it.
+
+If a standing bypass actor is ever judged necessary, treat it as a policy change rather than a recovery step: update this profile and `main-branch-ruleset.json` in the same pull request, recording the actor's identity and type, its bypass mode, and the conditions for its use, then change the live ruleset and rerun the administrator audit.
 
 ## Release Branch and Tag Boundary
 
@@ -112,7 +117,7 @@ Long-lived publishing credentials should not be introduced where federated or sc
 
 ## Publishing Compatibility
 
-The v2.x profile is designed to preserve the existing release workflows rather than add protection that makes them bypass-only:
+The v2.x profile is designed to preserve the existing release workflows rather than add protection that would block them:
 
 - `Publish Template Package` keeps `id-token: write` on the publish job for NuGet Trusted Publishing and uses the `template-package-publish` environment.
 - `Publish Container` keeps write permissions isolated to the publish job, signs the pushed digest with cosign keyless signing, and emits provenance/attestation evidence. `Publish Stable Release` runs it only after the approved package job succeeds, so it needs no environment or approval of its own.
@@ -130,13 +135,13 @@ Re-evaluate this profile when any of the following occurs:
 - A separate release or security approver is established.
 - Publication authority expands to additional package owners, registries, environments, or organizations.
 - Organizational or consumer policy requires signed source commits or two-person approval.
-- A credential, publishing, or bypass incident shows the current model is insufficient.
+- A credential, publishing, or ruleset-recovery incident shows the current model is insufficient.
 
 At that transition, explicitly review:
 
 - Raising the general required approval count to at least one.
 - Enabling approval of the most recent reviewable push where appropriate.
-- Removing or narrowing administrator bypass.
+- Keeping the ruleset free of bypass actors, or recording any newly justified actor with its scope and constraints in the manifest.
 - Enabling required signed commits after maintainer, bot, and contribution signing paths are proven.
 - Moving repeated branch-protection decisions into organization/repository rulesets when that improves consistency.
 - Expanding CODEOWNERS to the new maintainer or review groups.
@@ -179,7 +184,7 @@ The administrator drift audit verifies these items:
 [ ] Code Owner review and stale-approval behavior match the solo-maintainer model.
 [ ] General approval count remains 0 until an independent reviewer exists.
 [ ] Most-recent-push approval remains disabled until an independent reviewer exists.
-[ ] Ruleset bypass actors match the committed manifest.
+[ ] The ruleset has no bypass actors, matching the manifest's empty bypass_actors list.
 [ ] template-package-publish requires deliberate maintainer approval.
 [ ] Merged head branches are deleted automatically.
 ```
@@ -188,7 +193,7 @@ These items remain manual because the audit cannot read them:
 
 ```text
 [ ] Signed-commit enforcement remains intentionally deferred or has a documented replacement policy.
-[ ] Administrator bypass has not become a routine direct-push path.
+[ ] Any temporary recovery change to the ruleset since the last release is recorded in an issue and has been reverted.
 [ ] NuGet Trusted Publishing identity still matches this repository/workflow/environment.
 [ ] Production release tags point to the release commit already merged into main.
 ```
