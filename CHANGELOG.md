@@ -4,7 +4,7 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
-## Unreleased
+## 2.11.6 - 2026-10-24
 
 ### Added
 
@@ -19,6 +19,20 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * Added the weekly and on-demand `Repository Controls Audit` workflow, which runs the audit with the read-only job
   token, writes the result table to the job summary, and uploads it as drift evidence. Template packages and generated
   applications are unaffected.
+* Added a machine-readable source of truth for the six supported `authProvider` and `dbProvider` combinations. CI now
+  generates its option matrix from that contract, validates it against the template choices and published
+  documentation, and continues to build and test every supported combination. No template option was added or removed.
+
+### Changed
+
+* Updated FsCheck from 3.4.0 to 3.6.0 and all four OpenTelemetry packages from 1.20.0 to 1.20.1, then refreshed the
+  Web and test-project lock files. The package identities and generated application configuration remain unchanged.
+* Refreshed the pinned .NET SDK 10.0.402 and ASP.NET Core 10.0 container image digests used by generated applications.
+  The image tags, target framework, and generated Dockerfile structure remain unchanged.
+* Updated pinned GitHub Actions used by repository and release automation, including CodeQL 4.39.1, Harden-Runner
+  2.22.2, Docker Login Action 4.7.0, and Zizmor Action 0.8.0. Generated applications are unaffected.
+* Reordered the documentation landing-page project cards to follow the organization path from Learning through the
+  framework and template to the ReferenceApplication, without changing their text or destinations.
 
 ### Fixed
 
@@ -46,11 +60,19 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
   `dotnet ef migrations list`, or `dotnet ef database update` runs. The bootstrap `catch` in `Program.cs` now excludes
   `HostAbortedException`, which those commands throw on purpose to stop the host after it is built. Genuine startup
   failures are still logged as fatal and rethrown.
+* Prevented `/health/audit-integrity` from reporting `Healthy` when no `audit`-tagged health check is registered. The
+  unconfigured endpoint now returns HTTP 503 with `NotConfigured`; configured audit checks retain their existing
+  Healthy, Degraded, and Unhealthy behavior.
+* Updated the support policy's published-release marker from 2.11.4 to 2.11.5 while 2.11.6 is being prepared.
 
 ### Compatibility
 
 * Existing generated applications are not modified. Consumers can apply the same one-line filter,
   `catch (Exception ex) when (ex is not HostAbortedException)`, to their own `Program.cs`.
+* This is a backward-compatible patch release for the feature-complete 2.x line. The package ID, template identities,
+  short name, supported options, public application surface, and `net10.0` target remain unchanged.
+* Existing applications can independently adopt the corrected Development log path and audit-integrity endpoint
+  behavior. Installing the template package does not update an application that was already generated.
 
 ## 2.11.5 - 2026-10-17
 

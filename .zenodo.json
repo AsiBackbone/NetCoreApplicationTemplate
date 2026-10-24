@@ -1,6 +1,6 @@
 {
   "title": "NetCoreApplicationTemplate",
-  "version": "2.11.5",
+  "version": "2.11.6",
   "upload_type": "software",
   "description": "A reusable, production-oriented ASP.NET Core baseline, distributed as a dotnet new template, for secure and maintainable .NET applications. It organizes startup composition, middleware ordering, structured logging, forwarded headers, security headers, rate limiting, centralized error handling, authentication and authorization foundations, EF Core data access patterns, CI validation, template packaging, and DocFX documentation. It is a baseline rather than a finished or certified application: generated applications still require application-specific configuration, threat analysis, deployment controls, testing, and security review.",
   "creators": [
