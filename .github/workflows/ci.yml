@@ -311,7 +311,7 @@ jobs:
       - name: Test scaffolded output
         shell: pwsh
         working-directory: ./artifacts/scaffold/ContosoSecurityPortal
-        run: dotnet test ./ContosoSecurityPortal.slnx --configuration $env:CONFIGURATION --no-build --verbosity normal /p:ContinuousIntegrationBuild=true
+        run: dotnet test --solution ./ContosoSecurityPortal.slnx --configuration $env:CONFIGURATION --no-build --verbosity normal /p:ContinuousIntegrationBuild=true
 
       - name: Build scaffolded Docker image
         if: runner.os == 'Linux'
@@ -491,7 +491,7 @@ jobs:
       - name: Test option combination
         shell: pwsh
         working-directory: ./artifacts/scaffold/ContosoSecurityPortal
-        run: dotnet test ./ContosoSecurityPortal.slnx --configuration $env:CONFIGURATION --no-build --verbosity normal /p:ContinuousIntegrationBuild=true
+        run: dotnet test --solution ./ContosoSecurityPortal.slnx --configuration $env:CONFIGURATION --no-build --verbosity normal /p:ContinuousIntegrationBuild=true
 
       - name: Uninstall template package
         if: always()
