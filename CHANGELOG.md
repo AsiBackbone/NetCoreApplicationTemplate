@@ -4,6 +4,18 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
+## Unreleased
+
+### Security
+
+* Updated the narrowly scoped OWASP Dependency-Check suppression for CVE-2026-54285 to the currently referenced
+  `OpenTelemetry.Exporter.OpenTelemetryProtocol` 1.20.1 NuGet package. The CVE affects the JavaScript
+  `@opentelemetry/core` package rather than OpenTelemetry .NET; other package versions and vulnerabilities remain
+  scanned.
+* Pruned obsolete OpenTelemetry and Source Link suppressions and strengthened suppression validation so an exact NuGet
+  package/version suppression must match the version currently pinned in `Directory.Packages.props`. Future package
+  updates now require an explicit suppression review instead of silently leaving stale entries behind.
+
 ## 2.11.6 - 2026-10-24
 
 ### Added

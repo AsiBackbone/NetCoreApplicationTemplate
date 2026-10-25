@@ -5,6 +5,10 @@ param(
     [string] $Path = (Join-Path -Path $PSScriptRoot -ChildPath '../dependency-check-suppressions.xml'),
 
     [Parameter()]
+    [ValidateNotNullOrEmpty()]
+    [string] $PackageVersionsPath = (Join-Path -Path $PSScriptRoot -ChildPath '../Directory.Packages.props'),
+
+    [Parameter()]
     [ValidateRange(0, 3650)]
     [int] $ReviewWindowDays = 30,
 
@@ -70,6 +74,19 @@ $resolvedPath = (Resolve-Path -LiteralPath $Path).Path
 [xml] $document = Get-Content -LiteralPath $resolvedPath -Raw
 $suppressions = @($document.SelectNodes("/*[local-name()='suppressions']/*[local-name()='suppress']"))
 
+$resolvedPackageVersionsPath = (Resolve-Path -LiteralPath $PackageVersionsPath).Path
+[xml] $packageVersionsDocument = Get-Content -LiteralPath $resolvedPackageVersionsPath -Raw
+$packageVersions = @{}
+
+foreach ($packageVersionNode in @($packageVersionsDocument.SelectNodes("//*[local-name()='PackageVersion']"))) {
+    $packageName = $packageVersionNode.GetAttribute('Include').Trim()
+    $packageVersion = $packageVersionNode.GetAttribute('Version').Trim()
+
+    if (-not [string]::IsNullOrWhiteSpace($packageName) -and -not [string]::IsNullOrWhiteSpace($packageVersion)) {
+        $packageVersions[$packageName] = $packageVersion
+    }
+}
+
 if ($suppressions.Count -eq 0) {
     throw "No dependency-check suppressions were found in '$resolvedPath'."
 }
@@ -88,6 +105,25 @@ foreach ($suppression in $suppressions) {
     if ([string]::IsNullOrWhiteSpace($notes)) {
         $errors.Add("${identity}: suppression must include non-empty <notes> explaining the review rationale.")
         continue
+    }
+
+    $packageUrlNode = $suppression.SelectSingleNode("*[local-name()='packageUrl']")
+    if ($null -ne $packageUrlNode -and $packageUrlNode.GetAttribute('regex') -eq 'true') {
+        $exactPackageUrl = [regex]::Match(
+            $packageUrlNode.InnerText.Trim(),
+            '^\^pkg:nuget/(?<package>.+)@(?<version>[^@]+)\$$')
+
+        if ($exactPackageUrl.Success) {
+            $suppressedPackage = [regex]::Unescape($exactPackageUrl.Groups['package'].Value)
+            $suppressedVersion = [regex]::Unescape($exactPackageUrl.Groups['version'].Value)
+
+            if (-not $packageVersions.ContainsKey($suppressedPackage)) {
+                $errors.Add("${identity}: exact NuGet suppression targets package '$suppressedPackage', which is not centrally pinned in '$resolvedPackageVersionsPath'. Remove the stale suppression or add the reviewed current package version.")
+            }
+            elseif ($packageVersions[$suppressedPackage] -ne $suppressedVersion) {
+                $errors.Add("${identity}: exact NuGet suppression targets version '$suppressedVersion', but '$suppressedPackage' is centrally pinned to '$($packageVersions[$suppressedPackage])'. Review the finding and update or remove the stale suppression.")
+            }
+        }
     }
 
     $until = $suppression.GetAttribute('until').Trim()

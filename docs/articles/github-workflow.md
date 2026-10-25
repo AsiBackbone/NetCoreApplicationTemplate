@@ -107,7 +107,7 @@ OWASP Dependency-Check runs in its own workflow, separately from CI. It scans th
 
 Findings are reviewed through code scanning, and the release checklist in `RELEASE.md` asks for explicit confirmation that dependency and audit scanning has no unresolved release-blocking findings before a stable tag. Treat that confirmation as the gate, not the workflow's exit code.
 
-Reviewed false positives are recorded in `dependency-check-suppressions.xml`. Each entry is scoped to an exact package and version so it expires naturally when that version is no longer referenced; prune entries whose versions are no longer in `Directory.Packages.props`.
+Reviewed false positives are recorded in `dependency-check-suppressions.xml`. Each entry is scoped to an exact package and version so it expires naturally when that version is no longer referenced. The suppression validator rejects exact NuGet package/version entries that do not match `Directory.Packages.props`, forcing each package update to review whether the suppression remains necessary. Remove stale entries instead of carrying them forward automatically.
 
 ## Documentation Publishing
 
