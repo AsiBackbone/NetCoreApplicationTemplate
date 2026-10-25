@@ -61,7 +61,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Validate suppression expiry and rationale
+      - name: Validate suppression scope, expiry, and rationale
         shell: pwsh
         run: ./eng/Validate-DependencyCheckSuppressions.ps1 -ReviewWindowDays 30 -FailOnReviewWindow
 
