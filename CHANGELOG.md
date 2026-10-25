@@ -6,6 +6,23 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+### Changed
+
+* Updated `Microsoft.SourceLink.GitHub` from `10.0.402` to `10.0.403`, and refreshed the affected package lock files.
+* Updated dependencies from `10.0.13` to `10.0.14`, and refreshed the affected package lock files.
+  - Updated `Microsoft.AspNetCore.Authentication.Google`
+  - Updated `Microsoft.AspNetCore.Authentication.MicrosoftAccount`
+  - Updated `Microsoft.AspNetCore.Authentication.OpenIdConnect`
+  - Updated `Microsoft.AspNetCore.Mvc.Testing`
+  - Updated `Microsoft.EntityFrameworkCore`
+  - Updated `Microsoft.EntityFrameworkCore.Design`
+  - Updated `Microsoft.EntityFrameworkCore.Sqlite`
+  - Updated `Microsoft.EntityFrameworkCore.SqlServer`
+  - Updated `Microsoft.EntityFrameworkCore.STools`
+  - Updated `Microsoft.Extensions.Configuration.Abstractions`
+  - Updated `Microsoft.Extensions.Options.ConfigurationExtensions`
+  - Updated `Microsoft.SourceLink.GitHub`
+
 ### Security
 
 * Updated the narrowly scoped OWASP Dependency-Check suppression for CVE-2026-54285 to the currently referenced
