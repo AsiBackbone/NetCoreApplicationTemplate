@@ -14,8 +14,8 @@
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageReadmeFile>PACKAGE-README.md</PackageReadmeFile>
     <PackageIcon>PACKAGE-ICON.png</PackageIcon>
-    <PackageReleaseNotes>Patch 2.11.6 maintenance release of the NetCoreApplicationTemplate dotnet new template. Generated applications no longer report an unconfigured audit-integrity check as Healthy, EF Core design-time host shutdowns no longer produce spurious fatal logs, and Development file logging uses the documented path. The release also services FsCheck and OpenTelemetry dependencies, publishes the complete template option matrix, adds repository-control drift validation, refreshes pinned container image digests and GitHub Actions, and aligns documentation with live governance. The package ID, template identities, short name, supported options, public application surface, and net10.0 target remain unchanged.</PackageReleaseNotes>
-    <VersionPrefix>2.11.6</VersionPrefix>
+    <PackageReleaseNotes>Patch 2.11.7 maintenance release of the NetCoreApplicationTemplate dotnet new template. It services Microsoft .NET packages to 10.0.14 and Source Link to 10.0.403, refreshes package locks, updates the reviewed OpenTelemetry dependency-check suppression, and keeps scaffold validation compatible with the .NET 10 Microsoft Testing Platform command line. The package ID, template identities, short name, supported options, public application surface, generated behavior, and net10.0 target remain unchanged.</PackageReleaseNotes>
+    <VersionPrefix>2.11.7</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Version>$(VersionPrefix)</Version>
     <PackageType>Template</PackageType>

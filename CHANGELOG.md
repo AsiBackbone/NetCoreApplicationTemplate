@@ -4,7 +4,7 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
-## Unreleased
+## 2.11.7 - 2026-10-25
 
 ### Changed
 
@@ -32,6 +32,19 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * Pruned obsolete OpenTelemetry and Source Link suppressions and strengthened suppression validation so an exact NuGet
   package/version suppression must match the version currently pinned in `Directory.Packages.props`. Future package
   updates now require an explicit suppression review instead of silently leaving stale entries behind.
+
+### Fixed
+
+* Updated scaffold smoke and option-matrix test commands to pass the generated `.slnx` through the explicit
+  `dotnet test --solution` option required by the .NET 10 Microsoft Testing Platform command line.
+* Updated the support policy's published-release marker from 2.11.5 to 2.11.6 while 2.11.7 is being prepared.
+
+### Compatibility
+
+* This is a backward-compatible patch release for the feature-complete 2.x line. The package ID, template identities,
+  short name, supported options, public application surface, generated behavior, and `net10.0` target remain unchanged.
+* Existing generated applications are not modified. The `--solution` correction affects repository validation only,
+  and consumers may service the listed package versions independently.
 
 ## 2.11.6 - 2026-10-24
 
