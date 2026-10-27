@@ -81,7 +81,11 @@ jobs:
           printf 'skip=false\n' >> "$GITHUB_OUTPUT"
           printf 'tag=%s\n' "$tag" >> "$GITHUB_OUTPUT"
 
-      - name: Update README release section
+      # The support policy repeats the latest published release in two
+      # current-facing markers. Advance them with the README block so a
+      # published release cannot leave either behind; version-consistency.yml
+      # fails the pull request if any of the three disagree.
+      - name: Update latest release markers
         if: steps.release.outputs.skip == 'false'
         shell: bash
         env:
@@ -116,6 +120,40 @@ jobs:
 
           if updated != text:
               readme.write_text(updated, encoding="utf-8")
+
+          version = tag[1:]
+          support = Path(".github/SUPPORT.md")
+          with support.open(encoding="utf-8", newline="") as handle:
+              support_text = handle.read()
+
+          version_pattern = r"\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?"
+          support_markers = [
+              (
+                  "maintenance-posture latest published release",
+                  rf"(Release\s+`){version_pattern}(`\s+is\s+the\s+latest\s+published\s+release\.)",
+              ),
+              (
+                  "version support lifecycle latest release",
+                  rf"(?m)(^\|\s*`\d+\.x`\s*\|\s*Current stable line;\s*latest\s+release\s+`){version_pattern}(`)",
+              ),
+          ]
+
+          support_updated = support_text
+          for description, marker_pattern in support_markers:
+              support_updated, marker_count = re.subn(
+                  marker_pattern,
+                  lambda match: f"{match.group(1)}{version}{match.group(2)}",
+                  support_updated,
+              )
+
+              if marker_count != 1:
+                  raise SystemExit(
+                      f"SUPPORT.md {description} marker must appear exactly once; found {marker_count}."
+                  )
+
+          if support_updated != support_text:
+              with support.open("w", encoding="utf-8", newline="") as handle:
+                  handle.write(support_updated)
           PY
 
       - name: Create pull request
@@ -126,9 +164,10 @@ jobs:
           commit-message: "Update README latest release section"
           title: "Update README latest release section"
           body: |
-            Updates the README latest release section after publishing `${{ steps.release.outputs.tag }}`.
+            Updates the README latest release section and the support policy's latest-release markers after publishing `${{ steps.release.outputs.tag }}`.
           branch: docs/update-latest-release
           base: main
           delete-branch: true
           add-paths: |
             README.md
+            .github/SUPPORT.md
