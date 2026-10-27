@@ -163,6 +163,7 @@ if (-not [string]::IsNullOrWhiteSpace($templatePackageVersion)) {
     }
 }
 
+$versionPattern = '\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?'
 $escapedVersion = [regex]::Escape($ExpectedVersion)
 $escapedPackageId = [regex]::Escape('NetCoreApplicationTemplate')
 
@@ -175,6 +176,7 @@ $publishedReleaseMatch = [regex]::Match(
     $readme,
     'Current release:\s*__\[Release (?<labelVersion>\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)\]\([^\)]*/releases/tag/v(?<urlVersion>\d+\.\d+\.\d+(?:-[0-9A-Za-z][0-9A-Za-z.-]*)?)\)__'
 )
+$publishedReleaseVersion = $null
 
 if (-not $publishedReleaseMatch.Success) {
     Add-Failure 'README current-release block was not found or was malformed.'
@@ -183,6 +185,7 @@ else {
     $publishedLabelVersion = $publishedReleaseMatch.Groups['labelVersion'].Value
     $publishedUrlVersion = $publishedReleaseMatch.Groups['urlVersion'].Value
     Assert-Equal $publishedUrlVersion $publishedLabelVersion 'README current-release URL version'
+    $publishedReleaseVersion = $publishedLabelVersion
 
     $publishedTagMatch = [regex]::Match(
         $readme,
@@ -194,6 +197,60 @@ else {
     }
     else {
         Assert-Equal $publishedTagMatch.Groups['tagVersion'].Value $publishedLabelVersion 'README current-release tag version'
+    }
+}
+
+# The latest published release can trail the repository version while the next
+# release is prepared, but it can never be newer than the repository version.
+if ($null -ne $publishedReleaseVersion) {
+    $publishedSemanticVersion = $null
+    $expectedSemanticVersion = $null
+
+    if ([System.Management.Automation.SemanticVersion]::TryParse($publishedReleaseVersion, [ref]$publishedSemanticVersion) -and
+        [System.Management.Automation.SemanticVersion]::TryParse($ExpectedVersion, [ref]$expectedSemanticVersion) -and
+        $publishedSemanticVersion -gt $expectedSemanticVersion) {
+        Add-Failure "README current release '$publishedReleaseVersion' is newer than repository version '$ExpectedVersion'."
+    }
+}
+
+# The support policy repeats the latest published release in two current-facing
+# markers. Both must follow the README Current Release block, which
+# publish-release.yml advances together with them after each stable release.
+$support = Get-RequiredFileText '.github/SUPPORT.md'
+$supportMarkers = @(
+    [pscustomobject]@{
+        Description = 'SUPPORT.md maintenance-posture latest published release'
+        Pattern = "Release\s+\x60(?<version>$versionPattern)\x60\s+is\s+the\s+latest\s+published\s+release\."
+    },
+    [pscustomobject]@{
+        Description = 'SUPPORT.md version support lifecycle latest release'
+        Pattern = "(?m)^\|\s*\x60(?<line>\d+)\.x\x60\s*\|\s*Current stable line;\s*latest\s+release\s+\x60(?<version>$versionPattern)\x60"
+    }
+)
+
+foreach ($supportMarker in $supportMarkers) {
+    $markerMatches = @([regex]::Matches($support, $supportMarker.Pattern))
+
+    if ($markerMatches.Count -ne 1) {
+        Add-Failure "$($supportMarker.Description) marker must appear exactly once in .github/SUPPORT.md; found $($markerMatches.Count)."
+        continue
+    }
+
+    if ($null -eq $publishedReleaseVersion) {
+        continue
+    }
+
+    $markerVersion = $markerMatches[0].Groups['version'].Value
+    if ($markerVersion -ne $publishedReleaseVersion) {
+        Add-Failure "$($supportMarker.Description) expected '$publishedReleaseVersion' from the README Current Release block but found '$markerVersion'."
+    }
+
+    $markerLine = $markerMatches[0].Groups['line']
+    if ($markerLine.Success) {
+        $publishedMajor = $publishedReleaseVersion.Split('.')[0]
+        if ($markerLine.Value -ne $publishedMajor) {
+            Add-Failure "$($supportMarker.Description) names the '$($markerLine.Value).x' line, but the README current release '$publishedReleaseVersion' belongs to the '$publishedMajor.x' line."
+        }
     }
 }
 

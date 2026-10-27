@@ -297,9 +297,14 @@ workflow permission expansion.
 
 ## Automated Release README Pull Requests
 
-The `publish-release.yml` workflow updates the README latest-release markers after
+The `publish-release.yml` workflow updates the README latest-release markers and
+the two latest-release markers in `.github/SUPPORT.md` (the maintenance-posture
+statement and the current stable line's row in the version support lifecycle table) after
 a GitHub Release is published and opens or updates the
-`docs/update-latest-release` pull request. The pull request is intentionally
+`docs/update-latest-release` pull request. `scripts/Validate-VersionConsistency.ps1`
+requires both support-policy markers to match the README Current Release block and
+the README Current Release to be no newer than the repository version, so the
+version-consistency check fails if a published release leaves any of them behind. The pull request is intentionally
 created with a dedicated GitHub App installation token instead of the built-in
 `GITHUB_TOKEN`. Pull requests created by the default workflow token do not
 normally start subsequent workflow runs, while the App-authored pull request
