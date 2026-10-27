@@ -24,6 +24,21 @@
         <vulnerabilityName>CVE-2026-54285</vulnerabilityName>
     </suppress>
 
+    <suppress until="2027-01-31Z">
+        <notes>
+            <![CDATA[
+      CVE-2026-54285 affects W3CBaggagePropagator.extract() in @opentelemetry/core
+      (npm) from opentelemetry-js versions prior to 2.8.0. The scanned dependency
+      is the OpenTelemetry.Extensions.Hosting 1.20.1 NuGet package from
+      OpenTelemetry .NET, which provides .NET generic-host registration and does
+      not contain the opentelemetry-js propagator, so this is a reviewed
+      cross-ecosystem false positive. Code scanning alerts #75 and #76.
+    ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:nuget/OpenTelemetry\.Extensions\.Hosting@1\.20\.1$</packageUrl>
+        <vulnerabilityName>CVE-2026-54285</vulnerabilityName>
+    </suppress>
+
     <!--
     CVE-2012-2055 applies to historical GitHub Enterprise behavior,
     not these NuGet packages.
@@ -36,6 +51,22 @@
     ]]>
         </notes>
         <packageUrl regex="true">^pkg:nuget/AspNet\.Security\.OAuth\.GitHub@10\.0\.0$</packageUrl>
+        <vulnerabilityName>CVE-2012-2055</vulnerabilityName>
+    </suppress>
+
+    <suppress until="2027-01-31Z">
+        <notes>
+            <![CDATA[
+      CVE-2012-2055 is a mass-assignment flaw in GitHub Enterprise before
+      20120304 (the public-key update form). Microsoft.SourceLink.GitHub 10.0.403
+      is a build-time MSBuild package, referenced with PrivateAssets="all", that
+      records GitHub source URLs in PDBs; it contains no GitHub Enterprise server
+      code and is not shipped as a runtime dependency. The match comes from the
+      "GitHub" product name, so this is a reviewed false positive. Code scanning
+      alert #47.
+    ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:nuget/Microsoft\.SourceLink\.GitHub@10\.0\.403$</packageUrl>
         <vulnerabilityName>CVE-2012-2055</vulnerabilityName>
     </suppress>
 
