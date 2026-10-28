@@ -4,8 +4,7 @@
 
 The following original or project-generated image assets are distributed under this repository's MIT license:
 
-- `docs/images/logo.svg` is the editable original blueprint, shield, scaffold, and code-bracket repository icon.
-- `docs/images/logo.png`, `docs/images/logo-docs.png`, `docs/images/logo-256.png`, and `docs/images/logo-128.png` are rendered variants of the project branding.
+- `docs/images/logo.png`, `docs/images/logo-docs.png`, `docs/images/logo-256.png`, and `docs/images/logo-128.png` are rendered variants of the project's layered-pages glyph from the AsiBackbone glyph family.
 - `docs/images/favicon.ico`, `docs/images/social-preview.png`, and `PACKAGE-ICON.png` are project branding variants produced for documentation, social, and NuGet package surfaces.
 - `docs/images/application-preview.svg` is a project-created preview of the generated application's landing page.
 - `src/ProjectTemplate.Web/wwwroot/favicon.ico` is the favicon bundled with generated applications.
