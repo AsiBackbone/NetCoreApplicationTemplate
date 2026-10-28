@@ -4,6 +4,14 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
+## Unreleased
+
+### Changed
+
+* Replaced the repository icon, documentation logo, favicon, NuGet package icon, and social preview with the
+  layered-pages glyph from the AsiBackbone glyph family. File names and image dimensions are unchanged. Removed the
+  superseded `docs/images/logo.svg` source and updated `ASSETS-LICENSES.md`.
+
 ## 2.11.7 - 2026-10-25
 
 ### Changed
