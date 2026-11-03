@@ -20,6 +20,20 @@ Package-based validation is preferred because it verifies the actual distributio
 
 The `2.0.0` release moved the public NuGet package ID to `NetCoreApplicationTemplate`. Release `2.8.0` aligns the internal template identity and group identity with the `AsiBackbone` organization namespace. The public package ID and template short name remain unchanged.
 
+## Discovery Metadata
+
+The repository description and topics and the package `Description` and `PackageTags` in `eng/NetCoreApplicationTemplate.Template.csproj` are one discovery surface: GitHub search reads the first, NuGet search reads the second. They were reviewed together on 2026-11-03 for [AsiBackbone/NetCoreApplicationTemplate#679](https://github.com/AsiBackbone/NetCoreApplicationTemplate/issues/679).
+
+| Surface | Result |
+|:---|:---|
+| Repository description and topics | Retained. They already name the generated capabilities (`authentication`, `ef-core`, `security-headers`, `structured-logging`, `rate-limiting`, `secure-by-default`, and so on). Repository settings are maintained outside this repository. |
+| Package `Description` | Retained. A free-text NuGet search for "authentication template", "authorization template", "security-headers", "structured-logging", or "ef-core template" already returned the package in the top 20. |
+| Package `PackageTags` | Changed. The tags were `dotnet-new`, `templates`, `aspnetcore`, `mvc`, `web`, `enterprise`, and `security`. Tag-filtered searches such as `tags:security-headers` and `tags:authentication` didn't return the package, because none of the generated capabilities was a tag. |
+
+The tags now add `authentication`, `authorization`, `ef-core`, `security-headers`, and `structured-logging`. Each one corresponds to behavior in the default scaffold: cookie authentication, the authenticated fallback authorization policy and named policies, EF Core data access, the security-header middleware, and Serilog request and application logging. The list deliberately isn't exhaustive: options such as `--dbProvider none` still exist, and terms like `rate-limiting` stay in the description and repository topics rather than growing the tag list further. The change reaches NuGet with the next published package; the published `2.11.7` package is unchanged.
+
+`RepositoryLintTests.TemplatePackageTags_MatchReviewedDiscoveryVocabulary` pins the reviewed tag set, so adding, removing, or reordering a tag fails the test until this section and the test are updated together.
+
 ## Consumer Scaffold Boundaries
 
 The scaffolded output intentionally includes:

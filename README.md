@@ -27,12 +27,32 @@ threat analysis, deployment controls, testing, and security review; see
 [What This Template Secures by Default](#what-this-template-secures-by-default)
 and the [Security Policy](SECURITY.md).
 
-Install it:
+## Try the Generated App in Five Minutes
+
+Evaluating whether this ASP.NET Core baseline fits your application? Scaffold a disposable app from the published template package and see its secure defaults without cloning or building this repository. You need the .NET 10 SDK (10.0.400 or a later 10.0.4xx patch).
 
 ```bash
 dotnet new install NetCoreApplicationTemplate
-dotnet new netcoreapp-template -n ContosoSecurityPortal
+dotnet new netcoreapp-template -n NcatEval
+cd NcatEval
+dotnet run --project src/NcatEval.Web --launch-profile http
 ```
+
+The app listens on `http://localhost:5195`. In a second terminal, look for three behaviors:
+
+1. **Routed endpoints require authentication.** `curl -i http://localhost:5195/` returns `302 Found` with a `Location` header pointing to `/Account/Login?ReturnUrl=%2F`. The fallback authorization policy covers every routed endpoint that is not explicitly anonymous.
+2. **There is no built-in sign-in.** Opening `http://localhost:5195/Account/Login` in a browser shows "No sign-in provider is configured." Cookie authentication stores a session after sign-in, but the scaffold ships no local accounts, credential form, or seeded user. Adding a provider or a host-owned identity flow is your decision.
+3. **Security headers are on by default.** The same `curl -i` response includes `Content-Security-Policy`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy`, and cross-origin isolation headers.
+
+Health probes are anonymous: `/health/live` returns `200 Healthy`. `/health/ready` returns `503 Unhealthy` until you apply the SQLite migrations, because readiness reports the unprovisioned database instead of claiming to be healthy.
+
+To clean up, stop the app with `Ctrl+C`, delete the `NcatEval` folder, and remove the template if you don't want to keep it:
+
+```bash
+dotnet new uninstall NetCoreApplicationTemplate
+```
+
+For every template option and the generated test suite, see [Install and Use the Template Package](#install-and-use-the-template-package).
 
 Tagged releases publish a durable, hashed evidence bundle for the exact NuGet
 package and OCI image — separate SPDX SBOMs, provenance, the signed image digest,
@@ -80,6 +100,8 @@ The phrase **secure baseline** in this project refers to concrete controls—clo
 `--authProvider none` is an explicit architectural opt-out. It disables application authentication, cookie authentication, and the authenticated fallback policy in generated configuration. Unannotated routed endpoints are public in that variant until the consuming application adds another authentication mechanism and authorization posture.
 
 ## Quick Start from Source
+
+This path is for contributors and template maintainers working on the template itself. To evaluate the generated application, use [Try the Generated App in Five Minutes](#try-the-generated-app-in-five-minutes) instead.
 
 ```powershell
 git clone https://github.com/AsiBackbone/NetCoreApplicationTemplate.git
@@ -227,10 +249,30 @@ requires no external governance, audit, or policy product.
   complements but does not replace ASP.NET Core authentication or endpoint
   authorization, and NCAT does not require it.
 
+- **[ReferenceApplication](https://github.com/AsiBackbone/ReferenceApplication)**
+  — a runnable integration specimen that builds on an NCAT-generated
+  application and adds AsiBackbone governance (currently pre-release). Use it
+  to see the two projects working together. NCAT's own defaults and contracts
+  are still defined here, and NCAT does not depend on it.
+
 ## Support and Community
 
-- Use [AsiBackbone organization Discussions](https://github.com/orgs/AsiBackbone/discussions) for setup and usage questions, design or extension guidance, and community feedback. Identify `AsiBackbone/NetCoreApplicationTemplate` in project-specific posts.
-- Use [GitHub Issues](https://github.com/AsiBackbone/NetCoreApplicationTemplate/issues) for reproducible bugs, documentation gaps, and focused feature requests.
+### Feedback that helps most now
+
+The `2.x` line is a feature-complete, actively serviced baseline. It is not a finished, penetration-tested, or certified application, and each generated application's owner remains responsible for its configuration, threat analysis, deployment controls, and security review. The most useful feedback now comes from people evaluating a scaffold for the first time: reproducible scaffold failures, confusing defaults, unsafe assumptions, missing deployment boundaries, and documentation gaps.
+
+| Discussion category | Question to answer |
+| --- | --- |
+| [Q&A](https://github.com/orgs/AsiBackbone/discussions/categories/q-a) | Which quickstart command or generated behavior was unclear? |
+| [Ideas](https://github.com/orgs/AsiBackbone/discussions/categories/ideas) | Which secure default or template option is missing from your evaluation? |
+| [Architecture & Integration](https://github.com/orgs/AsiBackbone/discussions/categories/architecture-integration) | Where would this production-oriented baseline not fit your application or delivery model? |
+
+Identify `AsiBackbone/NetCoreApplicationTemplate` in project-specific posts. Because the `2.x` line is feature-complete, an idea for a new template option is a design discussion first, not a commitment.
+
+### Where to go
+
+- Use [AsiBackbone organization Discussions](https://github.com/orgs/AsiBackbone/discussions) for setup and usage questions, design or extension guidance, and community feedback.
+- Use the [GitHub issue forms](https://github.com/AsiBackbone/NetCoreApplicationTemplate/issues/new/choose) for reproducible bugs, documentation gaps, and focused feature requests.
 - Report suspected vulnerabilities through the private process in [SECURITY.md](SECURITY.md).
 - Participate under the repository [Code of Conduct](.github/CODE_OF_CONDUCT.md) and [Community Standards](.github/COMMUNITY_STANDARDS.md).
 - See [Governance](.github/GOVERNANCE.md) and [Maintainers](.github/MAINTAINERS.md) for decision authority and operational ownership.
