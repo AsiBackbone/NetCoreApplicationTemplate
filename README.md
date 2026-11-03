@@ -42,9 +42,9 @@ The app listens on `http://localhost:5195`. In a second terminal, look for three
 
 1. **Routed endpoints require authentication.** `curl -i http://localhost:5195/` returns `302 Found` with a `Location` header pointing to `/Account/Login?ReturnUrl=%2F`. The fallback authorization policy covers every routed endpoint that is not explicitly anonymous.
 2. **There is no built-in sign-in.** Opening `http://localhost:5195/Account/Login` in a browser shows "No sign-in provider is configured." Cookie authentication stores a session after sign-in, but the scaffold ships no local accounts, credential form, or seeded user. Adding a provider or a host-owned identity flow is your decision.
-3. **Security headers are on by default.** The same `curl -i` response includes `Content-Security-Policy`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy`, and cross-origin isolation headers.
+3. **Security headers are on by default.** The same `curl -i` response includes `Content-Security-Policy`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy`, and cross-origin isolation headers. Infrastructure paths excluded by default (`/health` and `/metrics`) receive only `X-Content-Type-Options`.
 
-Health probes are anonymous: `/health/live` returns `200 Healthy`. `/health/ready` returns `503 Unhealthy` until you apply the SQLite migrations, because readiness reports the unprovisioned database instead of claiming to be healthy.
+Health probes are anonymous: `/health/live` returns `200 Healthy`. In a fresh SQLite scaffold, `/health/ready` returns `503 Unhealthy` because the database file has not been created yet; the readiness check reports a missing SQLite file or a failed connection. It does not verify that migrations were applied, so creating the database with the checked-in migrations is a provisioning step you own, not something the probe confirms.
 
 To clean up, stop the app with `Ctrl+C`, delete the `NcatEval` folder, and remove the template if you don't want to keep it:
 
