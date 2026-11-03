@@ -8,6 +8,16 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ### Changed
 
+* Added a "Try the Generated App in Five Minutes" path to the README. It scaffolds a disposable app from the published
+  template package, names three observable defaults (the authenticated fallback redirect to `/Account/Login`, no
+  built-in sign-in provider, and the security headers on that redirect response), explains the live/ready
+  health-probe split, and ends with cleanup. "Quick Start from Source" is now labeled for contributors and template maintainers.
+* Added ReferenceApplication to Related Projects as the runnable NCAT + AsiBackbone integration specimen, and added a
+  "Feedback that helps most now" section with direct Q&A, Ideas, and Architecture & Integration links and concrete
+  questions. Issue forms remain the route for concrete work.
+* Reviewed repository and NuGet discovery metadata together. The template package adds the `authentication`,
+  `authorization`, `ef-core`, `security-headers`, and `structured-logging` tags, starting with the next published
+  package; the review is recorded in Template Packaging, and a repository lint test pins the reviewed tag set.
 * Replaced the repository icon, documentation logo, favicon, NuGet package icon, and social preview with the
   layered-pages glyph from the AsiBackbone glyph family. File names and image dimensions are unchanged. Removed the
   superseded `docs/images/logo.svg` source and updated `ASSETS-LICENSES.md`.

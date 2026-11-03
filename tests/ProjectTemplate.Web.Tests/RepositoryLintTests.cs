@@ -205,6 +205,50 @@ public sealed class RepositoryLintTests
             StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// Verifies that the template package keeps the discovery tags reviewed in the Template Packaging documentation.
+    /// </summary>
+    /// <remarks>
+    /// NuGet tag-filtered search only finds the package through these tags. Changing them is a deliberate metadata
+    /// decision, so this test and the Discovery Metadata section of <c>docs/articles/template-packaging.md</c> change
+    /// together.
+    /// </remarks>
+    [Fact]
+    public void TemplatePackageTags_MatchReviewedDiscoveryVocabulary()
+    {
+        string[] reviewedTags =
+        [
+            "dotnet-new",
+            "templates",
+            "aspnetcore",
+            "mvc",
+            "web",
+            "enterprise",
+            "security",
+            "authentication",
+            "authorization",
+            "ef-core",
+            "security-headers",
+            "structured-logging"
+        ];
+
+        string solutionRoot = GetSolutionRoot();
+        string projectPath = Path.Combine(solutionRoot, "eng", "NetCoreApplicationTemplate.Template.csproj");
+        var project = System.Xml.Linq.XDocument.Load(projectPath);
+
+        System.Xml.Linq.XElement packageTags = Assert.Single(project.Descendants("PackageTags"));
+        string[] actualTags = packageTags.Value
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        Assert.Equal(reviewedTags, actualTags);
+        Assert.True(
+            packageTags.Value.Length <= 4000,
+            "NuGet limits the combined tags value to 4000 characters.");
+
+        string documentation = File.ReadAllText(Path.Combine(solutionRoot, "docs", "articles", "template-packaging.md"));
+        Assert.Contains("## Discovery Metadata", documentation, StringComparison.Ordinal);
+    }
+
     private static string GetSolutionRoot()
     {
         DirectoryInfo? directory = new(AppContext.BaseDirectory);
