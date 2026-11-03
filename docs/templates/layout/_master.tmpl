@@ -97,9 +97,9 @@
           <div class="collapse navbar-collapse" id="navpanel">
             <div id="navbar">
               {{#_enableSearch}}
-              <form class="search" role="search" id="search">
+              <form class="search" role="search" action="https://asibackbone.github.io/search/" method="get">
                 <i class="bi bi-search" aria-hidden="true"></i>
-                <input class="form-control" id="search-query" type="search" disabled placeholder="{{__global.search}}" autocomplete="off" aria-label="Search">
+                <input class="form-control" name="q" type="search" placeholder="Search all AsiBackbone" autocomplete="off" aria-label="Search all AsiBackbone documentation">
               </form>
               {{/_enableSearch}}
             </div>
