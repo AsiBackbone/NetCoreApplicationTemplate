@@ -63,6 +63,8 @@ $ecosystemNavigation = [ordered]@{
     'Community' = 'https://asibackbone.github.io/#community'
     'Framework' = 'https://asibackbone.github.io/AsiBackbone/'
     'Template' = 'index.md'
+    'Reference' = 'https://asibackbone.github.io/ReferenceApplication/'
+    'Funding' = 'https://asibackbone.github.io/#funding'
     'GitHub' = 'https://github.com/AsiBackbone'
 }
 
@@ -379,6 +381,7 @@ function Invoke-SelfTest {
         @{ Name = 'missing not-a-dependency statement'; Check = { param($e) Test-Homepage $validHomepage.Replace('Neither related project is a dependency of the template.', '') $e }; Pass = $false }
         @{ Name = 'valid navigation'; Check = { param($e) Test-Navigation $validToc $e }; Pass = $true }
         @{ Name = 'missing Community'; Check = { param($e) Test-Navigation $validToc.Replace('- name: Community', '- name: Discussions') $e }; Pass = $false }
+        @{ Name = 'missing Funding'; Check = { param($e) Test-Navigation $validToc.Replace('- name: Funding', '- name: Sponsorship') $e }; Pass = $false }
         @{ Name = 'valid footer'; Check = { param($e) Test-Footer $validFooter $e }; Pass = $true }
         @{ Name = 'footer without license'; Check = { param($e) Test-Footer $validFooter.Replace('LICENSE.txt', 'README.md') $e }; Pass = $false }
         @{ Name = 'valid built homepage'; Check = { param($e) Test-BuiltHomepage $validSite $e }; Pass = $true }
