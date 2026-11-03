@@ -110,6 +110,8 @@ $requiredLayoutContent = @(
     '<meta property="og:image" content="{{_socialImageUrl}}">'
     '<script type="application/ld+json">{{{_structuredDataJson}}}</script>'
     '{{^_disableToc}}<meta name="docfx:tocrel" content="{{_tocRel}}">{{/_disableToc}}'
+    '<form class="search" role="search" action="https://asibackbone.github.io/search/" method="get">'
+    '<input class="form-control" name="q" type="search" placeholder="Search all AsiBackbone" autocomplete="off" aria-label="Search all AsiBackbone documentation">'
     '<a class="skip-link" href="#main-content">Skip to content</a>'
     '<main class="container-xxl" id="main-content" tabindex="-1">'
 )
@@ -122,6 +124,8 @@ $requiredBuiltHomepageMetadata = @(
     "<meta property=`"og:image`" content=`"$socialImageUrl`">"
     '<meta name="description" content="'
     '<script type="application/ld+json">'
+    '<form class="search" role="search" action="https://asibackbone.github.io/search/" method="get">'
+    '<input class="form-control" name="q" type="search" placeholder="Search all AsiBackbone" autocomplete="off" aria-label="Search all AsiBackbone documentation">'
     '<a class="skip-link" href="#main-content">Skip to content</a>'
     '<main class="container-xxl" id="main-content" tabindex="-1">'
 )
@@ -364,6 +368,8 @@ function Invoke-SelfTest {
         "<script type=`"application/ld+json`">$validStructuredData</script>"
         '<a class="skip-link" href="#main-content">Skip to content</a>'
         '<header class="bg-body border-bottom"></header>'
+        '<form class="search" role="search" action="https://asibackbone.github.io/search/" method="get">'
+        '<input class="form-control" name="q" type="search" placeholder="Search all AsiBackbone" autocomplete="off" aria-label="Search all AsiBackbone documentation">'
         '<main class="container-xxl" id="main-content" tabindex="-1">'
     ) + $requiredBuiltSectionIds + $designPhilosophyStatement + '</main>') -join "`n"
     $validDocFx = (@('"template": [ "default", "modern", "templates" ],') + $requiredDocFxMetadata) -join ",`n"
