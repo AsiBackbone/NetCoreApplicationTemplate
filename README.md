@@ -40,7 +40,7 @@ dotnet run --project src/NcatEval.Web --launch-profile http
 
 The app listens on `http://localhost:5195`. In a second terminal, look for three behaviors:
 
-1. **Routed endpoints require authentication.** `curl -i http://localhost:5195/` returns `302 Found` with a `Location` header pointing to `/Account/Login?ReturnUrl=%2F`. The fallback authorization policy covers every routed endpoint that is not explicitly anonymous.
+1. **Routed endpoints require authentication.** `curl -i http://localhost:5195/` returns `302 Found` with a `Location` header pointing to `/Account/Login?ReturnUrl=%2F`. The fallback authorization policy applies to routed endpoints that have no authorization metadata, such as `/`. Endpoints marked with `[Authorize]` use the default or a named policy instead, and explicitly anonymous endpoints are exempt.
 2. **There is no built-in sign-in.** Opening `http://localhost:5195/Account/Login` in a browser shows "No sign-in provider is configured." Cookie authentication stores a session after sign-in, but the scaffold ships no local accounts, credential form, or seeded user. Adding a provider or a host-owned identity flow is your decision.
 3. **Security headers are on by default.** The same `curl -i` response includes `Content-Security-Policy`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy`, and cross-origin isolation headers. Infrastructure paths excluded by default (`/health` and `/metrics`) receive only `X-Content-Type-Options`.
 
