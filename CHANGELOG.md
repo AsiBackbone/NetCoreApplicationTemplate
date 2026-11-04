@@ -8,6 +8,8 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ### Changed
 
+* Related Projects now describes ReferenceApplication as stable `1.x` instead of pre-release, matching its prepared
+  `1.0.0` release.
 * Added a "Try the Generated App in Five Minutes" path to the README. It scaffolds a disposable app from the published
   template package, names three observable defaults (the authenticated fallback redirect to `/Account/Login`, no
   built-in sign-in provider, and the security headers on that redirect response), explains the live/ready
