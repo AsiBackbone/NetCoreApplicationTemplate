@@ -251,7 +251,7 @@ requires no external governance, audit, or policy product.
 
 - **[ReferenceApplication](https://github.com/AsiBackbone/ReferenceApplication)**
   — a runnable integration specimen that builds on an NCAT-generated
-  application and adds AsiBackbone governance (currently pre-release). Use it
+  application and adds AsiBackbone governance (stable `1.x`). Use it
   to see the two projects working together. NCAT's own defaults and contracts
   are still defined here, and NCAT does not depend on it.
 
