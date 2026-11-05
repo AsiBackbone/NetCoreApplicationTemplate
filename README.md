@@ -5,6 +5,7 @@
 [![CI](https://github.com/AsiBackbone/NetCoreApplicationTemplate/actions/workflows/ci.yml/badge.svg)](https://github.com/AsiBackbone/NetCoreApplicationTemplate/actions/workflows/ci.yml)
 [![Coverage Report](https://img.shields.io/badge/coverage%20gate-75%25-brightgreen)](https://asibackbone.github.io/NetCoreApplicationTemplate/coverage/index.html)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13645/badge)](https://www.bestpractices.dev/projects/13645)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/AsiBackbone/NetCoreApplicationTemplate/badge)](https://scorecard.dev/viewer/?uri=github.com/AsiBackbone/NetCoreApplicationTemplate)
 [![Documentation](https://github.com/AsiBackbone/NetCoreApplicationTemplate/actions/workflows/publish-docs.yml/badge.svg)](https://github.com/AsiBackbone/NetCoreApplicationTemplate/actions/workflows/publish-docs.yml)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://asibackbone.github.io/NetCoreApplicationTemplate/)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple)](https://dotnet.microsoft.com/)
