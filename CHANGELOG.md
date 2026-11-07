@@ -4,7 +4,7 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
-## Unreleased
+## 2.11.8 - 2026-11-06
 
 ### Changed
 
@@ -23,6 +23,25 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * Replaced the repository icon, documentation logo, favicon, NuGet package icon, and social preview with the
   layered-pages glyph from the AsiBackbone glyph family. File names and image dimensions are unchanged. Removed the
   superseded `docs/images/logo.svg` source and updated `ASSETS-LICENSES.md`.
+* Refreshed the pinned .NET 10 SDK and ASP.NET Core runtime container image digests used by newly generated
+  applications. The image tags, target framework, Dockerfile structure, and intended runtime behavior remain unchanged.
+* Updated ReportGenerator and the pinned GitHub Actions used by repository validation and release automation.
+* Hardened release publication so the README current-release block and both support-policy release markers advance
+  together after publication, with version-consistency validation rejecting drift between them.
+
+### Security
+
+* Restored the reviewed, package-specific dependency-check suppressions for Source Link and the remaining
+  OpenTelemetry .NET packages where the scanner maps vulnerabilities from unrelated ecosystems or components. Each
+  suppression remains version-scoped, documented, and validated against the centrally pinned package set.
+
+### Compatibility
+
+* This is a backward-compatible patch release for the feature-complete 2.x line. The package ID, template identities,
+  short name, supported options, public application surface, and `net10.0` target remain unchanged.
+* Existing generated applications are not modified. Newly generated applications receive refreshed container image
+  digests, while the package discovery tags, icon, documentation, and repository automation do not change application
+  runtime behavior.
 
 ## 2.11.7 - 2026-10-25
 
