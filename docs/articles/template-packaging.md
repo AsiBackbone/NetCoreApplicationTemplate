@@ -16,7 +16,7 @@ Package-based validation is preferred because it verifies the actual distributio
 | Template identity | `AsiBackbone.NetCoreApplicationTemplate.CSharp` |
 | Template group identity | `AsiBackbone.NetCoreApplicationTemplate` |
 | Source replacement token | `ProjectTemplate` |
-| Current package version | `2.11.7` |
+| Current package version | `2.11.8` |
 
 The `2.0.0` release moved the public NuGet package ID to `NetCoreApplicationTemplate`. Release `2.8.0` aligns the internal template identity and group identity with the `AsiBackbone` organization namespace. The public package ID and template short name remain unchanged.
 
@@ -30,7 +30,7 @@ The repository description and topics and the package `Description` and `Package
 | Package `Description` | Retained. A free-text NuGet search for "authentication template", "authorization template", "security-headers", "structured-logging", or "ef-core template" already returned the package in the top 20. |
 | Package `PackageTags` | Changed. The tags were `dotnet-new`, `templates`, `aspnetcore`, `mvc`, `web`, `enterprise`, and `security`. Tag-filtered searches such as `tags:security-headers` and `tags:authentication` didn't return the package, because none of the generated capabilities was a tag. |
 
-The tags now add `authentication`, `authorization`, `ef-core`, `security-headers`, and `structured-logging`. Each one corresponds to behavior in the default scaffold: cookie authentication, the authenticated fallback authorization policy and named policies, EF Core data access, the security-header middleware, and Serilog request and application logging. The list deliberately isn't exhaustive: options such as `--dbProvider none` still exist, and terms like `rate-limiting` stay in the description and repository topics rather than growing the tag list further. The change reaches NuGet with the next published package; the published `2.11.7` package is unchanged.
+The tags now add `authentication`, `authorization`, `ef-core`, `security-headers`, and `structured-logging`. Each one corresponds to behavior in the default scaffold: cookie authentication, the authenticated fallback authorization policy and named policies, EF Core data access, the security-header middleware, and Serilog request and application logging. The list deliberately isn't exhaustive: options such as `--dbProvider none` still exist, and terms like `rate-limiting` stay in the description and repository topics rather than growing the tag list further. The tags first ship in `2.11.8`; the published `2.11.7` package is unchanged.
 
 `RepositoryLintTests.TemplatePackageTags_MatchReviewedDiscoveryVocabulary` pins the reviewed tag set, so adding, removing, or reordering a tag fails the test until this section and the test are updated together.
 
@@ -138,13 +138,13 @@ See [Container Release Publishing](container-publish.md#durable-release-assets) 
 Install the published package from NuGet:
 
 ```powershell
-dotnet new install NetCoreApplicationTemplate::2.11.7
+dotnet new install NetCoreApplicationTemplate::2.11.8
 ```
 
 Install a locally packed package:
 
 ```powershell
-dotnet new install ./artifacts/template-package/NetCoreApplicationTemplate.2.11.7.nupkg
+dotnet new install ./artifacts/template-package/NetCoreApplicationTemplate.2.11.8.nupkg
 ```
 
 ## Create a New Project from the Template
