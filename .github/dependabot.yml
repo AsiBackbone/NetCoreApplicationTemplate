@@ -59,16 +59,15 @@ updates:
     groups:
       dotnet-base-images:
         patterns:
-          - "mcr.microsoft.com/dotnet/*"
+          - "dotnet/*"
     ignore:
-      - dependency-name: "mcr.microsoft.com/dotnet/aspnet"
+      - dependency-name: "dotnet/aspnet"
         update-types:
           - "version-update:semver-major"
 
-      - dependency-name: "mcr.microsoft.com/dotnet/sdk"
+      - dependency-name: "dotnet/sdk"
         update-types:
           - "version-update:semver-major"
-
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
