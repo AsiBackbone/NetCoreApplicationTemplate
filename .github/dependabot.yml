@@ -60,6 +60,14 @@ updates:
       dotnet-base-images:
         patterns:
           - "mcr.microsoft.com/dotnet/*"
+    ignore:
+      - dependency-name: "mcr.microsoft.com/dotnet/aspnet"
+        update-types:
+          - "version-update:semver-major"
+
+      - dependency-name: "mcr.microsoft.com/dotnet/sdk"
+        update-types:
+          - "version-update:semver-major"
 
   - package-ecosystem: "github-actions"
     directory: "/"
