@@ -4,6 +4,18 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
+## 2.11.9 - 2026-11-10
+
+### Security
+
+* Refreshed the pinned ASP.NET Core 10 runtime image in generated Dockerfiles to pick up the Ubuntu APT fix for
+  CVE-2026-109518, which blocked signed container publication for 2.11.8.
+
+### Changed
+
+* Updated the pinned .NET 10 build image to SDK 10.0.404.
+* Grouped .NET container dependency updates and restricted automated updates to the supported .NET major version.
+
 ## 2.11.8 - 2026-11-06
 
 ### Changed
