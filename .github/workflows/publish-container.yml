@@ -257,6 +257,31 @@ jobs:
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
 
+      # Verify the image signature by immutable digest against the exact
+      # publish-container.yml release-tag identity, and confirm that untrusted
+      # workflow identities are rejected.
+      - name: Verify image digest signature
+        shell: pwsh
+        env:
+          DIGEST_REF: ${{ steps.push.outputs.digest_ref }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
+          SOURCE_COMMIT: ${{ github.sha }}
+        run: >
+          ./scripts/Assert-SigstoreContainerSignature.ps1
+          -DigestReference $env:DIGEST_REF
+          -TagName $env:RELEASE_TAG
+          -SourceCommit $env:SOURCE_COMMIT
+          -Repository $env:REPOSITORY
+          -IncludeNegativeChecks
+
+      - name: Verify image digest provenance
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DIGEST_REF: ${{ steps.push.outputs.digest_ref }}
+          REPOSITORY: ${{ github.repository }}
+        run: gh attestation verify "oci://$DIGEST_REF" --repo "$REPOSITORY"
+
       - name: Capture exact release notes
         shell: pwsh
         env:
@@ -321,6 +346,43 @@ jobs:
 
           Copy-Item -Path (Join-Path $templateEvidenceDirectory '*') -Destination artifacts/container-release -Force
 
+      # The unified manifest binds the package and bundle exactly as the public
+      # release serves them, so they are downloaded without credentials and
+      # verified again rather than taken from a workflow artifact.
+      - name: Verify published template package signature and provenance
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
+          SOURCE_COMMIT: ${{ github.sha }}
+        run: |
+          $packageManifestPath = 'artifacts/template-package-release/template-package-manifest.json'
+          $packageManifest = Get-Content -LiteralPath $packageManifestPath -Raw | ConvertFrom-Json
+          $packageFile = [string]$packageManifest.package.packageFile
+          $packageDirectory = 'artifacts/template-package-signed'
+
+          ./scripts/Save-GitHubReleaseAssetsAnonymously.ps1 `
+            -TagName $env:RELEASE_TAG `
+            -Repository $env:REPOSITORY `
+            -AssetName @($packageFile, "$packageFile.sigstore.json") `
+            -OutputDirectory $packageDirectory
+
+          ./scripts/Assert-SigstorePackageBundle.ps1 `
+            -PackageDirectory $packageDirectory `
+            -BundleDirectory $packageDirectory `
+            -PackageManifestPath $packageManifestPath `
+            -TagName $env:RELEASE_TAG `
+            -SourceCommit $env:SOURCE_COMMIT `
+            -Repository $env:REPOSITORY `
+            -IncludeNegativeChecks
+
+          gh attestation verify (Join-Path $packageDirectory $packageFile) --repo $env:REPOSITORY
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "GitHub provenance verification failed for released template package '$packageFile'."
+          }
+
       - name: Generate unified release evidence manifest
         shell: pwsh
         env:
@@ -336,6 +398,7 @@ jobs:
           -SourceCommit $env:SOURCE_COMMIT
           -ImageReference $env:IMAGE_REFERENCE
           -ImageDigest $env:IMAGE_DIGEST
+          -TemplatePackageDirectory artifacts/template-package-signed
           -Repository $env:REPOSITORY
 
       - name: Publish complete release evidence

@@ -22,7 +22,8 @@ For every new tagged release, publish durable evidence for the exact `.nupkg`: a
 
 Keep the following controls explicitly separate:
 
-- Cosign signs only the published OCI image digest.
+- Cosign signs the published OCI image digest; that signature does not cover the package.
+- A separate Cosign keyless blob signature covers the exact `.nupkg` attached to the GitHub Release (see the amendment below); it is not a NuGet author signature.
 - NuGet Trusted Publishing authorizes the workflow to publish the package.
 - GitHub artifact attestations bind workflow provenance to the package and evidence files.
 - SBOMs, Source Link, release tags, and retained SHA-256 hashes support inspection and correlation.
@@ -39,6 +40,22 @@ Consumers can durably retrieve package identity, composition, hash, source commi
 The review is time-bounded and owner-assigned instead of being an open-ended deferral. Release reviews must not describe Cosign, Trusted Publishing, provenance, or an SBOM as package signing.
 
 The release workflows become coupled at the evidence-publication boundary: both protected publish jobs must finish so the unified release manifest can be assembled and verified.
+
+## Amendment: Sigstore signature for the GitHub Release package (2026-11-12)
+
+[Issue #698](https://github.com/AsiBackbone/NetCoreApplicationTemplate/issues/698) extends the existing Cosign keyless signing to the template package. For releases after `v2.11.9`, the protected `publish-template` job signs the exact validated `.nupkg` with `cosign sign-blob` using its GitHub Actions OIDC identity, attaches the package and its `*.sigstore.json` bundle to the GitHub Release, and verifies the bundle against the exact `publish-template-package.yml` release-tag identity before NuGet publication.
+
+This amendment does not adopt NuGet author signing and does not change the decision or review date above:
+
+| Signal | Status | What it covers |
+| --- | --- | --- |
+| Sigstore blob signature for the `.nupkg` | Adopted for releases after `v2.11.9` | The exact package bytes attached to the GitHub Release, bound to the protected release workflow identity |
+| Cosign image signature | Adopted | The published OCI image digest only |
+| NuGet Trusted Publishing | Adopted | Authorization of the workflow to publish to NuGet.org; no signature in the package |
+| NuGet.org repository signature | Applied by NuGet.org | The bytes NuGet.org serves; not an NCAT signature |
+| NuGet author signing | Deferred by this ADR | Would bind the package to a project-controlled certificate |
+
+NuGet.org repository-signs packages on ingestion, so the Sigstore bundle does not verify the NuGet.org copy, and NuGet tooling does not evaluate the bundle during install. A consumer or registry that requires NuGet author-signed packages is not satisfied by the bundle. Signer identities, verification commands, trust roots, and failure behavior are documented in [Container Release Publishing](../articles/container-publish.md#release-signatures).
 
 ## Alternatives Considered
 

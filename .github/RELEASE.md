@@ -47,6 +47,7 @@ Complete these checks before tagging a stable release:
 Before approving publication, review generated artifacts from the release workflow:
 
 - `.nupkg`
+- `.nupkg.sigstore.json` Cosign keyless signature bundle for the exact `.nupkg`
 - `.snupkg`, if produced
 - Container image digest, if containers are published
 - Package and container SPDX SBOMs
@@ -60,7 +61,7 @@ Before approving publication, review generated artifacts from the release workfl
 
 Confirm artifact names, versions, repository URLs, license metadata, authorship metadata, package descriptions, package IDs, and release notes are accurate before publication.
 
-For a tagged release, confirm the GitHub Release contains all seven durable evidence assets documented in [Container Release Publishing](../docs/articles/container-publish.md#durable-release-assets). GitHub Actions artifacts are temporary workflow hand-offs and do not satisfy this requirement.
+For a tagged release, confirm the GitHub Release contains all nine durable release assets documented in [Container Release Publishing](../docs/articles/container-publish.md#durable-release-assets). GitHub Actions artifacts are temporary workflow hand-offs and do not satisfy this requirement.
 
 ## 4. NuGet Publication Policy
 
@@ -96,14 +97,16 @@ Before publication, confirm one of the following is true:
 
 External contributors are not expected to sign release packages. Official packages should be produced only by the maintainer-controlled release workflow.
 
-Do not conflate controls: NuGet Trusted Publishing authenticates publication, Cosign signs only the OCI image digest, and SBOMs, hashes, Source Link, tags, and GitHub provenance attestations provide separate evidence. None is a NuGet author signature.
+Do not conflate controls: NuGet Trusted Publishing authenticates publication; a Cosign keyless blob signature covers only the exact `.nupkg` attached to the GitHub Release, not the repository-signed copy NuGet.org serves; a separate Cosign signature covers only the OCI image digest; and SBOMs, hashes, Source Link, tags, and GitHub provenance attestations provide separate evidence. None is a NuGet author signature.
+
+Publish tagged releases only through `Publish Stable Release`. The package and image signatures are verified against the reusable workflow identity at the release tag with the `push` trigger, so a tag publication started any other way fails before NuGet publication.
 
 ## 6. GitHub Release, Zenodo, and Documentation Validation
 
 After creating the release candidate or stable release:
 
 1. Confirm the GitHub Release points to the expected tag.
-2. Confirm all seven durable evidence assets are present and versioned correctly, and verify the hashes recorded in `release-evidence-manifest.json`.
+2. Confirm all nine durable release assets are present and versioned correctly, and verify the hashes recorded in `release-evidence-manifest.json`.
 3. Confirm Zenodo receives the intended release only after integration is enabled.
 4. Confirm Zenodo metadata matches `CITATION.cff` and `.zenodo.json`.
 5. Confirm the DocFX documentation workflow completes.
@@ -113,8 +116,9 @@ After creating the release candidate or stable release:
 9. Confirm the production deployment checklist is current.
 10. Confirm release notes link to the production deployment checklist, package page, documentation site, and DOI/archive record when available.
 11. Confirm the merged release branch is absent from the remote branch list. If a legacy release branch remains, verify its immutable tag and published GitHub Release before deleting it.
-12. Confirm the exact NuGet package satisfies the package-manifest hash and its GitHub attestation verifies for releases produced by the current workflow.
+12. Confirm the exact `.nupkg` downloaded from the GitHub Release satisfies the package-manifest hash, its GitHub attestation verifies, and its `.sigstore.json` bundle verifies with the `templatePackageSignature.verificationCommand` recorded in `release-evidence-manifest.json`.
 13. Confirm the OCI digest satisfies both the Cosign signature and GitHub provenance verification commands recorded in `container-image-manifest.json`.
+14. Review the OpenSSF Scorecard Signed-Releases result after publication. Treat it as a discoverability signal, not as proof that a signature is valid.
 
 ## 7. Clean-Environment Post-Release Validation
 

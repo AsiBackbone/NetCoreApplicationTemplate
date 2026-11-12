@@ -9,16 +9,17 @@ The production path is:
 1. Build and validate the template package.
 2. Generate the package SPDX SBOM and package manifest.
 3. Attest the package and package evidence when the run is tag-based.
-4. Create or resolve the GitHub Release.
-5. Upload the package evidence to the GitHub Release.
-6. Verify that the package evidence is present and anonymously retrievable.
-7. Push the package to the configured NuGet source.
-8. Build, scan, and package the container image.
-9. Publish the versioned container image and resolve its immutable digest.
-10. Sign the image digest and publish container provenance.
-11. Download the already-published package evidence without polling.
-12. Generate and upload the unified release-evidence manifest.
-13. Verify the complete GitHub Release evidence set.
+4. Sign the exact package with Cosign keyless signing and verify the bundle against the exact signer identity, including tamper and untrusted-identity cases.
+5. Create or resolve the GitHub Release.
+6. Upload the package, its Sigstore bundle, and the package evidence to the GitHub Release.
+7. Verify that those assets are present and anonymously retrievable, and verify the anonymously downloaded package against its bundle.
+8. Push the package to the configured NuGet source.
+9. Build, scan, and package the container image.
+10. Publish the versioned container image and resolve its immutable digest.
+11. Sign the image digest, publish container provenance, and verify both against the exact signer identity.
+12. Download the already-published package, bundle, and package evidence without polling, and verify the package signature and provenance again.
+13. Generate and upload the unified release-evidence manifest.
+14. Verify the complete GitHub Release evidence set.
 
 The `template-package-publish` environment remains the deliberate maintainer approval boundary. The container workflow is reusable and is reached only through the orchestrator's explicit `needs:` dependency after the package stage succeeds. This removes the former mutual 30-minute polling dependency between the package and container workflows.
 
@@ -33,10 +34,11 @@ The NuGet push retains `--skip-duplicate` so rerunning the same release is safe 
 | Failure point | Public state | Retry guidance |
 | --- | --- | --- |
 | Package build, validation, SBOM generation, or provenance attestation | No NuGet publication | Correct the failure and rerun. No registry cleanup is required. |
+| Package signing or Sigstore bundle verification | No NuGet publication | Correct the failure and rerun the same tag workflow. A rerun signs the same package again and replaces the bundle. A run not started by the tag push fails the trigger check by design. |
 | GitHub Release creation, package-evidence upload, or anonymous evidence verification | No NuGet publication | Correct the release/evidence problem and rerun. Evidence upload uses `--clobber`. |
 | NuGet push | Package may or may not exist | Check the package source, then rerun the same tag workflow. `--skip-duplicate` makes an already-published version non-fatal. |
 | Container build or vulnerability threshold after NuGet publication | NuGet is public; container is not | Correct the container-only failure and rerun the same tag workflow. The package stage is duplicate-safe. |
-| GHCR push, signing, or container provenance | NuGet is public; image may be partially published | Inspect the version digest and tags. Rerun only when the same release commit and intended image are being published; otherwise use a corrective patch release. |
+| GHCR push, signing, container provenance, or image signature verification | NuGet is public; image may be partially published | Inspect the version digest and tags. Rerun only when the same release commit and intended image are being published; otherwise use a corrective patch release. |
 | Unified evidence generation, upload, or final verification | NuGet and container are public | Rerun immediately to restore the durable evidence boundary. Evidence upload uses `--clobber`; do not change already-published artifact identity. |
 
 ## Missing evidence behavior

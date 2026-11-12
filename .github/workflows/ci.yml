@@ -160,6 +160,10 @@ jobs:
         shell: pwsh
         run: ./scripts/Test-ReleaseEvidence.ps1
 
+      - name: Test Sigstore package and image verification
+        shell: pwsh
+        run: ./scripts/Test-SigstoreVerification.ps1
+
       - name: Test repository security-control audit
         shell: pwsh
         run: ./scripts/Test-RepositorySecurityControls.ps1 -SelfTest
