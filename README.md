@@ -56,8 +56,9 @@ dotnet new uninstall NetCoreApplicationTemplate
 For every template option and the generated test suite, see [Install and Use the Template Package](#install-and-use-the-template-package).
 
 Tagged releases publish a durable, hashed evidence bundle for the exact NuGet
-package and OCI image — separate SPDX SBOMs, provenance, the signed image digest,
-and tested verification commands. See
+package and OCI image — separate SPDX SBOMs, provenance, a Sigstore signature
+bundle for the exact `.nupkg`, the signed image digest, and tested verification
+commands. See
 [Container Release Publishing](docs/articles/container-publish.md#durable-release-assets).
 NuGet author signing is tracked separately by
 [ADR-0005](docs/adr/0005-defer-nuget-package-signing.md).

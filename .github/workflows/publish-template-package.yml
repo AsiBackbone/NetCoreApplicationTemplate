@@ -228,6 +228,66 @@ jobs:
         with:
           subject-path: ${{ env.PACKAGE_EVIDENCE_OUTPUT }}/*.json
 
+      # Sign the exact validated .nupkg with Cosign keyless blob signing in this
+      # protected job, before the release assets are attached and before NuGet
+      # publication. The certificate identity is this reusable workflow at the
+      # release tag; the trigger is the tag push that starts Publish Stable
+      # Release. A tag run started any other way fails the identity gate below
+      # and publishes nothing. No long-lived signing key is used.
+      - name: Install Cosign
+        if: github.ref_type == 'tag'
+        uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
+
+      - name: Sign exact template package with Sigstore
+        if: github.ref_type == 'tag'
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          packages=("$PACKAGE_OUTPUT"/*.nupkg)
+
+          if [ "${#packages[@]}" -ne 1 ]; then
+            echo "::error::Expected exactly one template package to sign, found ${#packages[@]}."
+            exit 1
+          fi
+
+          package="${packages[0]}"
+          cosign sign-blob --yes \
+            --bundle "$PACKAGE_EVIDENCE_OUTPUT/$(basename "$package").sigstore.json" \
+            "$package"
+
+      - name: Verify template package Sigstore bundle before publication
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
+          SOURCE_COMMIT: ${{ github.sha }}
+        run: >
+          ./scripts/Assert-SigstorePackageBundle.ps1
+          -PackageDirectory $env:PACKAGE_OUTPUT
+          -BundleDirectory $env:PACKAGE_EVIDENCE_OUTPUT
+          -PackageManifestPath (Join-Path $env:PACKAGE_EVIDENCE_OUTPUT 'template-package-manifest.json')
+          -TagName $env:RELEASE_TAG
+          -SourceCommit $env:SOURCE_COMMIT
+          -Repository $env:REPOSITORY
+          -IncludeNegativeChecks
+
+      # The signed .nupkg is attached beside its bundle so consumers can verify
+      # the exact signed bytes; NuGet.org serves a repository-signed copy.
+      - name: Stage signed template package as a release asset
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        run: |
+          $packages = @(Get-ChildItem -LiteralPath $env:PACKAGE_OUTPUT -Filter '*.nupkg' -File)
+
+          if ($packages.Count -ne 1) {
+              throw "Expected exactly one template package, found $($packages.Count)."
+          }
+
+          Copy-Item -LiteralPath $packages[0].FullName -Destination $env:PACKAGE_EVIDENCE_OUTPUT
+
       - name: Ensure GitHub release evidence boundary
         if: github.ref_type == 'tag'
         shell: pwsh
@@ -276,6 +336,36 @@ jobs:
             -TagName $env:RELEASE_TAG `
             -EvidenceDirectory $env:PACKAGE_EVIDENCE_OUTPUT `
             -Repository $env:REPOSITORY
+
+      # Verify the copies consumers will receive: download the package and
+      # bundle from the public release without credentials and verify them
+      # against the exact signer identity before NuGet publication.
+      - name: Verify published template package signature from anonymous download
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          REPOSITORY: ${{ github.repository }}
+          SOURCE_COMMIT: ${{ github.sha }}
+        run: |
+          $packageManifest = Get-Content -LiteralPath (Join-Path $env:PACKAGE_EVIDENCE_OUTPUT 'template-package-manifest.json') -Raw | ConvertFrom-Json
+          $packageFile = [string]$packageManifest.package.packageFile
+          $verificationRoot = Join-Path $env:RUNNER_TEMP 'template-package-signature-verification'
+
+          ./scripts/Save-GitHubReleaseAssetsAnonymously.ps1 `
+            -TagName $env:RELEASE_TAG `
+            -Repository $env:REPOSITORY `
+            -AssetName @($packageFile, "$packageFile.sigstore.json") `
+            -OutputDirectory $verificationRoot
+
+          ./scripts/Assert-SigstorePackageBundle.ps1 `
+            -PackageDirectory $verificationRoot `
+            -BundleDirectory $verificationRoot `
+            -PackageManifestPath (Join-Path $env:PACKAGE_EVIDENCE_OUTPUT 'template-package-manifest.json') `
+            -TagName $env:RELEASE_TAG `
+            -SourceCommit $env:SOURCE_COMMIT `
+            -Repository $env:REPOSITORY `
+            -IncludeNegativeChecks
 
       - name: Resolve package source
         id: source

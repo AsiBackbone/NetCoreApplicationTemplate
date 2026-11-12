@@ -119,7 +119,7 @@ Long-lived publishing credentials should not be introduced where federated or sc
 
 The v2.x profile is designed to preserve the existing release workflows rather than add protection that would block them:
 
-- `Publish Template Package` keeps `id-token: write` on the publish job for NuGet Trusted Publishing and uses the `template-package-publish` environment.
+- `Publish Template Package` keeps `id-token: write` on the publish job for NuGet Trusted Publishing and Cosign keyless signing of the exact `.nupkg`, and uses the `template-package-publish` environment.
 - `Publish Container` keeps write permissions isolated to the publish job, signs the pushed digest with cosign keyless signing, and emits provenance/attestation evidence. `Publish Stable Release` runs it only after the approved package job succeeds, so it needs no environment or approval of its own.
 - Release tags that trigger these workflows must point to the release commit already merged into `main`.
 - Environment approval remains the human publication gate after the tag is created.

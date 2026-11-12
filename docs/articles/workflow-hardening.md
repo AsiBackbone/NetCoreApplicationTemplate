@@ -61,7 +61,7 @@ allowlist because some GitHub-hosted artifact and CDN destinations are dynamic.
 | GHCR publication and pulls | `ghcr.io` plus the GitHub container storage endpoints returned by GHCR |
 | Base image pulls during Docker builds | Microsoft Container Registry and Docker registry/auth/CDN endpoints required by the repository Dockerfile |
 | Trivy vulnerability database and scanner support | Aqua Security/GHCR endpoints used by the pinned `aquasecurity/trivy-action` |
-| Keyless container signing | GitHub OIDC plus Sigstore Fulcio, Rekor, and trusted-root/TUF distribution endpoints used by Cosign |
+| Keyless container and package signing and verification | GitHub OIDC plus Sigstore Fulcio, Rekor, timestamp, and trusted-root/TUF distribution endpoints used by Cosign |
 | GitHub-hosted artifact/cache transfer | Ephemeral GitHub Actions/Azure-backed storage hosts issued to the current workflow run |
 
 When audit output shows a previously undocumented destination, determine which
@@ -75,7 +75,7 @@ Change a protected publishing job from audit to block only after:
 1. observing multiple successful cold-cache and warm-cache runs for the exact
    release path;
 2. exercising NuGet Trusted Publishing, GitHub release uploads, attestations,
-   GHCR publication, Trivy database retrieval, and Cosign signing;
+   GHCR publication, Trivy database retrieval, and Cosign package and image signing;
 3. accounting for dynamic GitHub artifact/cache storage without introducing a
    broad unrestricted wildcard;
 4. validating the proposed allowlist in a release-candidate or otherwise
@@ -99,6 +99,6 @@ operation, registry call, or release step cannot consume a runner indefinitely.
 | `template-smoke-test` | 45 minutes | Cross-platform template generation plus Linux Docker build/start/health validation can be substantially slower on a cold runner. |
 | `template-option-matrix` | 20 minutes | Existing bounded budget for one generated option combination. |
 | `pack-template` | 25 minutes | Covers locked restore, solution build, package creation, SBOM generation, and artifact upload. |
-| `publish-template` | 20 minutes | Covers approval-to-run publication work, evidence upload/verification, OIDC login, and registry push. |
+| `publish-template` | 20 minutes | Covers approval-to-run publication work, package signing and verification, evidence upload/verification, OIDC login, and registry push. |
 | container `build-scan` | 35 minutes | Allows image build/export, Trivy database retrieval, two scans, SBOM generation, and artifact uploads. |
 | container `publish` | 30 minutes | Allows image publication, digest resolution, Cosign signing, provenance, evidence assembly, uploads, and verification. |

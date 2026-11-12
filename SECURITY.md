@@ -136,6 +136,8 @@ NuGet.org publication uses NuGet Trusted Publishing through GitHub Actions OIDC 
 
 Until package author signing is formally adopted and documented, NCAT should not be described as providing author-signed release artifacts. NuGet.org adds its own repository signature to the package bytes it serves; that repository signature is distinct from a maintainer or author signature.
 
+For releases after `v2.11.9`, the GitHub Release also carries the exact `.nupkg` with a Cosign keyless blob signature bundle (`*.sigstore.json`). The protected `publish-template-package.yml` workflow signs it at the release tag through GitHub Actions OIDC, with no long-lived key. The bundle verifies only the package attached to the GitHub Release, not the repository-signed copy served by NuGet.org, and it is not a NuGet author signature. See [Release Signatures](docs/articles/container-publish.md#release-signatures) for the signer identities and verification commands.
+
 ### Current trust model
 
 Current release trust is established through:
@@ -144,6 +146,7 @@ Current release trust is established through:
 - the public GitHub source repository and release tags;
 - durable release-attached SPDX SBOMs for the package and the container image;
 - package, SBOM, and container provenance attestations;
+- a Cosign keyless signature bundle for the exact GitHub Release `.nupkg`, for releases after `v2.11.9`;
 - the signed container image digest and published verification commands;
 - release evidence and artifact SHA-256 mappings.
 

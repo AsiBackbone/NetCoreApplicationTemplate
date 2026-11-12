@@ -122,9 +122,9 @@ Documentation updates should be validated by checking:
 
 ## NuGet Package Publishing
 
-The Publish Template Package workflow publishes release tags and can also be run manually for pack-only validation. NuGet.org publication uses NuGet Trusted Publishing through GitHub Actions OIDC rather than a long-lived NuGet API key. For tags, the workflow also generates and attests evidence for the exact `.nupkg`, then attaches its SPDX SBOM and SHA-256 package manifest to the GitHub Release.
+The Publish Template Package workflow publishes release tags and can also be run manually for pack-only validation. NuGet.org publication uses NuGet Trusted Publishing through GitHub Actions OIDC rather than a long-lived NuGet API key. For tags, the workflow also generates and attests evidence for the exact `.nupkg`, signs it with a Cosign keyless blob signature, verifies the bundle against the exact release-tag workflow identity, then attaches the package, its `*.sigstore.json` bundle, its SPDX SBOM, and its SHA-256 package manifest to the GitHub Release. It downloads the package and bundle back from the public release and verifies them again before NuGet publication.
 
-The publish job uses the `template-package-publish` GitHub environment. Keep deliberate maintainer approval on that environment, and keep `id-token: write` scoped only to the job that performs Trusted Publishing login. Changes to package publishing, environment names, OIDC identity, package ownership, or registry targets require security/release review before the next stable tag.
+The publish job uses the `template-package-publish` GitHub environment. Keep deliberate maintainer approval on that environment, and keep `id-token: write` scoped only to the job that performs Trusted Publishing login and package signing. Changes to package publishing, environment names, OIDC identity, package ownership, or registry targets require security/release review before the next stable tag.
 
 ## Container Publishing
 
@@ -134,7 +134,7 @@ The Publish Container workflow runs as part of `Publish Stable Release`, which s
 v*.*.*
 ```
 
-The workflow builds the Docker image, scans it with Trivy, uploads SARIF results, generates a container SPDX SBOM, publishes the image to GitHub Container Registry, signs the pushed digest with Cosign keyless signing, and generates build provenance attestation metadata. It then downloads the package workflow's evidence from the GitHub Release, creates the unified release evidence manifest, uploads the complete durable asset set, and verifies that the public release contains every required asset.
+The workflow builds the Docker image, scans it with Trivy, uploads SARIF results, generates a container SPDX SBOM, publishes the image to GitHub Container Registry, signs the pushed digest with Cosign keyless signing, generates build provenance attestation metadata, and verifies both against the exact release-tag workflow identity. It then downloads the package workflow's evidence, package, and Sigstore bundle from the GitHub Release, creates the unified release evidence manifest, uploads the complete durable asset set, and verifies that the public release contains every required asset.
 
 The published image is:
 
