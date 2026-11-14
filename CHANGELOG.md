@@ -4,6 +4,21 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
+## 2.11.10 - 2026-11-14
+
+### Security
+
+* Added Sigstore keyless signing for the exact template package attached to each GitHub Release, with verification before NuGet publication.
+* Added digest-bound verification for published container signatures and provenance.
+
+### Fixed
+
+* Corrected successful Sigstore package and container verification paths so rejected negative checks do not leave a failing process exit code.
+
+### Changed
+
+* Updated OpenTelemetry ASP.NET Core and HTTP instrumentation packages to 1.20.2.
+
 ## 2.11.9 - 2026-11-10
 
 ### Security
