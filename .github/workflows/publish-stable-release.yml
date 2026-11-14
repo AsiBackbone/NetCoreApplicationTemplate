@@ -32,6 +32,7 @@ jobs:
     needs: publish-template-package
     permissions:
       actions: read
+      artifact-metadata: write
       attestations: write
       contents: write
       id-token: write

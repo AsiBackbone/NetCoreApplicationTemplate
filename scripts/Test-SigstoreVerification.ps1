@@ -23,6 +23,70 @@ $imageName = 'ghcr.io/asibackbone/netcoreapplicationtemplate'
 $signedDigest = 'sha256:' + ('d' * 64)
 $otherDigest = 'sha256:' + ('e' * 64)
 
+function Assert-WorkflowJobPermission {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$WorkflowRelativePath,
+
+        [Parameter(Mandatory = $true)]
+        [string]$JobName,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Permission
+    )
+
+    $repositoryRoot = Split-Path -Parent $PSScriptRoot
+    $workflowPath = Join-Path $repositoryRoot $WorkflowRelativePath
+    $lines = @(Get-Content -LiteralPath $workflowPath)
+    $jobPattern = '^\s{2}' + [regex]::Escape($JobName) + ':\s*$'
+    $jobStart = -1
+
+    for ($index = 0; $index -lt $lines.Count; $index++) {
+        if ($lines[$index] -match $jobPattern) {
+            $jobStart = $index
+            break
+        }
+    }
+
+    if ($jobStart -lt 0) {
+        throw "Workflow '$WorkflowRelativePath' does not define job '$JobName'."
+    }
+
+    $jobEnd = $lines.Count
+    for ($index = $jobStart + 1; $index -lt $lines.Count; $index++) {
+        if ($lines[$index] -match '^\s{2}[A-Za-z0-9_-]+:\s*$') {
+            $jobEnd = $index
+            break
+        }
+    }
+
+    $permissionsStart = -1
+    for ($index = $jobStart + 1; $index -lt $jobEnd; $index++) {
+        if ($lines[$index] -match '^\s{4}permissions:\s*$') {
+            $permissionsStart = $index
+            break
+        }
+    }
+
+    if ($permissionsStart -lt 0) {
+        throw "Job '$JobName' in '$WorkflowRelativePath' does not define job-scoped permissions."
+    }
+
+    $permissionPattern = '^\s{6}' + [regex]::Escape($Permission) + ':\s*write\s*$'
+    for ($index = $permissionsStart + 1; $index -lt $jobEnd; $index++) {
+        if ($lines[$index] -match '^\s{4}\S') {
+            break
+        }
+
+        if ($lines[$index] -match $permissionPattern) {
+            Write-Host "Verified $Permission write permission for '$JobName' in '$WorkflowRelativePath'."
+            return
+        }
+    }
+
+    throw "Job '$JobName' in '$WorkflowRelativePath' must grant '${Permission}: write'."
+}
+
 $parseArguments = @'
 $options = @{}
 $positional = [System.Collections.Generic.List[string]]::new()
@@ -301,6 +365,18 @@ function Assert-Rejected {
 $previousImageSignature = $env:NCAT_TEST_IMAGE_SIGNATURE
 
 try {
+    # A reusable workflow cannot elevate permissions granted by its caller.
+    # Keep both boundaries aligned so attest-build-provenance can persist the
+    # GHCR storage record without weakening any unrelated job.
+    Assert-WorkflowJobPermission `
+        -WorkflowRelativePath '.github/workflows/publish-stable-release.yml' `
+        -JobName 'publish-container' `
+        -Permission 'artifact-metadata'
+    Assert-WorkflowJobPermission `
+        -WorkflowRelativePath '.github/workflows/publish-container.yml' `
+        -JobName 'publish' `
+        -Permission 'artifact-metadata'
+
     New-Item -ItemType Directory -Path $testRoot -Force | Out-Null
     $blobStub = Join-Path $testRoot 'stub-cosign-blob.ps1'
     $imageStub = Join-Path $testRoot 'stub-cosign-image.ps1'
