@@ -315,6 +315,10 @@ try {
     $valid = New-PackageFixture -Name 'valid'
     Invoke-PackageAssert -Fixture $valid -Verifier $blobStub -UsePackageManifest
 
+    if ($LASTEXITCODE -ne 0) {
+        throw "Successful package Sigstore verification left native exit code '$LASTEXITCODE'."
+    }
+
     $missing = New-PackageFixture -Name 'missing-bundle'
     Remove-Item -LiteralPath (Join-Path $missing.Bundles "$($missing.PackageFile).sigstore.json")
     Assert-Rejected -Description 'Missing package Sigstore bundle' -ExpectedMessagePattern 'Sigstore bundle missing*' -Action {
@@ -360,6 +364,10 @@ try {
     # OCI image digest signature.
     Set-ImageSignature
     Invoke-ContainerAssert -Verifier $imageStub
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Successful container Sigstore verification left native exit code '$LASTEXITCODE'."
+    }
 
     Assert-Rejected -Description 'Unsigned image digest' -ExpectedMessagePattern 'Sigstore verification failed*' -Action {
         Invoke-ContainerAssert -Verifier $imageStub -Digest $otherDigest
