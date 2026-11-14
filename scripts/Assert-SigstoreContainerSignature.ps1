@@ -144,3 +144,9 @@ if ($IncludeNegativeChecks) {
 
     Write-Host 'Sigstore negative checks rejected untrusted workflow-ref and workflow-file identities.'
 }
+
+# Expected Cosign failures from the negative checks leave PowerShell's global
+# native-command exit code nonzero even though every assertion passed. Clear it
+# before returning so a successful `pwsh -File` invocation reports success to
+# GitHub Actions and other callers.
+$global:LASTEXITCODE = 0
