@@ -4,6 +4,11 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
+## Unreleased
+
+### Security
+
+* The repository and generated-scaffold `nuget.config` files now use package source mapping to route every package ID to nuget.org, so restore cannot pull a package from a machine-level or user-level feed. Applications that add a private feed must also map its package IDs; see [Package Source Mapping](docs/articles/build-quality.md#package-source-mapping) (#706).
 ## 2.11.10 - 2026-11-14
 
 ### Security

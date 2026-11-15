@@ -213,6 +213,8 @@ The generated `global.json` explicitly selects Microsoft.Testing.Platform, and t
 
 Every generated project includes a checked-in `packages.lock.json`. Use `--locked-mode` in CI and other repeatable builds so restore fails when declared dependencies and the recorded graph differ. After an intentional dependency change, run `dotnet restore --force-evaluate`, review the resulting lock-file changes, and commit them with the package update.
 
+The generated `nuget.config` restores only from nuget.org and maps every package ID to it with package source mapping. To add a private feed, add both the source and a mapping for its package IDs; see [Package Source Mapping](build-quality.md#package-source-mapping).
+
 ## Update the Installed Template
 
 Install the newer package version:
