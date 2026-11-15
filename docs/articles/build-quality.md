@@ -45,6 +45,12 @@ This keeps package drift visible, makes dependency review easier, and ensures sc
 
 Repository, generated-scaffold, and Docker restores use `dotnet restore --locked-mode`. CI first verifies that every project has a lock file so a missing file cannot be silently generated during a supposedly locked restore. After an intentional dependency change, run `dotnet restore --force-evaluate`, review the lock-file diff, and commit it with the dependency update.
 
+## Package Source Mapping
+
+The repository `nuget.config` and the `nuget.config` emitted into every generated scaffold clear inherited package sources, add only `nuget.org`, and use [package source mapping](https://learn.microsoft.com/nuget/consume-packages/package-source-mapping) to route every package ID (`*`) to that source. Restore therefore cannot resolve a package from a machine-level or user-level feed, even when one is configured outside the repository, which closes the dependency-confusion path that multiple sources would otherwise open. Lock files then record the exact versions that nuget.org supplied.
+
+An application that adds a private feed must also add a `packageSource` mapping for that feed's package IDs, for example a company prefix such as `Contoso.*`. NuGet chooses the most specific matching pattern, so the private packages resolve from the private feed while every other package still resolves only from nuget.org. Do not remove the mapping to make a private feed work. Repository tests fail if either `nuget.config` adds another source or drops the `*` mapping.
+
 ## Shared Build Properties
 
 Common build settings live in `Directory.Build.props`.
