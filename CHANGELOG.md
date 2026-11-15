@@ -6,6 +6,10 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+### Fixed
+
+* `Directory.Build.props` no longer sets `InformationalVersion` to `$(Version)+$(RepositoryUrl)`. The line was evaluated before `RepositoryUrl` was defined, so repository and generated-application assemblies reported `<version>+.<commit>` (for example as OpenTelemetry `service.version`). They now report the SDK default, `<version>+<commit>`; Source Link still records the repository. Repository tests guard both the property and the built value (#710).
+
 ### Changed
 
 * `CODE_OF_CONDUCT.md` is now identical to the AsiBackbone organization Code of Conduct (Contributor Covenant 2.1), so every AsiBackbone repository carries the same text and reporting contact. The statement that NetCoreApplicationTemplate also follows the .NET Foundation Code of Conduct moved to `COMMUNITY_STANDARDS.md`.

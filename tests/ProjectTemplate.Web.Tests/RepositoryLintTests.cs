@@ -258,6 +258,46 @@ public sealed class RepositoryLintTests
         Assert.Contains("## Discovery Metadata", documentation, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// Verifies that the shared build properties leave <c>InformationalVersion</c> to the SDK default.
+    /// </summary>
+    /// <remarks>
+    /// The template once set it to <c>$(Version)+$(RepositoryUrl)</c> before <c>RepositoryUrl</c> was defined, so the
+    /// URL evaluated empty and every repository and generated assembly reported <c>&lt;version&gt;+.&lt;commit&gt;</c>.
+    /// The repository root file is also the generated application's file, so this guards both.
+    /// </remarks>
+    [Fact]
+    public void DirectoryBuildProps_LeavesInformationalVersionToSdkDefault()
+    {
+        string solutionRoot = GetSolutionRoot();
+        var project = System.Xml.Linq.XDocument.Load(Path.Combine(solutionRoot, "Directory.Build.props"));
+
+        Assert.Empty(project.Descendants("InformationalVersion"));
+    }
+
+    /// <summary>
+    /// Verifies that the built application reports a well-formed informational version.
+    /// </summary>
+    /// <remarks>
+    /// The value is <c>&lt;version&gt;</c>, or <c>&lt;version&gt;+&lt;commit&gt;</c> when the build can read the
+    /// source revision. OpenTelemetry reports it as <c>service.version</c>.
+    /// </remarks>
+    [Fact]
+    public void ApplicationAssembly_ReportsWellFormedInformationalVersion()
+    {
+        System.Reflection.Assembly assembly = typeof(Program).Assembly;
+        string? informationalVersion = System.Reflection.CustomAttributeExtensions
+            .GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>(assembly)
+            ?.InformationalVersion;
+        string assemblyVersion = assembly.GetName().Version!.ToString(3);
+
+        Assert.NotNull(informationalVersion);
+        Assert.StartsWith(assemblyVersion, informationalVersion, StringComparison.Ordinal);
+        Assert.False(informationalVersion.EndsWith('+'), $"Informational version '{informationalVersion}' ends with '+'.");
+        Assert.DoesNotContain("+.", informationalVersion, StringComparison.Ordinal);
+        Assert.DoesNotContain("://", informationalVersion, StringComparison.Ordinal);
+    }
+
     private static string GetSolutionRoot()
     {
         DirectoryInfo? directory = new(AppContext.BaseDirectory);
