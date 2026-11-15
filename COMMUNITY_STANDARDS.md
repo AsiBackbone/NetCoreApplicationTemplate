@@ -4,7 +4,7 @@ NetCoreApplicationTemplate is a public, reusable ASP.NET Core application templa
 
 The project currently operates under a solo-maintainer model. Community participation is welcome when it keeps the template focused, respectful, reviewable, and useful to future consumers.
 
-This document summarizes project-specific participation expectations. The enforceable conduct policy is [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), and project decision authority is defined in [GOVERNANCE.md](GOVERNANCE.md).
+This document summarizes project-specific participation expectations. The enforceable conduct policy is [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), which is identical to the [AsiBackbone organization Code of Conduct](https://github.com/AsiBackbone/.github/blob/main/CODE_OF_CONDUCT.md). NetCoreApplicationTemplate also follows the [.NET Foundation Code of Conduct](https://dotnetfoundation.org/code-of-conduct) as an additional community standard. Project decision authority is defined in [GOVERNANCE.md](GOVERNANCE.md).
 
 ## Expected Conduct
 
