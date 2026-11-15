@@ -11,7 +11,11 @@
     <Version Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</Version>
     <AssemblyVersion>2.11.10.0</AssemblyVersion>
     <FileVersion>2.11.10.0</FileVersion>
-    <InformationalVersion>$(Version)+$(RepositoryUrl)</InformationalVersion>
+    <!--
+      InformationalVersion is left to the SDK default, "<version>+<commit>". Source Link already records the repository.
+      Do not set it here: a value that references a property defined later in this file, such as RepositoryUrl,
+      evaluates that property as empty.
+    -->
 
     <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
     <EnableSourceLink Condition="'$(EnableSourceLink)' == '' and '$(GITHUB_ACTIONS)' == 'true'">true</EnableSourceLink>
