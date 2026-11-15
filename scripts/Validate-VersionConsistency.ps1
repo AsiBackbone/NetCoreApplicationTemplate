@@ -216,7 +216,7 @@ if ($null -ne $publishedReleaseVersion) {
 # The support policy repeats the latest published release in two current-facing
 # markers. Both must follow the README Current Release block, which
 # publish-release.yml advances together with them after each stable release.
-$support = Get-RequiredFileText '.github/SUPPORT.md'
+$support = Get-RequiredFileText 'SUPPORT.md'
 $supportMarkers = @(
     [pscustomobject]@{
         Description = 'SUPPORT.md maintenance-posture latest published release'
@@ -232,7 +232,7 @@ foreach ($supportMarker in $supportMarkers) {
     $markerMatches = @([regex]::Matches($support, $supportMarker.Pattern))
 
     if ($markerMatches.Count -ne 1) {
-        Add-Failure "$($supportMarker.Description) marker must appear exactly once in .github/SUPPORT.md; found $($markerMatches.Count)."
+        Add-Failure "$($supportMarker.Description) marker must appear exactly once in SUPPORT.md; found $($markerMatches.Count)."
         continue
     }
 

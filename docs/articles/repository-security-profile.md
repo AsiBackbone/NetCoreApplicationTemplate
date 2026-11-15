@@ -200,10 +200,10 @@ These items remain manual because the audit cannot read them:
 
 ## Related Documentation
 
-- [Governance](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/.github/GOVERNANCE.md)
+- [Governance](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/GOVERNANCE.md)
 - [Contributing](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/CONTRIBUTING.md)
 - [Security Policy](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/SECURITY.md)
-- [Maintainers](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/.github/MAINTAINERS.md)
-- [Release Checklist and Runbook](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/.github/RELEASE.md)
+- [Maintainers](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/MAINTAINERS.md)
+- [Release Checklist and Runbook](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/RELEASE.md)
 - [GitHub Workflow](github-workflow.md)
 - [Container Release Publishing](container-publish.md)
