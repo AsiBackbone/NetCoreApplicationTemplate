@@ -111,13 +111,17 @@ public sealed class RepositoryLintTests
     }
 
     /// <summary>
-    /// Verifies that repository restores do not require credentials for a private package source.
+    /// Verifies that repository and generated-scaffold restores use only nuget.org, without credentials for a private
+    /// package source, and that package source mapping routes every package ID to nuget.org.
     /// </summary>
-    [Fact]
-    public void RepositoryNuGetConfig_UsesOnlyNuGetOrg()
+    /// <param name="relativePath">The NuGet configuration path relative to the repository root.</param>
+    [Theory]
+    [InlineData("nuget.config")]
+    [InlineData(".template.content/nuget.config")]
+    public void NuGetConfig_UsesOnlyNuGetOrgWithSourceMapping(string relativePath)
     {
         string solutionRoot = GetSolutionRoot();
-        string nugetConfigPath = Path.Combine(solutionRoot, "nuget.config");
+        string nugetConfigPath = Path.Combine(solutionRoot, relativePath);
         var configuration = System.Xml.Linq.XDocument.Load(nugetConfigPath);
 
         System.Xml.Linq.XElement packageSources = Assert.Single(configuration.Descendants("packageSources"));
@@ -126,7 +130,12 @@ public sealed class RepositoryLintTests
         System.Xml.Linq.XElement source = Assert.Single(packageSources.Elements("add"));
         Assert.Equal("nuget.org", source.Attribute("key")?.Value);
         Assert.Equal("https://api.nuget.org/v3/index.json", source.Attribute("value")?.Value);
-        Assert.Empty(configuration.Descendants("packageSourceMapping"));
+
+        System.Xml.Linq.XElement mapping = Assert.Single(configuration.Descendants("packageSourceMapping"));
+        System.Xml.Linq.XElement mappedSource = Assert.Single(mapping.Elements("packageSource"));
+        Assert.Equal("nuget.org", mappedSource.Attribute("key")?.Value);
+        System.Xml.Linq.XElement pattern = Assert.Single(mappedSource.Elements("package"));
+        Assert.Equal("*", pattern.Attribute("pattern")?.Value);
     }
 
     /// <summary>

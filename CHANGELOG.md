@@ -9,6 +9,13 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 ### Changed
 
 * Moved `AGENTS.md`, `CODE_OF_CONDUCT.md`, `COMMUNITY_STANDARDS.md`, `GOVERNANCE.md`, `MAINTAINERS.md`, `RELEASE.md`, and `SUPPORT.md` from `.github/` to the repository root, matching AsiBackbone and Learning. Links, the release workflow, version-consistency validation, and the template exclusions were updated; the generated scaffold's file list is unchanged (#707).
+* Updated the central transitive `System.Security.Cryptography.Pkcs` pin from 10.0.13 to 10.0.14 and refreshed the
+  affected package lock files. Existing generated applications can adopt the same patch independently without
+  regenerating from the template.
+
+### Security
+
+* The repository and generated-scaffold `nuget.config` files now use package source mapping to route every package ID to nuget.org, so restore cannot pull a package from a machine-level or user-level feed. Applications that add a private feed must also map its package IDs; see [Package Source Mapping](docs/articles/build-quality.md#package-source-mapping) (#706).
 ## 2.11.10 - 2026-11-14
 
 ### Security
