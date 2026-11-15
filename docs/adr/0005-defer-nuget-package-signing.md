@@ -67,5 +67,5 @@ NuGet.org repository-signs packages on ingestion, so the Sigstore bundle does no
 
 - [Issue #506](https://github.com/AsiBackbone/NetCoreApplicationTemplate/issues/506)
 - [Security Policy](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/SECURITY.md)
-- [Release Checklist and Runbook](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/.github/RELEASE.md)
+- [Release Checklist and Runbook](https://github.com/AsiBackbone/NetCoreApplicationTemplate/blob/main/RELEASE.md)
 - [Container Release Publishing](../articles/container-publish.md)

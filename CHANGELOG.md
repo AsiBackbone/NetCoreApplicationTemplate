@@ -4,6 +4,11 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
+## Unreleased
+
+### Changed
+
+* Moved `AGENTS.md`, `CODE_OF_CONDUCT.md`, `COMMUNITY_STANDARDS.md`, `GOVERNANCE.md`, `MAINTAINERS.md`, `RELEASE.md`, and `SUPPORT.md` from `.github/` to the repository root, matching AsiBackbone and Learning. Links, the release workflow, version-consistency validation, and the template exclusions were updated; the generated scaffold's file list is unchanged (#707).
 ## 2.11.10 - 2026-11-14
 
 ### Security
@@ -570,7 +575,7 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * **Behavior change for adopters using the `concurrency` policy:** permits are now partitioned by endpoint and client instead of by endpoint only, so one client can no longer exhaust an endpoint's concurrency for every other client. Set `ConcurrencyPolicy:PartitionByClient` to `false` to restore one shared pool per endpoint.
 * **Behavior change for adopters:** a configured `ExcludedPathPrefixes` list for security headers or request logging now replaces the code defaults instead of being appended to them, so configuration can remove a default exclusion. Blank entries are ignored, which lets a later configuration source remove an inherited entry by setting its index to an empty string; a blank entry therefore no longer fails options validation. Previously the shipped `appsettings.json` values were appended to identical code defaults, producing duplicates, and no default could be removed through configuration.
 * **Behavior change for adopters:** the authentication cookie is now named `__Host-ProjectTemplate.Web.Authentication` with `Path=/` whenever it is always `Secure`, binding the session to the exact issuing host. Existing sessions end once after upgrading because the cookie name changes. The Development-only `AllowInsecureHttp` override keeps the unprefixed `.ProjectTemplate.Web.Authentication` name.
-* Updated `.github/SUPPORT.md` to reflect published release `2.10.0` as the current stable and feature-complete `2.x` baseline.
+* Updated `SUPPORT.md` to reflect published release `2.10.0` as the current stable and feature-complete `2.x` baseline.
 
 ### Fixed
 

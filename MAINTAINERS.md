@@ -70,7 +70,7 @@ Expected `main` branch controls include:
 - The `main` ruleset has no bypass actors, so no maintainer or administrator can push directly to `main` or merge around the ruleset.
 - Workflow, release, security, package, and governance changes receive deliberate maintainer review.
 
-The authoritative rationale and the recovery and escalation path are documented in [Repository Security Profile](../docs/articles/repository-security-profile.md).
+The authoritative rationale and the recovery and escalation path are documented in [Repository Security Profile](docs/articles/repository-security-profile.md).
 
 Short-lived `release/*` branches do not carry independent publishing authority. They are created from `main`, validated, merged back through protected `main`, and only then may the merged `main` commit be tagged for publication. Protect any release branch equivalently to `main` if it becomes long-lived or begins accepting independent changes.
 

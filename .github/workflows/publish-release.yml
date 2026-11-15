@@ -122,7 +122,7 @@ jobs:
               readme.write_text(updated, encoding="utf-8")
 
           version = tag[1:]
-          support = Path(".github/SUPPORT.md")
+          support = Path("SUPPORT.md")
           with support.open(encoding="utf-8", newline="") as handle:
               support_text = handle.read()
 
@@ -170,4 +170,4 @@ jobs:
           delete-branch: true
           add-paths: |
             README.md
-            .github/SUPPORT.md
+            SUPPORT.md

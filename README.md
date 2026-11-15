@@ -82,7 +82,7 @@ Generated projects are not modified by later releases. Applications scaffolded
 from any `2.x` version continue to build and run independently of the template's
 release cadence.
 
-See [SUPPORT.md](.github/SUPPORT.md) for the complete support policy and version
+See [SUPPORT.md](SUPPORT.md) for the complete support policy and version
 lifecycle.
 
 ## What This Template Secures by Default
@@ -276,10 +276,10 @@ Identify `AsiBackbone/NetCoreApplicationTemplate` in project-specific posts. Bec
 - Use [AsiBackbone organization Discussions](https://github.com/orgs/AsiBackbone/discussions) for setup and usage questions, design or extension guidance, and community feedback.
 - Use the [GitHub issue forms](https://github.com/AsiBackbone/NetCoreApplicationTemplate/issues/new/choose) for reproducible bugs, documentation gaps, and focused feature requests.
 - Report suspected vulnerabilities through the private process in [SECURITY.md](SECURITY.md).
-- Participate under the repository [Code of Conduct](.github/CODE_OF_CONDUCT.md) and [Community Standards](.github/COMMUNITY_STANDARDS.md).
-- See [Governance](.github/GOVERNANCE.md) and [Maintainers](.github/MAINTAINERS.md) for decision authority and operational ownership.
+- Participate under the repository [Code of Conduct](CODE_OF_CONDUCT.md) and [Community Standards](COMMUNITY_STANDARDS.md).
+- See [Governance](GOVERNANCE.md) and [Maintainers](MAINTAINERS.md) for decision authority and operational ownership.
 
-See [SUPPORT.md](.github/SUPPORT.md) for the complete support policy and version lifecycle.
+See [SUPPORT.md](SUPPORT.md) for the complete support policy and version lifecycle.
 
 ## Versioning and Citation
 

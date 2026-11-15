@@ -60,6 +60,7 @@ The .NET Core Application Template is organized as a compact, production-oriente
 ├── .env.example
 ├── .gitattributes
 ├── .gitignore
+├── AGENTS.md
 ├── ASSETS-LICENSES.md
 ├── CHANGELOG.md
 ├── CITATION.cff

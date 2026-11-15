@@ -298,7 +298,7 @@ workflow permission expansion.
 ## Automated Release README Pull Requests
 
 The `publish-release.yml` workflow updates the README latest-release markers and
-the two latest-release markers in `.github/SUPPORT.md` (the maintenance-posture
+the two latest-release markers in `SUPPORT.md` (the maintenance-posture
 statement and the current stable line's row in the version support lifecycle table) after
 a GitHub Release is published and opens or updates the
 `docs/update-latest-release` pull request. `scripts/Validate-VersionConsistency.ps1`
