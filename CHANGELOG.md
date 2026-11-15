@@ -4,6 +4,14 @@ All notable changes to this project are documented in this file.
 
 This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
+## Unreleased
+
+### Changed
+
+* Updated the central transitive `System.Security.Cryptography.Pkcs` pin from 10.0.13 to 10.0.14 and refreshed the
+  affected package lock files. Existing generated applications can adopt the same patch independently without
+  regenerating from the template.
+
 ## 2.11.10 - 2026-11-14
 
 ### Security
