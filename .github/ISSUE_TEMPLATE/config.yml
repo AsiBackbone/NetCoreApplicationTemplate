@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Report a security vulnerability privately
+    url: https://github.com/AsiBackbone/NetCoreApplicationTemplate/security/advisories/new
+    about: Follow the private vulnerability reporting process documented in SECURITY.md.
   - name: Questions and community support
     url: https://github.com/orgs/AsiBackbone/discussions/categories/q-a
     about: Ask setup or usage questions on the shared organization discussion surface and identify this repository in the post.
