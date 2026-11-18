@@ -38,6 +38,7 @@ The .NET Core Application Template is organized as a compact, production-oriente
 │   └── Validate-TemplateContentOverlay.ps1
 │
 ├── scripts/
+│   ├── Test-PublishedReleaseReferences.ps1
 │   └── Validate-VersionConsistency.ps1
 │
 ├── .template.config/

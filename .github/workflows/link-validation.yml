@@ -12,6 +12,7 @@ on:
       - 'scripts/Ensure-PublishedHtmlMetadata.ps1'
       - 'scripts/Validate-ApiReference.ps1'
       - 'scripts/Validate-LandingPage.ps1'
+      - 'scripts/Test-PublishedReleaseReferences.ps1'
       - 'lychee.toml'
       - '.config/dotnet-tools.json'
       - '.github/workflows/link-validation.yml'
@@ -25,6 +26,7 @@ on:
       - 'scripts/Ensure-PublishedHtmlMetadata.ps1'
       - 'scripts/Validate-ApiReference.ps1'
       - 'scripts/Validate-LandingPage.ps1'
+      - 'scripts/Test-PublishedReleaseReferences.ps1'
       - 'lychee.toml'
       - '.config/dotnet-tools.json'
       - '.github/workflows/link-validation.yml'
@@ -82,6 +84,14 @@ jobs:
       - name: Validate documentation landing page
         shell: pwsh
         run: ./scripts/Validate-LandingPage.ps1 -SiteDirectory ./docs/_site
+
+      - name: Test release-reference validator
+        shell: pwsh
+        run: ./scripts/Test-PublishedReleaseReferences.ps1 -SelfTest
+
+      - name: Validate release references in generated HTML
+        shell: pwsh
+        run: ./scripts/Test-PublishedReleaseReferences.ps1 -SiteDirectory ./docs/_site
 
       - name: Test API reference validator
         shell: pwsh

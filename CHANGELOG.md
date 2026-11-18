@@ -12,6 +12,7 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ### Changed
 
+* The documentation homepage names the latest published release with links to its GitHub Release and release notes, and `scripts/Validate-VersionConsistency.ps1` checks the homepage and Template Packaging page against the README Current Release block. `scripts/Test-PublishedReleaseReferences.ps1` checks the same release references in the generated HTML before deployment and on the deployed site after each publication, reporting deployment lag, HTTP failures, missing markers, and version mismatches separately. The documentation currency review records the reviewed pages and decisions (#718).
 * `CODE_OF_CONDUCT.md` is now identical to the AsiBackbone organization Code of Conduct (Contributor Covenant 2.1), so every AsiBackbone repository carries the same text and reporting contact. The statement that NetCoreApplicationTemplate also follows the .NET Foundation Code of Conduct moved to `COMMUNITY_STANDARDS.md`.
 * Moved `AGENTS.md`, `CODE_OF_CONDUCT.md`, `COMMUNITY_STANDARDS.md`, `GOVERNANCE.md`, `MAINTAINERS.md`, `RELEASE.md`, and `SUPPORT.md` from `.github/` to the repository root, matching AsiBackbone and Learning. Links, the release workflow, version-consistency validation, and the template exclusions were updated; the generated scaffold's file list is unchanged (#707).
 * Updated the central transitive `System.Security.Cryptography.Pkcs` pin from 10.0.13 to 10.0.14 and refreshed the

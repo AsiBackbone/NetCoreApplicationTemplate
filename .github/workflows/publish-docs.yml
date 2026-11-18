@@ -70,6 +70,10 @@ jobs:
         shell: pwsh
         run: ./scripts/Validate-LandingPage.ps1 -SiteDirectory ./docs/_site
 
+      - name: Validate release references in generated HTML
+        shell: pwsh
+        run: ./scripts/Test-PublishedReleaseReferences.ps1 -SiteDirectory ./docs/_site
+
       - name: Validate generated API reference surface
         shell: pwsh
         run: ./scripts/Validate-ApiReference.ps1 -SiteDirectory ./docs/_site
@@ -90,6 +94,10 @@ jobs:
       - name: Remove internal DocFX build manifest
         # manifest.json is a DocFX build artifact with no published consumer; see AsiBackbone/.github LANDING-PAGE-STANDARD.md.
         run: rm -- docs/_site/manifest.json
+
+      # Lets the post-deployment check tell a deployment that has not propagated yet from a wrong release reference.
+      - name: Record deployed revision
+        run: printf '%s\n' "$GITHUB_SHA" > docs/_site/deployment-revision.txt
 
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
@@ -113,3 +121,30 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+
+  # Reads the deployed HTML, not a search index. A separate job keeps a slow Pages or CDN refresh from failing the
+  # deployment itself; it retries until deployment-revision.txt reports this commit, then fails on a missing or wrong
+  # release reference.
+  verify-published-docs:
+    name: Verify published release references
+    needs: deploy-docs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Verify deployed homepage and Template Packaging page
+        shell: pwsh
+        run: >
+          ./scripts/Test-PublishedReleaseReferences.ps1
+          -BaseUrl 'https://asibackbone.github.io/NetCoreApplicationTemplate/'
+          -ExpectedRevision "$env:GITHUB_SHA"
+          -MaximumAttempts 30
+          -RetryDelaySeconds 20

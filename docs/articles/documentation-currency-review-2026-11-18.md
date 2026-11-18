@@ -82,3 +82,18 @@ GitHub Release. Do not treat search-index snippets as deployed truth.
 Separate follow-up: validate additional runtime and security claims against
 each owning implementation and its tests when those contracts change; do not
 automatically replace legitimate historical references with newer numbers.
+
+## Follow-up completed
+
+The post-publication check this review called for is now automated (#718).
+`scripts/Test-PublishedReleaseReferences.ps1` checks the generated homepage and
+Template Packaging page before deployment, and the `Verify published release
+references` job checks the deployed pages after each publication, separating
+deployment lag, HTTP failures, missing markers, and version mismatches. See
+[Documentation Publishing](github-workflow.md#documentation-publishing).
+
+On 2026-11-18, after #719 was published, the live homepage showed current release
+`2.11.10` with its release-notes link, and the live Template Packaging page showed
+package version `2.11.10` with the published-versus-candidate note, matching the
+README Current Release block. Repository CI, version consistency, documentation
+link validation, and documentation publishing all passed on the #719 merge commit.
