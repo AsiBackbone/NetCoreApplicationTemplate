@@ -23,7 +23,12 @@ exclude = [
   # unauthenticated link checkers.
   '^https://github\.com/AsiBackbone/NetCoreApplicationTemplate/security/advisories/new$',
 
-  # The canonical DOI remains the published citation target, but Zenodo's
-  # resolver can repeatedly redirect or time out for automated link checks.
-  '^https://doi\.org/10\.5281/zenodo\.20373042$'
+  # Zenodo archive DOIs (Learning, AsiBackbone, and NCAT) intermittently time
+  # out or return HTTP 500 to automated checkers even though they resolve, which
+  # failed a push whose change did not touch them. tools/validate-landing-page.cs
+  # pins each DOI's exact value, and the "Resolve Zenodo archive DOIs" step in
+  # .github/workflows/link-validation.yml resolves every one with its own
+  # retries: it fails scheduled and manual runs but only warns on pull request
+  # and push runs, so a DOI that stops resolving is still reported.
+  '^https://doi\.org/10\.5281/zenodo\.[0-9]+$'
 ]

@@ -174,3 +174,50 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           fail: true
           jobSummary: true
+
+      # Zenodo DOIs are excluded from Lychee (see lychee.toml) and resolved here
+      # instead. Scheduled and manual runs fail when a DOI does not resolve after
+      # retries, so an archive that disappears is still reported as link rot.
+      # Pull request and push runs only warn, because Zenodo intermittently times
+      # out or returns HTTP 500 to automated requests, and that says nothing
+      # about the change under review.
+      - name: Resolve Zenodo archive DOIs
+        if: ${{ !cancelled() }}
+        shell: bash
+        env:
+          STRICT: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+        run: |
+          set -euo pipefail
+
+          mapfile -t dois < <(grep -rhoE 'https://doi\.org/10\.5281/zenodo\.[0-9]+' \
+            --include='*.md' --exclude-dir='.link-targets' . | sort -u)
+          if [[ ${#dois[@]} -eq 0 ]]; then
+            echo "::error::No Zenodo DOI links were found in Markdown; update this step if the archive links moved."
+            exit 1
+          fi
+
+          unresolved=0
+          for doi in "${dois[@]}"; do
+            status=""
+            if status="$(curl --silent --show-error --fail --location \
+                --output /dev/null --write-out '%{http_code}' \
+                --connect-timeout 10 --max-time 30 \
+                --retry 4 --retry-delay 15 --retry-all-errors \
+                --user-agent 'AsiBackbone-NCAT-link-validation (+https://github.com/AsiBackbone/NetCoreApplicationTemplate)' \
+                "$doi")"; then
+              echo "Resolved $doi (HTTP $status)."
+              continue
+            fi
+
+            unresolved=$((unresolved + 1))
+            if [[ "$STRICT" == "true" ]]; then
+              echo "::error::$doi did not resolve after retries (last HTTP status ${status:-none})."
+            else
+              echo "::warning::$doi did not resolve after retries (last HTTP status ${status:-none}). Not failing this ${GITHUB_EVENT_NAME} run; the weekly scheduled run reports a DOI that stays unavailable."
+            fi
+          done
+
+          if [[ "$unresolved" -gt 0 && "$STRICT" == "true" ]]; then
+            exit 1
+          fi
+          echo "Checked ${#dois[@]} Zenodo DOI(s); ${unresolved} unresolved."
