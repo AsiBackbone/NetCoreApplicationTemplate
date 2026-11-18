@@ -48,6 +48,7 @@ This section is the task-oriented implementation reference for the .NET Core App
 
 ## Release & Compatibility
 
+- [Documentation Currency Review (2026-11-18)](documentation-currency-review-2026-11-18.md)
 - [Build Quality and Reproducibility](build-quality.md)
 - [Container Release Publishing](container-publish.md)
 - [GitHub Workflow](github-workflow.md)

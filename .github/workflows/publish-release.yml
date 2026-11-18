@@ -154,6 +154,48 @@ jobs:
           if support_updated != support_text:
               with support.open("w", encoding="utf-8", newline="") as handle:
                   handle.write(support_updated)
+
+          # These pages describe the latest *published* release, never the
+          # prepared version that may already exist on main.
+          notes_name = f"release-notes-{version.replace('.', '')}.md"
+          if not Path("docs/articles", notes_name).is_file():
+              raise SystemExit(f"Published release notes not found: {notes_name}")
+
+          homepage = Path("docs/index.md")
+          homepage_text = homepage.read_text(encoding="utf-8")
+          homepage_row = (
+              f"| Current release | [{version}]({url}) "
+              f"([release notes](articles/{notes_name})) |"
+          )
+          homepage_updated, count = re.subn(
+              r"(?m)^\| Current release \|.*$", lambda _: homepage_row, homepage_text
+          )
+          if count != 1:
+              raise SystemExit(f"docs/index.md current release row count is {count}, expected 1.")
+          if homepage_updated != homepage_text:
+              homepage.write_text(homepage_updated, encoding="utf-8")
+
+          packaging = Path("docs/articles/template-packaging.md")
+          packaging_text = packaging.read_text(encoding="utf-8")
+          packaging_updated = packaging_text
+          replacements = [
+              (r"(?m)^\| Current package version \| `[^`]+` \|$",
+               f"| Current package version | `{version}` |"),
+              (r"(?m)^dotnet new install NetCoreApplicationTemplate::\d+\.\d+\.\d+$",
+               f"dotnet new install NetCoreApplicationTemplate::{version}"),
+              (r"(?m)^dotnet new install \./artifacts/template-package/NetCoreApplicationTemplate\.\d+\.\d+\.\d+\.nupkg$",
+               f"dotnet new install ./artifacts/template-package/NetCoreApplicationTemplate.{version}.nupkg"),
+          ]
+          for pattern, replacement in replacements:
+              packaging_updated, count = re.subn(
+                  pattern, lambda _: replacement, packaging_updated
+              )
+              if count != 1:
+                  raise SystemExit(
+                      f"docs/articles/template-packaging.md release marker count is {count}, expected 1: {pattern}"
+                  )
+          if packaging_updated != packaging_text:
+              packaging.write_text(packaging_updated, encoding="utf-8")
           PY
 
       - name: Create pull request
@@ -161,13 +203,15 @@ jobs:
         uses: peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1 # v8.1.3
         with:
           token: ${{ steps.release-pr-app-token.outputs.token }}
-          commit-message: "Update README latest release section"
-          title: "Update README latest release section"
+          commit-message: "docs: synchronize published release references"
+          title: "docs: synchronize published release references"
           body: |
-            Updates the README latest release section and the support policy's latest-release markers after publishing `${{ steps.release.outputs.tag }}`.
+            Updates README, SUPPORT, the documentation homepage, and pinned template packaging examples after publishing `${{ steps.release.outputs.tag }}`.
           branch: docs/update-latest-release
           base: main
           delete-branch: true
           add-paths: |
             README.md
             SUPPORT.md
+            docs/index.md
+            docs/articles/template-packaging.md

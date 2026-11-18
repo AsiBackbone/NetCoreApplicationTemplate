@@ -254,6 +254,38 @@ foreach ($supportMarker in $supportMarkers) {
     }
 }
 
+# The documentation homepage and consumer installation instructions describe the
+# latest *published* stable release. A prepared repository/package version can
+# be newer; do not rewrite these pages to an unpublished candidate.
+if ($null -ne $publishedReleaseVersion) {
+    $homepageContent = Get-RequiredFileText 'docs/index.md'
+    $packaging = Get-RequiredFileText 'docs/articles/template-packaging.md'
+    $releaseNotesFile = "release-notes-$($publishedReleaseVersion.Replace('.', '')).md"
+    $releaseNotesPath = "docs/articles/$releaseNotesFile"
+    $releaseUrl = "https://github.com/AsiBackbone/NetCoreApplicationTemplate/releases/tag/v$publishedReleaseVersion"
+    $expectedHomeRow = "| Current release | [$publishedReleaseVersion]($releaseUrl) ([release notes](articles/$releaseNotesFile)) |"
+
+    if (-not $homepageContent.Contains($expectedHomeRow, [System.StringComparison]::Ordinal)) {
+        Add-Failure "docs/index.md current release row must identify published version '$publishedReleaseVersion' and link its release notes."
+    }
+    if (-not (Test-Path -LiteralPath (Resolve-RepositoryPath $releaseNotesPath) -PathType Leaf)) {
+        Add-Failure "Published release notes not found at '$releaseNotesPath'."
+    }
+
+    $expectedPackagingVersion = '| Current package version | ' + [char]96 + $publishedReleaseVersion + [char]96 + ' |'
+    if (-not $packaging.Contains($expectedPackagingVersion, [System.StringComparison]::Ordinal)) {
+        Add-Failure "docs/articles/template-packaging.md current package version must equal published version '$publishedReleaseVersion'."
+    }
+    $expectedInstallCommand = "dotnet new install NetCoreApplicationTemplate::$publishedReleaseVersion"
+    if (-not $packaging.Contains($expectedInstallCommand, [System.StringComparison]::Ordinal)) {
+        Add-Failure "docs/articles/template-packaging.md published install command must use '$publishedReleaseVersion'."
+    }
+    $expectedLocalPackage = "NetCoreApplicationTemplate.$publishedReleaseVersion.nupkg"
+    if (-not $packaging.Contains($expectedLocalPackage, [System.StringComparison]::Ordinal)) {
+        Add-Failure "docs/articles/template-packaging.md pinned package example must use '$publishedReleaseVersion'."
+    }
+}
+
 Assert-Matches $readme "$escapedPackageId\.$escapedVersion\.nupkg" 'README package install example'
 Assert-Matches $readme "Version $escapedVersion\. Zenodo\. MIT License\." 'README citation version'
 
