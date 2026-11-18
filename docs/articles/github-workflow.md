@@ -120,6 +120,24 @@ Documentation updates should be validated by checking:
 - Resource files such as images or examples are included as DocFX resources when needed.
 - Links are relative and work in the published site.
 
+The generated homepage and Template Packaging page must name the latest published stable release, as recorded in the
+README Current Release block. `scripts/Test-PublishedReleaseReferences.ps1` checks the generated HTML before deployment
+in both the documentation link-validation and publishing workflows: the homepage's current release row and its GitHub
+Release and release-notes links, and the packaging page's current package version, pinned install command, and pinned
+local package example.
+
+After each deployment, the `Verify published release references` job reads the same pages from GitHub Pages. It waits
+until `deployment-revision.txt` reports the deployed commit, retrying for about ten minutes, and then fails on a missing
+or wrong release reference. Its findings distinguish deployment lag, HTTP failures, missing markers, and version
+mismatches. Search-engine snippets are not evidence of what the site serves.
+
+To check locally after a DocFX build, or against the live site:
+
+```powershell
+./scripts/Test-PublishedReleaseReferences.ps1 -SiteDirectory ./docs/_site
+./scripts/Test-PublishedReleaseReferences.ps1 -BaseUrl https://asibackbone.github.io/NetCoreApplicationTemplate/
+```
+
 ## NuGet Package Publishing
 
 The Publish Template Package workflow publishes release tags and can also be run manually for pack-only validation. NuGet.org publication uses NuGet Trusted Publishing through GitHub Actions OIDC rather than a long-lived NuGet API key. For tags, the workflow also generates and attests evidence for the exact `.nupkg`, signs it with a Cosign keyless blob signature, verifies the bundle against the exact release-tag workflow identity, then attaches the package, its `*.sigstore.json` bundle, its SPDX SBOM, and its SHA-256 package manifest to the GitHub Release. It downloads the package and bundle back from the public release and verifies them again before NuGet publication.
@@ -297,14 +315,18 @@ workflow permission expansion.
 
 ## Automated Release README Pull Requests
 
-The `publish-release.yml` workflow updates the README latest-release markers and
-the two latest-release markers in `SUPPORT.md` (the maintenance-posture
-statement and the current stable line's row in the version support lifecycle table) after
-a GitHub Release is published and opens or updates the
-`docs/update-latest-release` pull request. `scripts/Validate-VersionConsistency.ps1`
-requires both support-policy markers to match the README Current Release block and
-the README Current Release to be no newer than the repository version, so the
-version-consistency check fails if a published release leaves any of them behind. The pull request is intentionally
+The `publish-release.yml` workflow updates the README latest-release markers, the
+two latest-release markers in `SUPPORT.md` (the maintenance-posture statement and
+the current stable line's row in the version support lifecycle table), the
+documentation homepage's current release row, and the Template Packaging page's
+current package version and pinned install examples after a GitHub Release is
+published, and opens or updates the `docs/update-latest-release` pull request.
+`scripts/Validate-VersionConsistency.ps1` requires the support-policy markers and
+both documentation pages to match the README Current Release block, and the README
+Current Release to be no newer than the repository version, so the
+version-consistency check fails if a published release leaves any of them behind.
+A prepared but unpublished version therefore never appears on these pages as the
+current release. The pull request is intentionally
 created with a dedicated GitHub App installation token instead of the built-in
 `GITHUB_TOKEN`. Pull requests created by the default workflow token do not
 normally start subsequent workflow runs, while the App-authored pull request
