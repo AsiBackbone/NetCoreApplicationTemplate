@@ -18,6 +18,8 @@ Package-based validation is preferred because it verifies the actual distributio
 | Source replacement token | `ProjectTemplate` |
 | Current package version | `2.11.10` |
 
+The version above and the pinned NuGet install command describe the latest **published stable release**, not necessarily an unpublished candidate prepared on `main`. The [documentation homepage](../index.md) links the reviewed release and its notes; `Directory.Build.props` identifies a locally built candidate. The post-publication release-update PR synchronizes the published references.
+
 The `2.0.0` release moved the public NuGet package ID to `NetCoreApplicationTemplate`. Release `2.8.0` aligns the internal template identity and group identity with the `AsiBackbone` organization namespace. The public package ID and template short name remain unchanged.
 
 ## Discovery Metadata

@@ -76,7 +76,7 @@ _disableToc: true
 
 | Area | Current reference |
 |:---|:---|
-| Current release | [Latest GitHub release](https://github.com/AsiBackbone/NetCoreApplicationTemplate/releases/latest) |
+| Current release | [2.11.10](https://github.com/AsiBackbone/NetCoreApplicationTemplate/releases/tag/v2.11.10) ([release notes](articles/release-notes-21110.md)) |
 | Supported platform | .NET 10.0 |
 | Template package | [NetCoreApplicationTemplate on NuGet](https://www.nuget.org/packages/NetCoreApplicationTemplate) |
 | Template short name | `netcoreapp-template` |
