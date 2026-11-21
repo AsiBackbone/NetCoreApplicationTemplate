@@ -27,4 +27,46 @@
         <vulnerabilityName>CVE-2012-2055</vulnerabilityName>
     </suppress>
 
+    <!--
+    CVE-2026-24051 applies to the OpenTelemetry Go SDK on macOS,
+    not the .NET OTLP exporter NuGet package below.
+  -->
+
+    <suppress until="2027-02-28Z">
+        <notes>
+            <![CDATA[
+      CVE-2026-24051 is an untrusted search path issue in the OpenTelemetry Go
+      SDK's sdk/resource/host_id.go implementation on macOS. The
+      OpenTelemetry.Exporter.OpenTelemetryProtocol 1.21.0 NuGet package is the
+      managed .NET OTLP exporter and does not contain or execute that Go
+      implementation. Dependency-Check matched the shared OpenTelemetry product
+      name, so this is a reviewed ecosystem false positive. Code scanning alerts
+      #228 and #229.
+    ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:nuget/OpenTelemetry\.Exporter\.OpenTelemetryProtocol@1\.21\.0$</packageUrl>
+        <vulnerabilityName>CVE-2026-24051</vulnerabilityName>
+    </suppress>
+
+    <!--
+    CVE-2026-54285 applies to the OpenTelemetry JavaScript core package,
+    not the .NET OTLP exporter NuGet package below.
+  -->
+
+    <suppress until="2027-02-28Z">
+        <notes>
+            <![CDATA[
+      CVE-2026-54285 is an inbound W3C baggage parsing issue in the
+      @opentelemetry/core JavaScript package before 2.8.0. The
+      OpenTelemetry.Exporter.OpenTelemetryProtocol 1.21.0 NuGet package is the
+      managed .NET OTLP exporter and does not contain that JavaScript package or
+      its W3CBaggagePropagator implementation. Dependency-Check matched the
+      shared OpenTelemetry product name, so this is a reviewed ecosystem false
+      positive. Code scanning alerts #75 and #76.
+    ]]>
+        </notes>
+        <packageUrl regex="true">^pkg:nuget/OpenTelemetry\.Exporter\.OpenTelemetryProtocol@1\.21\.0$</packageUrl>
+        <vulnerabilityName>CVE-2026-54285</vulnerabilityName>
+    </suppress>
+
 </suppressions>
