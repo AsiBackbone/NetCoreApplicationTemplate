@@ -15,7 +15,7 @@
         <notes>
             <![CDATA[
       CVE-2012-2055 is a mass-assignment flaw in GitHub Enterprise before
-      20120304 (the public-key update form). Microsoft.SourceLink.GitHub 10.0.403
+      20120304 (the public-key update form). Microsoft.SourceLink.GitHub 10.0.404
       is a build-time MSBuild package, referenced with PrivateAssets="all", that
       records GitHub source URLs in PDBs; it contains no GitHub Enterprise server
       code and is not shipped as a runtime dependency. The match comes from the
@@ -23,7 +23,7 @@
       alert #47.
     ]]>
         </notes>
-        <packageUrl regex="true">^pkg:nuget/Microsoft\.SourceLink\.GitHub@10\.0\.403$</packageUrl>
+        <packageUrl regex="true">^pkg:nuget/Microsoft\.SourceLink\.GitHub@10\.0\.404$</packageUrl>
         <vulnerabilityName>CVE-2012-2055</vulnerabilityName>
     </suppress>
 
