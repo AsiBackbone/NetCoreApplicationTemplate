@@ -27,6 +27,9 @@ updates:
       - dependency-name: "Microsoft.Extensions.*"
         update-types:
           - "version-update:semver-major"
+      - dependency-name: "Microsoft.SourceLink.*"
+        update-types:
+          - "version-update:semver-major"
       - dependency-name: "System.Drawing.Common"
         update-types:
           - "version-update:semver-major"
