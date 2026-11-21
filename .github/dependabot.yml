@@ -15,6 +15,24 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
+    # Keep framework-coupled packages on .NET 10 until a deliberate .NET 11
+    # migration is scheduled and validated. Servicing updates remain enabled.
+    ignore:
+      - dependency-name: "Microsoft.AspNetCore.*"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "Microsoft.EntityFrameworkCore*"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "Microsoft.Extensions.*"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "System.Drawing.Common"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "System.Security.Cryptography.Pkcs"
+        update-types:
+          - "version-update:semver-major"
     groups:
       microsoft-aspnetcore:
         patterns:
