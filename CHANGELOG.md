@@ -6,6 +6,20 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+## 2.11.11 - 2026-11-21
+
+### Security
+
+* Added package source mapping to the repository and generated scaffold so every package ID is explicitly routed to
+  NuGet.org. Applications that add a private feed must also map its package IDs; see
+  [Package Source Mapping](docs/articles/build-quality.md#package-source-mapping) (#706).
+* Refreshed the pinned .NET 10 SDK and ASP.NET Core runtime container image digests used by newly generated
+  applications. The .NET major version, image tags, Dockerfile structure, and intended runtime behavior remain
+  unchanged.
+* Added exact package-, version-, and CVE-scoped dependency-check suppressions for OpenTelemetry scanner matches from
+  unrelated Go and JavaScript components. The suppressions do not hide a vulnerability in the referenced .NET
+  packages and expire on 2027-02-28 (#735, #736).
+
 ### Fixed
 
 * `Directory.Build.props` no longer sets `InformationalVersion` to `$(Version)+$(RepositoryUrl)`. The line was evaluated before `RepositoryUrl` was defined, so repository and generated-application assemblies reported `<version>+.<commit>` (for example as OpenTelemetry `service.version`). They now report the SDK default, `<version>+<commit>`; Source Link still records the repository. Repository tests guard both the property and the built value (#710).
@@ -22,10 +36,14 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 * Updated the central transitive `System.Security.Cryptography.Pkcs` pin from 10.0.13 to 10.0.14 and refreshed the
   affected package lock files. Existing generated applications can adopt the same patch independently without
   regenerating from the template.
+* Updated the .NET 10 framework-coupled dependencies to their current servicing releases: Entity Framework Core,
+  ASP.NET Core authentication and testing, and Microsoft.Extensions configuration packages are now 10.0.15.
+  Dependabot ignores future major-version updates for framework-coupled Microsoft packages so the template remains
+  on .NET 10.
+* Updated OpenTelemetry packages to 1.21.0 and AspNet.Security.OAuth.GitHub to 10.1.0.
+* Updated repository tooling and tests: Microsoft.SourceLink.GitHub 10.0.404, Microsoft.NET.Test.Sdk 18.12.0,
+  xunit.v3 4.0.3, and ReportGenerator 5.6.0.
 
-### Security
-
-* The repository and generated-scaffold `nuget.config` files now use package source mapping to route every package ID to nuget.org, so restore cannot pull a package from a machine-level or user-level feed. Applications that add a private feed must also map its package IDs; see [Package Source Mapping](docs/articles/build-quality.md#package-source-mapping) (#706).
 ## 2.11.10 - 2026-11-14
 
 ### Security
