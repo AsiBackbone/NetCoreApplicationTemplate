@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0.404@sha256:fe0fd4e93bd2fbb47c883b7a6369e5c8d3db8bf01cdc5981f6ee35fbdf3ff4fb AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0.404@sha256:bef136a371963aaa46ec97882845ef6f54dec15728bb4b128b1c2a400ffbc9b4 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
@@ -23,7 +23,7 @@ RUN dotnet publish "src/ProjectTemplate.Web/ProjectTemplate.Web.csproj" \
     /p:UseAppHost=false \
     /p:ContinuousIntegrationBuild=true
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:bfd912c83295ce66d4b706ebb8541b9f14259b0e76fbb88b2751f58ce2399d2e AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:12b1135f5f8b3c0a214f2a680ff2033dff4f684f445d6c697d9524ceeb303586 AS final
 WORKDIR /app
 
 ENV ASPNETCORE_URLS=http://+:8080 \
