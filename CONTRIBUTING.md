@@ -4,6 +4,18 @@ Thank you for helping improve the .NET Core Application Template.
 
 This project is intended to remain a clean, reusable, production-oriented ASP.NET Core baseline. Contributions should preserve that goal by keeping changes focused, documented, and easy to review.
 
+## Contribution and Pull Request Policy
+
+AsiBackbone projects use a controlled-contribution model to preserve architectural consistency, security boundaries, and sustainable maintainer review capacity. Public source code remains available under each repository's applicable license; pull request permissions govern contributions to the official repository, not independent forks or use of the licensed work.
+
+- **Start with a proposal.** Open an issue for a reproducible defect or a focused improvement. For larger features or architectural changes, use [organization Discussions](https://github.com/orgs/AsiBackbone/discussions) before undertaking substantial implementation. Follow the repository's security policy for vulnerabilities; do not disclose sensitive details publicly.
+- **Explain the change.** Include the problem, intended outcome, affected components, relevant compatibility and security considerations, and a proposed validation approach. A concise proposal is sufficient for minor documentation defects.
+- **Maintainer review comes first.** Maintainers evaluate scope, project direction, technical risk, compatibility, testing requirements, and available review capacity. Acknowledgment of an issue or proposal does not constitute approval to implement or a commitment to review within a specific timeframe.
+- **Contribution is by agreement.** When a proposal is accepted, maintainers may invite implementation through an appropriate mechanism, such as a patch, a focused pull request where permitted, or time-limited collaborator access. Acceptance of a proposal does not automatically confer repository write access.
+- **Integration remains controlled.** Contributions are subject to the affected repository's existing testing, review, licensing, and governance requirements. Maintainers retain final integration and release authority.
+
+Some repositories restrict pull request creation to authorized collaborators. These restrictions do not prevent independent forks or modifications permitted by the applicable license. Unsolicited changes developed without prior agreement may not be reviewed or accepted. Public issues and discussions remain the preferred starting point for outside participation.
+
 ## Community Standards
 
 Participation in this repository is governed by the [Code of Conduct](CODE_OF_CONDUCT.md), with project-specific expectations summarized in [Community Standards](COMMUNITY_STANDARDS.md). Decision authority and maintainer roles are defined in [Governance](GOVERNANCE.md).
@@ -42,7 +54,7 @@ Recommended flow:
 2. Move or treat the issue as `Ready` before starting work.
 3. Create a branch from the current `main` branch.
 4. Keep commits focused on the issue.
-5. Open a pull request when the work is ready for review.
+5. After maintainer agreement and appropriate contribution access, open a pull request when the work is ready for review.
 6. Include `Closes #<issue-number>` when the pull request fully completes the issue.
 7. Merge only after validation passes and the scope is reviewed.
 
