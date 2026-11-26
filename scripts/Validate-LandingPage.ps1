@@ -35,6 +35,9 @@ $sharedProjectDescriptions = @(
 $headingProperNouns = @('API', 'APIs', 'ADR', 'ADRs', 'ASP.NET', 'AsiBackbone', 'Core', 'DocFX', 'EF', 'NCAT', '.NET')
 
 $requiredHomepageContent = @(
+    '<strong>Anything can propose; the host retains authority to act.</strong>'
+    '<strong>Proposal is open. Authority is bounded.</strong>'
+    'maintainers alone decide whether a proposal becomes organizational work and authorize any downstream action.'
     'class="btn btn-primary" href="articles/template-packaging.md"'
     'href="articles/getting-started.md"'
     'href="articles/production-deployment-checklist.md"'
