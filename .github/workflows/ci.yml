@@ -130,7 +130,9 @@ jobs:
 
       - name: Validate repository agent governance
         shell: pwsh
-        run: ./eng/Validate-AgentGovernance.ps1
+        run: |
+          ./eng/Validate-AgentGovernance.ps1 -SelfTest
+          ./eng/Validate-AgentGovernance.ps1
 
       - name: Restore dependencies
         shell: pwsh

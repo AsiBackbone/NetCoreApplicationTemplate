@@ -156,3 +156,6 @@ Each assurance review must report findings by severity with file/line evidence,
 actionable recommendations, uncertainties, and validation not performed. Never
 fabricate test results or claim a permission boundary that was not independently
 verified. Maintainers retain all consequential authority.
+
+For agent-governance changes, run `./eng/Validate-AgentGovernance.ps1 -SelfTest`
+before the live validator and package/scaffold checks.
