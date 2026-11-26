@@ -123,3 +123,5 @@
   items:
     - name: Documentation Ownership
       href: documentation-ownership.md
+    - name: Repository Assurance Agents
+      href: repository-agent-assurance.md

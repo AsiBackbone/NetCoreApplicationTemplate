@@ -128,14 +128,18 @@ jobs:
       - name: Display .NET information
         run: dotnet --info
 
+      - name: Validate repository agent governance
+        shell: pwsh
+        run: ./eng/Validate-AgentGovernance.ps1
+
       - name: Restore dependencies
         shell: pwsh
         run: |
           ./eng/Test-PackageLockFiles.ps1
-          dotnet restore --locked-mode
+          dotnet restore $env:SOLUTION_FILE --locked-mode
 
       - name: Build solution
-        run: dotnet build --configuration ${{ env.CONFIGURATION }} --no-restore /p:ContinuousIntegrationBuild=true
+        run: dotnet build ${{ env.SOLUTION_FILE }} --configuration ${{ env.CONFIGURATION }} --no-restore /p:ContinuousIntegrationBuild=true
 
       - name: Verify formatting
         run: dotnet format ${{ env.SOLUTION_FILE }} --verify-no-changes --verbosity minimal
@@ -270,6 +274,16 @@ jobs:
             --configuration $env:CONFIGURATION `
             --output ./artifacts/template-package `
             /p:ContinuousIntegrationBuild=true
+
+      - name: Validate template package governance boundary
+        shell: pwsh
+        run: |
+          $package = Get-ChildItem -Path ./artifacts/template-package -Filter *.nupkg | Select-Object -First 1
+          if (-not $package) {
+              Write-Error "Template package was not created."
+              exit 1
+          }
+          ./eng/Validate-AgentGovernance.ps1 -PackagePath $package.FullName
 
       - name: Install template package
         shell: pwsh
