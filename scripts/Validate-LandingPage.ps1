@@ -34,10 +34,13 @@ $sharedProjectDescriptions = @(
 # Homepage h2 headings use sentence case; only these proper nouns and acronyms may be capitalized after the first word.
 $headingProperNouns = @('API', 'APIs', 'ADR', 'ADRs', 'ASP.NET', 'AsiBackbone', 'Core', 'DocFX', 'EF', 'NCAT', '.NET')
 
-$requiredHomepageContent = @(
+$requiredAuthorityContent = @(
     '<strong>Anything can propose; the host retains authority to act.</strong>'
     '<strong>Proposal is open. Authority is bounded.</strong>'
     'maintainers alone decide whether a proposal becomes organizational work and authorize any downstream action.'
+)
+
+$requiredHomepageContent = $requiredAuthorityContent + @(
     'class="btn btn-primary" href="articles/template-packaging.md"'
     'href="articles/getting-started.md"'
     'href="articles/production-deployment-checklist.md"'
@@ -315,6 +318,12 @@ function Test-BuiltHomepage {
         $Errors.Add('built index.html does not render the Design Philosophy statement.')
     }
 
+    foreach ($requiredText in $requiredAuthorityContent) {
+        if (-not $Content.Contains($requiredText, [StringComparison]::Ordinal)) {
+            $Errors.Add("built index.html does not render required authority content: $requiredText")
+        }
+    }
+
     foreach ($requiredText in $requiredBuiltHomepageMetadata) {
         if (-not $Content.Contains($requiredText, [StringComparison]::Ordinal)) {
             $Errors.Add("built index.html is missing required metadata or markup: $requiredText")
@@ -374,7 +383,7 @@ function Invoke-SelfTest {
         '<form class="search" role="search" action="https://asibackbone.github.io/search/" method="get">'
         '<input class="form-control" name="q" type="search" placeholder="Search all AsiBackbone" autocomplete="off" aria-label="Search all AsiBackbone documentation">'
         '<main class="container-xxl" id="main-content" tabindex="-1">'
-    ) + $requiredBuiltSectionIds + $designPhilosophyStatement + '</main>') -join "`n"
+    ) + $requiredBuiltSectionIds + $requiredAuthorityContent + $designPhilosophyStatement + '</main>') -join "`n"
     $validDocFx = (@('"template": [ "default", "modern", "templates" ],') + $requiredDocFxMetadata) -join ",`n"
     $validFrontMatter = "---`ntitle: `"Production-Oriented ASP.NET Core Baseline`"`ndescription: A concise homepage description.`n_disableAffix: true`n_disableToc: true`n---`n`n# Home"
     $validLayout = (@('{{!This file is based on the DocFX modern template v2.81.0.}}') + $requiredLayoutContent) -join "`n"
@@ -395,6 +404,9 @@ function Invoke-SelfTest {
         @{ Name = 'footer without license'; Check = { param($e) Test-Footer $validFooter.Replace('LICENSE.txt', 'README.md') $e }; Pass = $false }
         @{ Name = 'valid built homepage'; Check = { param($e) Test-BuiltHomepage $validSite $e }; Pass = $true }
         @{ Name = 'built homepage missing section'; Check = { param($e) Test-BuiltHomepage $validSite.Replace('id="related-projects"', '') $e }; Pass = $false }
+        @{ Name = 'built homepage missing proposal maxim'; Check = { param($e) Test-BuiltHomepage $validSite.Replace($requiredAuthorityContent[0], '') $e }; Pass = $false }
+        @{ Name = 'built homepage missing bounded-authority maxim'; Check = { param($e) Test-BuiltHomepage $validSite.Replace($requiredAuthorityContent[1], '') $e }; Pass = $false }
+        @{ Name = 'built homepage missing maintainer authority boundary'; Check = { param($e) Test-BuiltHomepage $validSite.Replace($requiredAuthorityContent[2], '') $e }; Pass = $false }
         @{ Name = 'built homepage without lang'; Check = { param($e) Test-BuiltHomepage $validSite.Replace('<html lang="en">', '<html>') $e }; Pass = $false }
         @{ Name = 'built homepage with duplicated title'; Check = { param($e) Test-BuiltHomepage $validSite.Replace("<title>$expectedHomepageTitle</title>", '<title>.NET Core Application Template Documentation | .NET Core Application Template Documentation</title>') $e }; Pass = $false }
         @{ Name = 'built homepage without canonical'; Check = { param($e) Test-BuiltHomepage $validSite.Replace("<link rel=`"canonical`" href=`"$siteBaseUrl`">", '') $e }; Pass = $false }
