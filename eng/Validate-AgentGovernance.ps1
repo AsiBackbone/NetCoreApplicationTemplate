@@ -303,8 +303,10 @@ function Invoke-AgentGovernanceSelfTest {
         Assert-RejectedFixture -ExpectedError 'template.json must exclude repository agent guidance: AGENTS.md' -Mutation {
             param($root)
             $path = Join-Path $root '.template.config/template.json'
-            $content = Get-Content -LiteralPath $path -Raw
-            Set-Content -LiteralPath $path -Value $content.Replace('        "AGENTS.md",' + [Environment]::NewLine, '')
+            $config = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
+            $primarySource = @($config.sources | Where-Object { $_.source -eq './' })[0]
+            $primarySource.exclude = @($primarySource.exclude | Where-Object { $_ -ne 'AGENTS.md' })
+            $config | ConvertTo-Json -Depth 100 | Set-Content -LiteralPath $path
         }
 
         Assert-RejectedFixture -ExpectedError 'Default scaffold manifest must forbid repository agent guidance: .github' -Mutation {
