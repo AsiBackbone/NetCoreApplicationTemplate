@@ -53,6 +53,11 @@ for cross-repository ideas, architecture questions, governance proposals and
 work that benefits from human review before becoming an issue, pull request,
 article or external contribution.
 
+Humans and AI agents may introduce proposals into this public consideration
+process. This provides proposal access, not organizational decision authority;
+organizational decisions and downstream work authorization remain exclusively
+with human maintainers.
+
 By default, prepare a proposed discussion title, category and body locally for
 maintainer review. Create a public discussion only when a maintainer explicitly
 requests that specific posting action in the current task. Before posting,
