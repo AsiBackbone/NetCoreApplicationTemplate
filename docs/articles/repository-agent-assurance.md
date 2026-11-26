@@ -58,6 +58,7 @@ review without requesting broader permissions.
 Run the structural validation from the repository root:
 
 ```powershell
+./eng/Validate-AgentGovernance.ps1 -SelfTest
 ./eng/Validate-AgentGovernance.ps1
 ```
 
@@ -68,7 +69,10 @@ $package = Get-ChildItem ./artifacts/template-package/*.nupkg | Select-Object -F
 ./eng/Validate-AgentGovernance.ps1 -PackagePath $package.FullName
 ```
 
-CI runs both forms. The first verifies profile configuration, evidence and
+The fixture-based self-test proves the validator rejects weakened profiles,
+guidance, template exclusions, scaffold-manifest boundaries, package-project
+entries, and packed output. CI then runs the live forms. The first verifies
+profile configuration, evidence and
 handoff language, the current .NET 10 authority, exact repository commands, and
 static scaffold/package exclusions. The second opens the produced `.nupkg` and
 proves repository agent guidance is absent. The existing scaffold manifest
