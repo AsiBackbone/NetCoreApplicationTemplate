@@ -35,7 +35,6 @@ $sharedProjectDescriptions = @(
 $headingProperNouns = @('API', 'APIs', 'ADR', 'ADRs', 'ASP.NET', 'AsiBackbone', 'Core', 'DocFX', 'EF', 'NCAT', '.NET')
 
 $requiredAuthorityContent = @(
-    '<strong>Anything can propose; the host retains authority to act.</strong>'
     '<strong>Proposal is open. Authority is bounded.</strong>'
     'maintainers alone decide whether a proposal becomes organizational work and authorize any downstream action.'
 )
@@ -404,9 +403,8 @@ function Invoke-SelfTest {
         @{ Name = 'footer without license'; Check = { param($e) Test-Footer $validFooter.Replace('LICENSE.txt', 'README.md') $e }; Pass = $false }
         @{ Name = 'valid built homepage'; Check = { param($e) Test-BuiltHomepage $validSite $e }; Pass = $true }
         @{ Name = 'built homepage missing section'; Check = { param($e) Test-BuiltHomepage $validSite.Replace('id="related-projects"', '') $e }; Pass = $false }
-        @{ Name = 'built homepage missing proposal maxim'; Check = { param($e) Test-BuiltHomepage $validSite.Replace($requiredAuthorityContent[0], '') $e }; Pass = $false }
-        @{ Name = 'built homepage missing bounded-authority maxim'; Check = { param($e) Test-BuiltHomepage $validSite.Replace($requiredAuthorityContent[1], '') $e }; Pass = $false }
-        @{ Name = 'built homepage missing maintainer authority boundary'; Check = { param($e) Test-BuiltHomepage $validSite.Replace($requiredAuthorityContent[2], '') $e }; Pass = $false }
+        @{ Name = 'built homepage missing bounded-authority maxim'; Check = { param($e) Test-BuiltHomepage $validSite.Replace($requiredAuthorityContent[0], '') $e }; Pass = $false }
+        @{ Name = 'built homepage missing maintainer authority boundary'; Check = { param($e) Test-BuiltHomepage $validSite.Replace($requiredAuthorityContent[1], '') $e }; Pass = $false }
         @{ Name = 'built homepage without lang'; Check = { param($e) Test-BuiltHomepage $validSite.Replace('<html lang="en">', '<html>') $e }; Pass = $false }
         @{ Name = 'built homepage with duplicated title'; Check = { param($e) Test-BuiltHomepage $validSite.Replace("<title>$expectedHomepageTitle</title>", '<title>.NET Core Application Template Documentation | .NET Core Application Template Documentation</title>') $e }; Pass = $false }
         @{ Name = 'built homepage without canonical'; Check = { param($e) Test-BuiltHomepage $validSite.Replace("<link rel=`"canonical`" href=`"$siteBaseUrl`">", '') $e }; Pass = $false }
