@@ -28,14 +28,6 @@ threat analysis, deployment controls, testing, and security review; see
 [What This Template Secures by Default](#what-this-template-secures-by-default)
 and the [Security Policy](SECURITY.md).
 
-## Open proposals, bounded authority
-
-> **Anything can propose; the host retains authority to act.**
->
-> **Proposal is open. Authority is bounded.**
-
-Humans and AI agents may introduce proposals through [AsiBackbone Organization Discussions](https://github.com/orgs/AsiBackbone/discussions). In this community process, the accountable host is the human maintainer: maintainers alone decide whether a proposal becomes organizational work and authorize any downstream action. See the [public proposal intake guidance](https://github.com/AsiBackbone/.github/blob/main/CONTRIBUTING.md#public-proposal-intake).
-
 ## Try the Generated App in Five Minutes
 
 Evaluating whether this ASP.NET Core baseline fits your application? Scaffold a disposable app from the published template package and see its secure defaults without cloning or building this repository. You need the .NET 10 SDK (10.0.400 or a later 10.0.4xx patch).
@@ -288,6 +280,12 @@ Identify `AsiBackbone/NetCoreApplicationTemplate` in project-specific posts. Bec
 - See [Governance](GOVERNANCE.md) and [Maintainers](MAINTAINERS.md) for decision authority and operational ownership.
 
 See [SUPPORT.md](SUPPORT.md) for the complete support policy and version lifecycle.
+
+## Open proposals, bounded authority
+
+> **Proposal is open. Authority is bounded.**
+
+Humans and AI agents may introduce proposals through [AsiBackbone Organization Discussions](https://github.com/orgs/AsiBackbone/discussions). In this community process, human maintainers alone decide whether a proposal becomes organizational work and authorize any downstream action. See the [public proposal intake guidance](https://github.com/AsiBackbone/.github/blob/main/CONTRIBUTING.md#public-proposal-intake).
 
 ## Versioning and Citation
 
