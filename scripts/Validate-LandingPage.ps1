@@ -43,6 +43,7 @@ $requiredAuthorityContent = @(
 $retiredAuthorityContent = @(
     'Anything can propose; the host retains authority to act.'
     'the accountable host is the human maintainer'
+    'Humans and AI agents may introduce proposals'
 )
 
 $requiredHomepageContent = $requiredAuthorityContent + @(
@@ -416,9 +417,6 @@ function Invoke-SelfTest {
         @{ Name = 'built homepage missing section'; Check = { param($e) Test-BuiltHomepage $validSite.Replace('id="related-projects"', '') $e }; Pass = $false }
         @{ Name = 'built homepage missing bounded-authority maxim'; Check = { param($e) Test-BuiltHomepage $validSite.Replace($requiredAuthorityContent[0], '') $e }; Pass = $false }
         @{ Name = 'built homepage missing maintainer authority boundary'; Check = { param($e) Test-BuiltHomepage $validSite.Replace($requiredAuthorityContent[1], '') $e }; Pass = $false }
-        @{ Name = 'homepage with retired proposal maxim'; Check = { param($e) Test-Homepage ($validHomepage + "`n" + $retiredAuthorityContent[0]) $e }; Pass = $false }
-        @{ Name = 'homepage with retired host boundary wording'; Check = { param($e) Test-Homepage ($validHomepage + "`n" + $retiredAuthorityContent[1]) $e }; Pass = $false }
-        @{ Name = 'built homepage with retired proposal maxim'; Check = { param($e) Test-BuiltHomepage $validSite.Replace('</main>', $retiredAuthorityContent[0] + '</main>') $e }; Pass = $false }
         @{ Name = 'built homepage with retired host boundary wording'; Check = { param($e) Test-BuiltHomepage $validSite.Replace('</main>', 'In this community process, the accountable host is the human maintainer: maintainers alone decide whether a proposal becomes organizational work and authorize any downstream action.</main>') $e }; Pass = $false }
         @{ Name = 'built homepage without lang'; Check = { param($e) Test-BuiltHomepage $validSite.Replace('<html lang="en">', '<html>') $e }; Pass = $false }
         @{ Name = 'built homepage with duplicated title'; Check = { param($e) Test-BuiltHomepage $validSite.Replace("<title>$expectedHomepageTitle</title>", '<title>.NET Core Application Template Documentation | .NET Core Application Template Documentation</title>') $e }; Pass = $false }
@@ -440,10 +438,23 @@ function Invoke-SelfTest {
         @{ Name = 'layout template behind pinned DocFX'; Check = { param($e) Test-LayoutTemplate $validLayout '2.82.0' $e }; Pass = $false }
     )
 
+    # Every retired authority phrase must be rejected in both the source and the built homepage.
+    # The phrases are listed here independently of $retiredAuthorityContent so that removing or
+    # altering a validator entry fails the self-test. Each case carries its phrase in Text because
+    # the scriptblocks run later, after the loop ends.
+    foreach ($retiredText in @(
+        'Anything can propose; the host retains authority to act.'
+        'the accountable host is the human maintainer'
+        'Humans and AI agents may introduce proposals'
+    )) {
+        $cases += @{ Name = "homepage with retired authority wording: $retiredText"; Text = $retiredText; Check = { param($e, $t) Test-Homepage ($validHomepage + "`n" + $t) $e }; Pass = $false }
+        $cases += @{ Name = "built homepage with retired authority wording: $retiredText"; Text = $retiredText; Check = { param($e, $t) Test-BuiltHomepage $validSite.Replace('</main>', $t + '</main>') $e }; Pass = $false }
+    }
+
     $failures = [System.Collections.Generic.List[string]]::new()
     foreach ($case in $cases) {
         $caseErrors = [System.Collections.Generic.List[string]]::new()
-        & $case.Check $caseErrors
+        & $case.Check $caseErrors $case['Text']
         if (($caseErrors.Count -eq 0) -ne $case.Pass) {
             $expected = if ($case.Pass) { 'success' } else { 'failure' }
             $failures.Add("Self-test '$($case.Name)' expected $expected but got $($caseErrors.Count) error(s).")

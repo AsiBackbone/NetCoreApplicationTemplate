@@ -53,10 +53,11 @@ for cross-repository ideas, architecture questions, governance proposals and
 work that benefits from human review before becoming an issue, pull request,
 article or external contribution.
 
-Humans and AI agents may introduce proposals into this public consideration
-process. This provides proposal access, not organizational decision authority;
-organizational decisions and downstream work authorization remain exclusively
-with human maintainers.
+Anyone may submit proposals to this public consideration process, including
+proposals drafted with AI assistance or by an AI agent working for a person.
+The person who posts a proposal is responsible for it. This provides proposal
+access, not organizational decision authority; organizational decisions and
+downstream work authorization remain exclusively with human maintainers.
 
 By default, prepare a proposed discussion title, category and body locally for
 maintainer review. Create a public discussion only when a maintainer explicitly
@@ -77,8 +78,9 @@ Choose the category deliberately:
 
 Every AI-assisted public proposal must begin with this visible notice:
 
-> **AI-assisted proposal — unreviewed:** This discussion was prepared with AI
-> assistance and remains a proposal until a maintainer records a decision.
+> **AI-assisted proposal — awaiting maintainer decision:** This discussion was
+> prepared with AI assistance. The person who posted it is responsible for its
+> content, and it remains a proposal until a maintainer records a decision.
 
 Name the affected repository and version when applicable. State the problem or
 goal, relevant evidence, alternatives and tradeoffs, risks and the decision

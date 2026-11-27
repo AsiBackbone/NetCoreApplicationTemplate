@@ -285,7 +285,7 @@ See [SUPPORT.md](SUPPORT.md) for the complete support policy and version lifecyc
 
 > **Proposal is open. Authority is bounded.**
 
-Humans and AI agents may introduce proposals through [AsiBackbone Organization Discussions](https://github.com/orgs/AsiBackbone/discussions). In this community process, human maintainers alone decide whether a proposal becomes organizational work and authorize any downstream action. See the [public proposal intake guidance](https://github.com/AsiBackbone/.github/blob/main/CONTRIBUTING.md#public-proposal-intake).
+Anyone may submit a proposal through [AsiBackbone Organization Discussions](https://github.com/orgs/AsiBackbone/discussions), including one drafted with AI assistance; the person who posts it is responsible for it. In this community process, human maintainers alone decide whether a proposal becomes organizational work and authorize any downstream action. See the [public proposal intake guidance](https://github.com/AsiBackbone/.github/blob/main/CONTRIBUTING.md#public-proposal-intake).
 
 ## Versioning and Citation
 
