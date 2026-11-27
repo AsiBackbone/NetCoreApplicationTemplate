@@ -405,6 +405,8 @@ function Invoke-SelfTest {
         @{ Name = 'built homepage missing section'; Check = { param($e) Test-BuiltHomepage $validSite.Replace('id="related-projects"', '') $e }; Pass = $false }
         @{ Name = 'built homepage missing bounded-authority maxim'; Check = { param($e) Test-BuiltHomepage $validSite.Replace($requiredAuthorityContent[0], '') $e }; Pass = $false }
         @{ Name = 'built homepage missing proposal intake link'; Check = { param($e) Test-BuiltHomepage $validSite.Replace($requiredAuthorityContent[1], '') $e }; Pass = $false }
+        @{ Name = 'homepage missing bounded-authority maxim'; Check = { param($e) Test-Homepage $validHomepage.Replace($requiredAuthorityContent[0], '') $e }; Pass = $false }
+        @{ Name = 'homepage missing proposal intake link'; Check = { param($e) Test-Homepage $validHomepage.Replace($requiredAuthorityContent[1], '') $e }; Pass = $false }
         @{ Name = 'built homepage without lang'; Check = { param($e) Test-BuiltHomepage $validSite.Replace('<html lang="en">', '<html>') $e }; Pass = $false }
         @{ Name = 'built homepage with duplicated title'; Check = { param($e) Test-BuiltHomepage $validSite.Replace("<title>$expectedHomepageTitle</title>", '<title>.NET Core Application Template Documentation | .NET Core Application Template Documentation</title>') $e }; Pass = $false }
         @{ Name = 'built homepage without canonical'; Check = { param($e) Test-BuiltHomepage $validSite.Replace("<link rel=`"canonical`" href=`"$siteBaseUrl`">", '') $e }; Pass = $false }
