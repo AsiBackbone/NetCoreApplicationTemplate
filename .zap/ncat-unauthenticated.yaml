@@ -10,8 +10,11 @@
 env:
   contexts:
     - name: ncat-loopback
+      # The spider requests context URLs directly and follows redirects for that first request, before excludePaths
+      # apply. Seed only with an anonymous page that answers 200 without redirecting; everything else the spider finds
+      # is checked against includePaths and excludePaths before it is requested.
       urls:
-        - http://localhost:8080/
+        - http://localhost:8080/Account/Login
       includePaths:
         - "http://localhost:8080/.*"
       excludePaths:
@@ -31,24 +34,19 @@ jobs:
       scanOnlyInScope: true
       maxAlertsPerRule: 10
 
-  # Seed stable routes that are not necessarily linked from rendered pages.
+  # Seed anonymous, non-redirecting routes that are not linked from rendered pages. Never add a route here that can
+  # answer with a redirect.
   - type: requestor
     requests:
-      - url: http://localhost:8080/
-        method: GET
       - url: http://localhost:8080/health/live
         method: GET
       - url: http://localhost:8080/health/ready
-        method: GET
-      - url: http://localhost:8080/Account/Login
-        method: GET
-      - url: http://localhost:8080/api/application-information
         method: GET
 
   - type: spider
     parameters:
       context: ncat-loopback
-      url: http://localhost:8080/
+      url: http://localhost:8080/Account/Login
       maxDuration: 3           # minutes
       maxDepth: 5
       maxChildren: 20
@@ -61,12 +59,13 @@ jobs:
     parameters:
       maxDuration: 3           # minutes
 
-  # The complete site tree, used by the CI scope guard to prove that only the loopback origin was requested.
+  # Every URL in the session, in or out of scope, as a plain list. The CI scope guard uses it to prove that only the
+  # loopback origin was requested.
   - type: export
     parameters:
       type: url
-      source: sitestree
-      fileName: /zap/wrk/ncat-zap-sites-tree.txt
+      source: all
+      fileName: /zap/wrk/ncat-zap-urls.txt
 
   - type: report
     parameters:

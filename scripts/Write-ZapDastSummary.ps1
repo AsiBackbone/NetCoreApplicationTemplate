@@ -2,7 +2,7 @@
 param(
     [string]$ReportPath,
 
-    [string]$SitesTreePath,
+    [string]$UrlListPath,
 
     [ValidatePattern('^https?://[^/?#]+$')]
     [string]$AllowedOrigin = 'http://localhost:8080',
@@ -14,8 +14,8 @@ param(
 
 # Summarizes an OWASP ZAP traditional-json report for the package-generated NCAT application (#767) and enforces the
 # loopback-only scan boundary. Alerts are report-only during rollout stage 1: they are counted and listed but never fail
-# the script. The script fails only when the report is missing or malformed, or when the report or exported site tree
-# contains any URL outside -AllowedOrigin.
+# the script. The script fails only when the report is missing or malformed, or when the report or exported URL list
+# contains any URL outside -AllowedOrigin. -UrlListPath is the plain URL list written by the ZAP export job (type url).
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -72,7 +72,7 @@ function Get-PropertyValue {
 function Get-ZapDastResult {
     param(
         [Parameter(Mandatory = $true)][string]$ReportJson,
-        [AllowEmptyCollection()][string[]]$SitesTree = @(),
+        [AllowEmptyCollection()][string[]]$UrlList = @(),
         [Parameter(Mandatory = $true)][string]$Origin
     )
 
@@ -134,13 +134,13 @@ function Get-ZapDastResult {
         }
     }
 
-    foreach ($line in $SitesTree) {
+    foreach ($line in $UrlList) {
         if ([string]::IsNullOrWhiteSpace($line)) {
             continue
         }
 
         if (-not (Test-InAllowedOrigin -Url $line -Origin $Origin)) {
-            [void]$scopeViolations.Add("site tree: $($line.Trim())")
+            [void]$scopeViolations.Add("requested URL: $($line.Trim())")
         }
     }
 
@@ -150,7 +150,7 @@ function Get-ZapDastResult {
         ZapVersion      = [string](Get-PropertyValue -InputObject $report -Name '@version')
         Counts          = $counts
         Alerts          = $sortedAlerts
-        SitesTreeCount  = @($SitesTree | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }).Count
+        RequestedUrlCount = @($UrlList | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }).Count
         ScopeViolations = @($scopeViolations)
     }
 }
@@ -169,7 +169,7 @@ function ConvertTo-ZapDastMarkdown {
         [void]$builder.AppendLine("- ZAP version: $($Result.ZapVersion)")
     }
 
-    [void]$builder.AppendLine("- Site tree URLs: $($Result.SitesTreeCount)")
+    [void]$builder.AppendLine("- Requested URLs: $($Result.RequestedUrlCount)")
     if ($Result.ScopeViolations.Count -eq 0) {
         [void]$builder.AppendLine('- Scope guard: passed (no URL outside the authorized origin)')
     }
@@ -244,13 +244,13 @@ function Invoke-SelfTest {
   ]
 }
 '@
-    $clean = Get-ZapDastResult -ReportJson $cleanReport -SitesTree @('http://localhost:8080/', 'http://localhost:8080/robots.txt', '') -Origin $origin
+    $clean = Get-ZapDastResult -ReportJson $cleanReport -UrlList @('http://localhost:8080/', 'http://localhost:8080/robots.txt', '') -Origin $origin
     Assert-True ($clean.ScopeViolations.Count -eq 0) 'Clean report must have no scope violations.'
     Assert-True ($clean.Counts['Medium'] -eq 1) 'Clean report must count one Medium alert type.'
     Assert-True ($clean.Counts['Informational'] -eq 1) 'Clean report must count one Informational alert type.'
     Assert-True ($clean.Counts['High'] -eq 0) 'Clean report must count zero High alert types.'
     Assert-True ($clean.Alerts[0].Risk -eq 'Medium') 'Alerts must be ordered by descending risk.'
-    Assert-True ($clean.SitesTreeCount -eq 2) 'Blank site-tree lines must be ignored.'
+    Assert-True ($clean.RequestedUrlCount -eq 2) 'Blank URL-list lines must be ignored.'
     $markdown = ConvertTo-ZapDastMarkdown -Result $clean -Origin $origin
     Assert-True ($markdown.Contains('Scope guard: passed')) 'Clean summary must report the scope guard as passed.'
     Assert-True ($markdown.Contains('Content Security Policy \| Test')) 'Summary must escape table pipes in alert names.'
@@ -264,7 +264,7 @@ function Invoke-SelfTest {
   ]
 }
 '@
-    $leaky = Get-ZapDastResult -ReportJson $leakyReport -SitesTree @('https://cdn.example.net/x.js') -Origin $origin
+    $leaky = Get-ZapDastResult -ReportJson $leakyReport -UrlList @('https://cdn.example.net/x.js') -Origin $origin
     Assert-True ($leaky.ScopeViolations.Count -eq 3) "Leaky report must report 3 scope violations, found $($leaky.ScopeViolations.Count)."
     Assert-True ((ConvertTo-ZapDastMarkdown -Result $leaky -Origin $origin).Contains('Scope guard: **failed**')) 'Leaky summary must report failure.'
 
@@ -300,13 +300,13 @@ if ([string]::IsNullOrWhiteSpace($ReportPath) -or -not (Test-Path -LiteralPath $
     throw "ZAP JSON report was not found: '$ReportPath'."
 }
 
-if ([string]::IsNullOrWhiteSpace($SitesTreePath) -or -not (Test-Path -LiteralPath $SitesTreePath -PathType Leaf)) {
-    throw "ZAP site-tree export was not found: '$SitesTreePath'."
+if ([string]::IsNullOrWhiteSpace($UrlListPath) -or -not (Test-Path -LiteralPath $UrlListPath -PathType Leaf)) {
+    throw "ZAP URL export was not found: '$UrlListPath'."
 }
 
 $result = Get-ZapDastResult `
     -ReportJson (Get-Content -LiteralPath $ReportPath -Raw) `
-    -SitesTree @(Get-Content -LiteralPath $SitesTreePath) `
+    -UrlList @(Get-Content -LiteralPath $UrlListPath) `
     -Origin $AllowedOrigin
 
 $summary = ConvertTo-ZapDastMarkdown -Result $result -Origin $AllowedOrigin

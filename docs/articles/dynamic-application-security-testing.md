@@ -28,10 +28,15 @@ The scan is loopback-only and disposable by construction:
 * Routes that can redirect to, or receive callbacks from, an external identity provider are excluded:
   `/External/*`, `/signin-*`, `/signout-*`, and `/Saml2*`. The default scaffold uses local cookie authentication, so no
   external provider is configured, but the exclusions remain in case that default changes.
-* ZAP runs with `-silent`, which stops update checks and other unsolicited requests.
+* Excludes apply only to URLs the spider discovers. ZAP requests the context and spider seed URL directly and follows
+  redirects for that first request, so the seeds are limited to anonymous pages that answer `200` without redirecting:
+  `/Account/Login`, `/health/live`, and `/health/ready`. Never seed a route that can redirect.
+* ZAP runs with `-silent`, which stops update checks and other unsolicited requests. Its own proxy listens on
+  `127.0.0.1:8090`, because the application already holds port 8080 on the host network.
 * After the scan, `scripts/Write-ZapDastSummary.ps1` checks every site and alert instance in the JSON report, and every
-  URL in ZAP's exported site tree. **Any URL outside `http://localhost:8080` fails the job.** This scope guard is
-  enforced now, even though alerts are not.
+  URL in ZAP's session, exported as a plain URL list. **Any URL outside `http://localhost:8080` fails the job.** This
+  scope guard is enforced now, even though alerts are not. It detects an out-of-scope request after the fact; the seed
+  and exclusion rules above are what prevent one.
 * Never point the plan at a shared, public, or production deployment. A scan of any other environment needs its own
   authorization.
 
@@ -43,10 +48,10 @@ jobs:
 | Job | Purpose | Bound |
 |:---|:---|:---|
 | `passiveScan-config` | Passive rules scan in-scope traffic only, with at most 10 alerts per rule | - |
-| `requestor` | Seeds `/`, `/health/live`, `/health/ready`, `/Account/Login`, and `/api/application-information` | - |
-| `spider` | Discovers linked pages with GET requests. Forms are parsed but never submitted | 3 minutes, depth 5 |
+| `requestor` | Seeds `/health/live` and `/health/ready`, which are not linked from rendered pages | - |
+| `spider` | Starts at `/Account/Login` and discovers linked pages with GET requests. Forms are parsed but never submitted | 3 minutes, depth 5 |
 | `passiveScan-wait` | Waits for passive analysis to finish | 3 minutes |
-| `export` | Writes the full site tree for the scope guard | - |
+| `export` | Writes every URL in the session to `ncat-zap-urls.txt` for the scope guard | - |
 | `report` | Writes `ncat-zap-report.json` and `ncat-zap-report.html` | - |
 
 There is no active scan in stage 1. The whole container run is bounded by `timeout 12m`, and the step has a
@@ -61,9 +66,9 @@ variable at the top of `ci.yml`. A trailing comment records the matching version
 
 The Linux smoke-test leg publishes:
 
-* A **job summary** with the ZAP version, site-tree size, scope-guard result, scan duration, alert-type counts by risk,
+* A **job summary** with the ZAP version, number of requested URLs, scope-guard result, scan duration, alert-type counts by risk,
   and one row per alert type.
-* A **`dast-ncat-zap` artifact** with the JSON and HTML reports, the site-tree export, and the summary. It is kept for
+* A **`dast-ncat-zap` artifact** with the JSON and HTML reports, the URL list, and the summary. It is kept for
   7 days and uploaded on both success and failure.
 
 The workflow keeps `permissions: contents: read`. The scanner never creates or updates GitHub issues, and it never
@@ -101,11 +106,11 @@ ZAP_IMAGE="$(sed -n 's/^  ZAP_IMAGE: \([^ ]*\).*/\1/p' .github/workflows/ci.yml)
 docker run --rm --network host \
   --volume "$PWD/.zap:/zap/plans:ro" \
   --volume "$PWD/artifacts/dast/ncat:/zap/wrk:rw" \
-  "$ZAP_IMAGE" zap.sh -cmd -silent -autorun /zap/plans/ncat-unauthenticated.yaml
+  "$ZAP_IMAGE" zap.sh -cmd -silent -host 127.0.0.1 -port 8090 -autorun /zap/plans/ncat-unauthenticated.yaml
 
 pwsh ./scripts/Write-ZapDastSummary.ps1 \
   -ReportPath ./artifacts/dast/ncat/ncat-zap-report.json \
-  -SitesTreePath ./artifacts/dast/ncat/ncat-zap-sites-tree.txt
+  -UrlListPath ./artifacts/dast/ncat/ncat-zap-urls.txt
 
 (cd ./artifacts/scaffold/ContosoSecurityPortal && docker compose -p contososecurityportal-ci down --volumes --remove-orphans)
 dotnet new uninstall NetCoreApplicationTemplate

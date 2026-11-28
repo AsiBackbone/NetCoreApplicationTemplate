@@ -412,7 +412,8 @@ jobs:
           chmod 0777 "$report_dir"
 
           # --network host lets the container reach the Compose port published on 127.0.0.1 only.
-          # -silent stops ZAP from making unsolicited requests such as update and add-on checks.
+          # -silent stops ZAP from making unsolicited requests such as update and add-on checks. ZAP's own proxy listens
+          # on 127.0.0.1:8090 because the application under test already holds port 8080 on the host network.
           started_epoch="$(date +%s)"
           exit_code=0
           timeout --kill-after=30s 12m docker run \
@@ -422,7 +423,7 @@ jobs:
             --volume "$GITHUB_WORKSPACE/.zap:/zap/plans:ro" \
             --volume "$report_dir:/zap/wrk:rw" \
             "$ZAP_IMAGE" \
-            zap.sh -cmd -silent -autorun /zap/plans/ncat-unauthenticated.yaml \
+            zap.sh -cmd -silent -host 127.0.0.1 -port 8090 -autorun /zap/plans/ncat-unauthenticated.yaml \
             || exit_code=$?
           elapsed_seconds=$(( $(date +%s) - started_epoch ))
           echo "ZAP exited with code $exit_code after $elapsed_seconds seconds."
@@ -446,7 +447,7 @@ jobs:
           try {
               ./scripts/Write-ZapDastSummary.ps1 `
                 -ReportPath (Join-Path $reportDir 'ncat-zap-report.json') `
-                -SitesTreePath (Join-Path $reportDir 'ncat-zap-sites-tree.txt') `
+                -UrlListPath (Join-Path $reportDir 'ncat-zap-urls.txt') `
                 -AllowedOrigin 'http://localhost:8080' `
                 -SummaryPath $summaryFile
           }
