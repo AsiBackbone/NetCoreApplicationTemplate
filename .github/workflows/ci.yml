@@ -47,7 +47,8 @@ env:
     results-receiver.actions.githubusercontent.com:443
     www.nuget.org:443
     *.actions.githubusercontent.com:443
-  # The scaffolded Docker build and Compose run also reach container registries.
+  # The scaffolded Docker build and Compose run also reach container registries. ghcr.io and
+  # pkg-containers.githubusercontent.com serve the digest-pinned OWASP ZAP image used by the DAST scan (#767).
   ALLOWED_ENDPOINTS_SMOKE: |
     api.github.com:443
     api.nuget.org:443
@@ -57,11 +58,13 @@ env:
     codeload.github.com:443
     dotnetbuilds.azureedge.net:443
     dotnetcli.azureedge.net:443
+    ghcr.io:443
     github.com:443
     globalcdn.nuget.org:443
     index.docker.io:443
     mcr.microsoft.com:443
     objects.githubusercontent.com:443
+    pkg-containers.githubusercontent.com:443
     pkgs.dev.azure.com:443
     production.cloudflare.docker.com:443
     raw.githubusercontent.com:443
@@ -72,6 +75,8 @@ env:
     *.actions.githubusercontent.com:443
     *.data.mcr.microsoft.com:443
   COVERAGE_THRESHOLD: '75'
+  # Official OWASP ZAP stable image, pinned by immutable index digest. Keep the version comment in step with the digest.
+  ZAP_IMAGE: ghcr.io/zaproxy/zaproxy@sha256:9624669db72f54d86c4b46a7064518bd9bf79d8c61a4c31befa9923489f328af # 2.17.0 (stable)
   SOLUTION_FILE: './NetCoreApplicationTemplate.slnx'
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
@@ -173,6 +178,10 @@ jobs:
       - name: Test repository security-control audit
         shell: pwsh
         run: ./scripts/Test-RepositorySecurityControls.ps1 -SelfTest
+
+      - name: Test DAST report summary and scope guard
+        shell: pwsh
+        run: ./scripts/Write-ZapDastSummary.ps1 -SelfTest
 
       - name: Run tests
         shell: pwsh
@@ -385,6 +394,83 @@ jobs:
 
           Write-Error "Health endpoint did not respond successfully."
           exit 1
+
+      # Report-only OWASP ZAP scan of the package-generated application (#767). The target is the loopback-only Compose
+      # instance above; see docs/articles/dynamic-application-security-testing.md for scope, triage, and limits.
+      - name: Run OWASP ZAP DAST scan (report-only)
+        id: zap-scan
+        if: runner.os == 'Linux'
+        timeout-minutes: 15
+        shell: bash
+        run: |
+          set -uo pipefail
+          report_dir="$GITHUB_WORKSPACE/artifacts/dast/ncat"
+          mkdir -p "$report_dir"
+          # The ZAP image runs as an unprivileged user that differs from the runner user.
+          chmod 0777 "$report_dir"
+
+          # --network host lets the container reach the Compose port published on 127.0.0.1 only.
+          # -silent stops ZAP from making unsolicited requests such as update and add-on checks.
+          started_epoch="$(date +%s)"
+          exit_code=0
+          timeout --kill-after=30s 12m docker run \
+            --name ncat-zap \
+            --rm \
+            --network host \
+            --volume "$GITHUB_WORKSPACE/.zap:/zap/plans:ro" \
+            --volume "$report_dir:/zap/wrk:rw" \
+            "$ZAP_IMAGE" \
+            zap.sh -cmd -silent -autorun /zap/plans/ncat-unauthenticated.yaml \
+            || exit_code=$?
+          elapsed_seconds=$(( $(date +%s) - started_epoch ))
+          echo "ZAP exited with code $exit_code after $elapsed_seconds seconds."
+          echo "elapsed_seconds=$elapsed_seconds" >> "$GITHUB_OUTPUT"
+
+          case "$exit_code" in
+            0) ;;
+            2) echo "::warning title=OWASP ZAP::The automation plan completed with warnings; review the job log." ;;
+            124|137) echo "::error title=OWASP ZAP::The scan exceeded its 12 minute bound."; exit 1 ;;
+            *) echo "::error title=OWASP ZAP::The automation plan failed with exit code $exit_code."; exit 1 ;;
+          esac
+
+      - name: Summarize OWASP ZAP DAST results
+        if: always() && runner.os == 'Linux' && steps.zap-scan.outcome != 'skipped'
+        shell: pwsh
+        env:
+          ZAP_ELAPSED_SECONDS: ${{ steps.zap-scan.outputs.elapsed_seconds }}
+        run: |
+          $reportDir = './artifacts/dast/ncat'
+          $summaryFile = Join-Path $reportDir 'summary.md'
+          try {
+              ./scripts/Write-ZapDastSummary.ps1 `
+                -ReportPath (Join-Path $reportDir 'ncat-zap-report.json') `
+                -SitesTreePath (Join-Path $reportDir 'ncat-zap-sites-tree.txt') `
+                -AllowedOrigin 'http://localhost:8080' `
+                -SummaryPath $summaryFile
+          }
+          finally {
+              if ($env:ZAP_ELAPSED_SECONDS) {
+                  Add-Content -LiteralPath $summaryFile -Value "- Scan duration: $env:ZAP_ELAPSED_SECONDS seconds (bound: 12 minutes)" -Encoding utf8
+              }
+
+              if (Test-Path -LiteralPath $summaryFile) {
+                  Get-Content -LiteralPath $summaryFile -Raw | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Encoding utf8
+              }
+          }
+
+      - name: Upload OWASP ZAP DAST reports
+        if: always() && runner.os == 'Linux' && steps.zap-scan.outcome != 'skipped'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: dast-ncat-zap
+          path: ./artifacts/dast/ncat
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Remove OWASP ZAP container
+        if: always() && runner.os == 'Linux'
+        shell: bash
+        run: docker rm --force ncat-zap >/dev/null 2>&1 || true
 
       - name: Capture scaffolded Docker logs
         if: always() && runner.os == 'Linux'

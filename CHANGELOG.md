@@ -6,6 +6,13 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+### Security
+
+* Added a report-only OWASP ZAP scan to the Linux template smoke test. It spiders and passively analyzes the
+  loopback-only application scaffolded from the template package built in the same run, publishes JSON and HTML
+  reports with a job summary, and fails only if ZAP requests a URL outside the authorized origin. The ZAP stable image
+  is pinned by digest, and the scan, triage process, local reproduction, and limits are documented (#767).
+
 ## 2.11.12 - 2026-11-27
 
 ### Security

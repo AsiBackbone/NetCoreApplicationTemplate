@@ -1,0 +1,83 @@
+# OWASP ZAP Automation Framework plan for the package-generated NCAT application (#767).
+#
+# Rollout stage 1: bounded, unauthenticated, report-only discovery and passive analysis. The plan has no active scan
+# and no alert gate. Do not add either until every stage-1 alert has been triaged as described in
+# docs/articles/dynamic-application-security-testing.md.
+#
+# Boundary: the only authorized target is the disposable Compose instance that the CI template-smoke-test job scaffolds
+# from the template package built in the same run. That instance publishes on 127.0.0.1:8080 only. Never point this plan
+# at a shared, public, or production deployment.
+env:
+  contexts:
+    - name: ncat-loopback
+      urls:
+        - http://localhost:8080/
+      includePaths:
+        - "http://localhost:8080/.*"
+      excludePaths:
+        # Routes that can redirect to an external identity provider, or receive its callback, are never requested.
+        - "http://localhost:8080/External/.*"
+        - "http://localhost:8080/signin-.*"
+        - "http://localhost:8080/signout-.*"
+        - "http://localhost:8080/Saml2.*"
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    progressToStdout: true
+
+jobs:
+  - type: passiveScan-config
+    parameters:
+      scanOnlyInScope: true
+      maxAlertsPerRule: 10
+
+  # Seed stable routes that are not necessarily linked from rendered pages.
+  - type: requestor
+    requests:
+      - url: http://localhost:8080/
+        method: GET
+      - url: http://localhost:8080/health/live
+        method: GET
+      - url: http://localhost:8080/health/ready
+        method: GET
+      - url: http://localhost:8080/Account/Login
+        method: GET
+      - url: http://localhost:8080/api/application-information
+        method: GET
+
+  - type: spider
+    parameters:
+      context: ncat-loopback
+      url: http://localhost:8080/
+      maxDuration: 3           # minutes
+      maxDepth: 5
+      maxChildren: 20
+      threadCount: 2
+      postForm: false          # Discovery only: forms are parsed but never submitted.
+      parseRobotsTxt: true
+      parseSitemapXml: true
+
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 3           # minutes
+
+  # The complete site tree, used by the CI scope guard to prove that only the loopback origin was requested.
+  - type: export
+    parameters:
+      type: url
+      source: sitestree
+      fileName: /zap/wrk/ncat-zap-sites-tree.txt
+
+  - type: report
+    parameters:
+      template: traditional-json
+      reportDir: /zap/wrk
+      reportFile: ncat-zap-report.json
+      reportTitle: NCAT package-generated application - ZAP baseline (report-only)
+
+  - type: report
+    parameters:
+      template: traditional-html
+      reportDir: /zap/wrk
+      reportFile: ncat-zap-report.html
+      reportTitle: NCAT package-generated application - ZAP baseline (report-only)

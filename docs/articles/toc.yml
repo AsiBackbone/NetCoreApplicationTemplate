@@ -113,6 +113,8 @@
       href: dependency-update-policy.md
     - name: Workflow Hardening and Execution Budgets
       href: workflow-hardening.md
+    - name: Dynamic Application Security Testing
+      href: dynamic-application-security-testing.md
     - name: GitHub Workflow
       href: github-workflow.md
 
