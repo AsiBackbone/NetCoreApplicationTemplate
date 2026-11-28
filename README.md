@@ -66,9 +66,9 @@ NuGet author signing is tracked separately by
 ## Current Release
 
 <!-- BEGIN LATEST_RELEASE -->
-Current release: __[Release 2.11.11](https://github.com/AsiBackbone/NetCoreApplicationTemplate/releases/tag/v2.11.11)__
+Current release: __[Release 2.11.12](https://github.com/AsiBackbone/NetCoreApplicationTemplate/releases/tag/v2.11.12)__
 
-Tag: `v2.11.11`
+Tag: `v2.11.12`
 <!-- END LATEST_RELEASE -->
 
 ## Maintenance Status
@@ -137,13 +137,13 @@ Health routes are explicitly anonymous at the application layer for infrastructu
 Install the published package:
 
 ```powershell
-dotnet new install NetCoreApplicationTemplate::2.11.11
+dotnet new install NetCoreApplicationTemplate::2.11.12
 ```
 
 For local package validation, install the packed package directly:
 
 ```powershell
-dotnet new install ./artifacts/template-package/NetCoreApplicationTemplate.2.11.11.nupkg
+dotnet new install ./artifacts/template-package/NetCoreApplicationTemplate.2.11.12.nupkg
 ```
 
 Generate the default cookie-authenticated scaffold:
@@ -294,7 +294,7 @@ This project follows Semantic Versioning. Version metadata is managed centrally 
 Suggested citation:
 
 ```text
-Cavell, Christopher D. NetCoreApplicationTemplate. Version 2.11.11. Zenodo. MIT License. https://doi.org/10.5281/zenodo.20373042
+Cavell, Christopher D. NetCoreApplicationTemplate. Version 2.11.12. Zenodo. MIT License. https://doi.org/10.5281/zenodo.20373042
 ```
 
 ## License
