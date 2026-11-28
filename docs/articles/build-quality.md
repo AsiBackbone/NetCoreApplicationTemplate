@@ -196,16 +196,18 @@ Protected files should be added when they control security, trust boundaries, re
 
 ## Runner Egress Policy
 
-CI hardens each Linux job with [Harden-Runner](https://github.com/step-security/harden-runner). The policy is driven by the `EGRESS_POLICY` workflow environment variable, which defaults to `audit`: outbound calls are recorded but never blocked.
+CI hardens the build, smoke-test and option-matrix jobs with [Harden-Runner](https://github.com/step-security/harden-runner). The policy is driven by the `EGRESS_POLICY` workflow environment variable, which defaults to `audit`: outbound calls are recorded but never blocked.
 
 `ci.yml` also carries the allow-lists the jobs are expected to need:
 
 | Variable | Used by | Covers |
 |:---|:---|:---|
 | `ALLOWED_ENDPOINTS_DOTNET` | Build validation, template option matrix | GitHub Actions infrastructure, the .NET SDK installer, and NuGet restore |
-| `ALLOWED_ENDPOINTS_SMOKE` | Template smoke test | The same endpoints plus `aka.ms` for the Windows .NET SDK installer, the container registries used by the scaffolded Docker build and Compose run, and GitHub Container Registry for the pinned OWASP ZAP image ([Dynamic Application Security Testing](dynamic-application-security-testing.md)) |
+| `ALLOWED_ENDPOINTS_SMOKE` | Template smoke test | The same endpoints, plus `aka.ms` (the `dotnet-install` channel redirect used on Windows and macOS), the container registries used by the scaffolded Docker build and Compose run, and GitHub Container Registry for the pinned OWASP ZAP image ([Dynamic Application Security Testing](dynamic-application-security-testing.md)) |
 
 Harden-Runner ignores `allowed-endpoints` while the policy is `audit`, so the lists are inert until block mode is used.
+
+Keep both lists as folded (`>-`) YAML scalars so each entry is separated by a space. The Harden-Runner agent splits `allowed-endpoints` on spaces only. A newline-separated (`|`) list reaches the agent as a single malformed entry, so only the first host is allowed and every other endpoint is blocked.
 
 To move to blocking:
 
@@ -214,7 +216,7 @@ To move to blocking:
 3. Repeat until a full run, including the cross-platform smoke test and option matrix, passes in block mode.
 4. Change the `EGRESS_POLICY` default in `ci.yml` to `block`.
 
-Harden-Runner enforces the policy on the Linux and Windows runners; the Windows smoke-test leg needs `aka.ms`, which the .NET SDK installer uses for its download redirect. The macOS smoke-test leg remains unenforced regardless of the policy value.
+Harden-Runner enforces block mode on the Linux, Windows and macOS runners, so the cross-platform smoke-test legs are covered by `ALLOWED_ENDPOINTS_SMOKE`. A green block-mode run still records some denied lookups: certificate revocation checks (DigiCert, Sectigo, Microsoft and Symantec OCSP/CRL hosts), NuGet search (`azuresearch-*.nuget.org`), Windows connectivity probes and macOS system services. None of them is needed for the build, so they are deliberately left off the lists.
 
 ## Dependency Upgrade Policy
 
