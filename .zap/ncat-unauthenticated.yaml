@@ -1,8 +1,9 @@
 # OWASP ZAP Automation Framework plan for the package-generated NCAT application (#767).
 #
-# Rollout stage 1: bounded, unauthenticated, report-only discovery and passive analysis. The plan has no active scan
-# and no alert gate. Do not add either until every stage-1 alert has been triaged as described in
-# docs/articles/dynamic-application-security-testing.md.
+# Bounded, unauthenticated discovery and passive analysis, with no active scan. The plan only produces reports. The CI
+# summary step (scripts/Write-ZapDastSummary.ps1) enforces the scope guard, the passive-scan canary, and the alert gate:
+# unsuppressed Medium or High alerts fail CI. Accept an alert only through a narrow, reviewed entry in
+# .zap/alert-suppressions.json; see docs/articles/dynamic-application-security-testing.md.
 #
 # Boundary: the only authorized target is the disposable Compose instance that the CI template-smoke-test job scaffolds
 # from the template package built in the same run. That instance publishes on 127.0.0.1:8080 only. Never point this plan

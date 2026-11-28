@@ -8,6 +8,11 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ### Security
 
+* The OWASP ZAP scan of the package-generated application now fails CI on any Medium or High alert that is not covered
+  by a reviewed suppression. Low and Informational alerts stay report-only. Suppressions live in
+  `.zap/alert-suppressions.json`. Each one names one rule and one anchored URL pattern, with a rationale, owner and
+  review condition, and the file currently holds none. A controlled insecure-headers fixture proved the gate fails, and
+  cleanup was confirmed after timed-out and cancelled scans (#767).
 * Added a report-only OWASP ZAP scan to the Linux template smoke test. It spiders and passively analyzes the
   loopback-only application scaffolded from the template package built in the same run, publishes JSON and HTML
   reports with a job summary, and never fails on alerts. The job fails only when ZAP requests a URL outside the

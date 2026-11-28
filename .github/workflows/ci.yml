@@ -400,9 +400,10 @@ jobs:
           Write-Error "Health endpoint did not respond successfully."
           exit 1
 
-      # Report-only OWASP ZAP scan of the package-generated application (#767). The target is the loopback-only Compose
-      # instance above; see docs/articles/dynamic-application-security-testing.md for scope, triage, and limits.
-      - name: Run OWASP ZAP DAST scan (report-only)
+      # OWASP ZAP scan of the package-generated application (#767). The target is the loopback-only Compose instance
+      # above. The summary step fails on unsuppressed Medium or High alerts; Low and Informational alerts are reported
+      # only. See docs/articles/dynamic-application-security-testing.md for scope, triage, suppressions, and limits.
+      - name: Run OWASP ZAP DAST scan
         id: zap-scan
         if: runner.os == 'Linux'
         timeout-minutes: 15
@@ -439,7 +440,7 @@ jobs:
             *) echo "::error title=OWASP ZAP::The automation plan failed with exit code $exit_code."; exit 1 ;;
           esac
 
-      - name: Summarize OWASP ZAP DAST results
+      - name: Summarize and gate OWASP ZAP DAST results
         if: always() && runner.os == 'Linux' && steps.zap-scan.outcome != 'skipped'
         shell: pwsh
         env:
@@ -453,6 +454,8 @@ jobs:
                 -UrlListPath (Join-Path $reportDir 'ncat-zap-urls.txt') `
                 -AllowedOrigin 'http://localhost:8080' `
                 -CanaryUrl 'http://localhost:8080/Account/Login?password=zap-passive-canary' `
+                -FailOnRisk Medium `
+                -SuppressionsPath './.zap/alert-suppressions.json' `
                 -SummaryPath $summaryFile
           }
           finally {

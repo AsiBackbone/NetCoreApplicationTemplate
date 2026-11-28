@@ -14,15 +14,25 @@ param(
     [ValidatePattern('^\d+$')]
     [string]$CanaryPluginId = '10024',
 
+    [ValidateSet('None', 'Low', 'Medium', 'High')]
+    [string]$FailOnRisk = 'None',
+
+    [string]$SuppressionsPath,
+
     [switch]$SelfTest
 )
 
 # Summarizes an OWASP ZAP traditional-json report for the package-generated NCAT application (#767) and enforces the
-# loopback-only scan boundary. Alerts are report-only during rollout stage 1: they are counted and listed but never fail
-# the script. The script fails only when the report is missing or malformed, or when the report or exported URL list
-# contains any URL outside -AllowedOrigin. -UrlListPath is the plain URL list written by the ZAP export job (type url).
-# When -CanaryUrl is set, the script also fails unless rule -CanaryPluginId raised an alert on that URL. The canary
-# proves the passive scanner actually analyzed traffic, so an empty report cannot be mistaken for a clean application.
+# loopback-only scan boundary. The script fails when the report is missing or malformed, or when the report or exported
+# URL list contains any URL outside -AllowedOrigin. -UrlListPath is the plain URL list written by the ZAP export job
+# (type url). When -CanaryUrl is set, the script also fails unless rule -CanaryPluginId raised an alert on that URL. The
+# canary proves the passive scanner actually analyzed traffic, so an empty report cannot be mistaken for a clean
+# application.
+#
+# Alert gate: with -FailOnRisk set to Low, Medium or High, the script fails when any alert at or above that risk has an
+# instance that no suppression covers. Alerts below the threshold are always reported and never fail. -SuppressionsPath
+# names a JSON file of narrow suppressions. Each one names one rule and one anchored URL pattern, with a rationale, an
+# owner and a review condition. With -FailOnRisk None (the default) alerts are report-only.
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -78,16 +88,105 @@ function Get-PropertyValue {
     return $property.Value
 }
 
+function ConvertTo-ZapSuppressionList {
+    param(
+        [Parameter(Mandatory = $true)][string]$SuppressionsJson
+    )
+
+    try {
+        $document = $SuppressionsJson | ConvertFrom-Json -Depth 16
+    }
+    catch {
+        throw "Alert suppressions file is not valid JSON: $($_.Exception.Message)"
+    }
+
+    $entries = Get-PropertyValue -InputObject $document -Name 'suppressions'
+    if ($null -eq $document -or $null -eq $document.PSObject.Properties['suppressions']) {
+        throw "Alert suppressions file must contain a 'suppressions' array."
+    }
+
+    $list = [System.Collections.Generic.List[object]]::new()
+    $index = 0
+    foreach ($entry in @($entries)) {
+        if ($null -eq $entry) {
+            continue
+        }
+
+        $label = "Suppression #$index"
+        $values = @{}
+        foreach ($field in @('pluginId', 'urlPattern', 'rationale', 'owner', 'reviewCondition')) {
+            $value = [string](Get-PropertyValue -InputObject $entry -Name $field)
+            if ([string]::IsNullOrWhiteSpace($value)) {
+                throw "$label is missing required field '$field'."
+            }
+
+            $values[$field] = $value.Trim()
+        }
+
+        if ($values.pluginId -notmatch '^\d+$') {
+            throw "$label has non-numeric pluginId '$($values.pluginId)'."
+        }
+
+        # Narrow by construction: anchored at both ends and confined to one URL path under the origin.
+        $pattern = $values.urlPattern
+        if (-not $pattern.StartsWith('^') -or -not $pattern.EndsWith('$')) {
+            throw "$label urlPattern must be anchored with ^ and `$: '$pattern'."
+        }
+
+        if ($pattern -match '^\^\.\*' -or $pattern -eq '^.*$') {
+            throw "$label urlPattern must name a specific URL, not match everything: '$pattern'."
+        }
+
+        try {
+            $regex = [System.Text.RegularExpressions.Regex]::new(
+                $pattern,
+                [System.Text.RegularExpressions.RegexOptions]::CultureInvariant,
+                [TimeSpan]::FromSeconds(1))
+        }
+        catch {
+            throw "$label urlPattern is not a valid regular expression: $($_.Exception.Message)"
+        }
+
+        $list.Add([pscustomobject]@{
+                Index           = $index
+                PluginId        = $values.pluginId
+                UrlPattern      = $pattern
+                Regex           = $regex
+                Rationale       = $values.rationale
+                Owner           = $values.owner
+                ReviewCondition = $values.reviewCondition
+            })
+        $index++
+    }
+
+    return , $list.ToArray()
+}
+
 function Get-ZapDastResult {
     param(
         [Parameter(Mandatory = $true)][string]$ReportJson,
         [AllowEmptyCollection()][string[]]$UrlList = @(),
         [Parameter(Mandatory = $true)][string]$Origin,
         [string]$CanaryUrl,
-        [string]$CanaryPluginId = '10024'
+        [string]$CanaryPluginId = '10024',
+        [ValidateSet('None', 'Low', 'Medium', 'High')][string]$FailOnRisk = 'None',
+        [AllowEmptyCollection()][object[]]$Suppressions = @()
     )
 
     $canaryDetected = $false
+    $failOnRiskCode = switch ($FailOnRisk) {
+        'Low' { 1 }
+        'Medium' { 2 }
+        'High' { 3 }
+        default { [int]::MaxValue }
+    }
+
+    $suppressionMatches = @{}
+    foreach ($suppression in $Suppressions) {
+        $suppressionMatches[$suppression.Index] = 0
+    }
+
+    $gateViolations = [System.Collections.Generic.List[object]]::new()
 
     try {
         $report = $ReportJson | ConvertFrom-Json -Depth 64
@@ -126,7 +225,9 @@ function Get-ZapDastResult {
             }
 
             $pluginId = [string](Get-PropertyValue -InputObject $alert -Name 'pluginid')
-            $instances = @(Get-PropertyValue -InputObject $alert -Name 'instances') | Where-Object { $null -ne $_ }
+            $alertName = [string](Get-PropertyValue -InputObject $alert -Name 'name')
+            $instances = @(@(Get-PropertyValue -InputObject $alert -Name 'instances') | Where-Object { $null -ne $_ })
+            $suppressedCount = 0
             foreach ($instance in $instances) {
                 $uri = [string](Get-PropertyValue -InputObject $instance -Name 'uri')
                 if (-not (Test-InAllowedOrigin -Url $uri -Origin $Origin)) {
@@ -138,18 +239,39 @@ function Get-ZapDastResult {
                     [string]::Equals($uri.Trim(), $CanaryUrl.Trim(), [System.StringComparison]::OrdinalIgnoreCase)) {
                     $canaryDetected = $true
                 }
+
+                foreach ($suppression in $Suppressions) {
+                    if ($suppression.PluginId -eq $pluginId -and $suppression.Regex.IsMatch($uri.Trim())) {
+                        $suppressionMatches[$suppression.Index]++
+                        $suppressedCount++
+                        break
+                    }
+                }
             }
 
             $countValue = Get-PropertyValue -InputObject $alert -Name 'count'
-            $instanceCount = if ($null -ne $countValue -and "$countValue" -match '^\d+$') { [int]$countValue } else { @($instances).Count }
+            $instanceCount = if ($null -ne $countValue -and "$countValue" -match '^\d+$') { [int]$countValue } else { $instances.Count }
+
+            # An alert that reports a count without listing its instances cannot be shown to be suppressed.
+            $unsuppressedCount = if ($instances.Count -eq 0) { [Math]::Max($instanceCount, 1) } else { $instances.Count - $suppressedCount }
+
+            if ([int]$riskCode -ge $failOnRiskCode -and $unsuppressedCount -gt 0) {
+                $gateViolations.Add([pscustomobject]@{
+                        Risk         = $riskName
+                        PluginId     = $pluginId
+                        Name         = $alertName
+                        Unsuppressed = $unsuppressedCount
+                    })
+            }
 
             $counts[$riskName]++
             $alerts.Add([pscustomobject]@{
-                    RiskCode  = [int]$riskCode
-                    Risk      = $riskName
-                    PluginId  = $pluginId
-                    Name      = [string](Get-PropertyValue -InputObject $alert -Name 'name')
-                    Instances = $instanceCount
+                    RiskCode   = [int]$riskCode
+                    Risk       = $riskName
+                    PluginId   = $pluginId
+                    Name       = $alertName
+                    Instances  = $instanceCount
+                    Suppressed = $suppressedCount
                 })
         }
     }
@@ -175,6 +297,10 @@ function Get-ZapDastResult {
         CanaryUrl         = $CanaryUrl
         CanaryPluginId    = $CanaryPluginId
         CanaryDetected    = $canaryDetected
+        FailOnRisk        = $FailOnRisk
+        GateViolations    = @($gateViolations)
+        SuppressionCount  = @($Suppressions).Count
+        UnusedSuppressions = @($Suppressions | Where-Object { $suppressionMatches[$_.Index] -eq 0 })
     }
 }
 
@@ -184,8 +310,14 @@ function ConvertTo-ZapDastMarkdown {
         [Parameter(Mandatory = $true)][string]$Origin
     )
 
+    $enforcing = $Result.FailOnRisk -ne 'None'
     $builder = [System.Text.StringBuilder]::new()
-    [void]$builder.AppendLine('### OWASP ZAP DAST (report-only)')
+    if ($enforcing) {
+        [void]$builder.AppendLine("### OWASP ZAP DAST (fails on unsuppressed $($Result.FailOnRisk) or higher)")
+    }
+    else {
+        [void]$builder.AppendLine('### OWASP ZAP DAST (report-only)')
+    }
     [void]$builder.AppendLine()
     [void]$builder.AppendLine("- Target: ``$Origin`` (package-generated application, loopback only)")
     if (-not [string]::IsNullOrWhiteSpace($Result.ZapVersion)) {
@@ -209,7 +341,18 @@ function ConvertTo-ZapDastMarkdown {
         }
     }
 
-    [void]$builder.AppendLine('- Enforcement: none. Alerts are reported for triage and do not fail the job.')
+    if (-not $enforcing) {
+        [void]$builder.AppendLine('- Alert gate: off. Alerts are reported for triage and do not fail the job.')
+    }
+    elseif ($Result.GateViolations.Count -eq 0) {
+        [void]$builder.AppendLine("- Alert gate: passed (no unsuppressed $($Result.FailOnRisk) or higher alert; lower risks are report-only)")
+    }
+    else {
+        [void]$builder.AppendLine("- Alert gate: **failed** ($($Result.GateViolations.Count) alert type(s) at $($Result.FailOnRisk) or higher with unsuppressed instances)")
+    }
+
+    $unusedCount = @($Result.UnusedSuppressions).Count
+    [void]$builder.AppendLine("- Suppressions: $($Result.SuppressionCount) configured, $unusedCount unused")
     [void]$builder.AppendLine()
     [void]$builder.AppendLine('| Risk | Alert types |')
     [void]$builder.AppendLine('|:---|---:|')
@@ -219,11 +362,30 @@ function ConvertTo-ZapDastMarkdown {
 
     if ($Result.Alerts.Count -gt 0) {
         [void]$builder.AppendLine()
-        [void]$builder.AppendLine('| Risk | Rule | Alert | Instances |')
-        [void]$builder.AppendLine('|:---|:---|:---|---:|')
+        [void]$builder.AppendLine('| Risk | Rule | Alert | Instances | Suppressed |')
+        [void]$builder.AppendLine('|:---|:---|:---|---:|---:|')
         foreach ($alert in $Result.Alerts) {
             $name = ($alert.Name -replace '\|', '\|') -replace '[\r\n]+', ' '
-            [void]$builder.AppendLine("| $($alert.Risk) | $($alert.PluginId) | $name | $($alert.Instances) |")
+            [void]$builder.AppendLine("| $($alert.Risk) | $($alert.PluginId) | $name | $($alert.Instances) | $($alert.Suppressed) |")
+        }
+    }
+
+    if ($Result.GateViolations.Count -gt 0) {
+        [void]$builder.AppendLine()
+        [void]$builder.AppendLine('Alerts failing the gate:')
+        [void]$builder.AppendLine()
+        foreach ($violation in $Result.GateViolations) {
+            $name = ($violation.Name -replace '[\r\n]+', ' ')
+            [void]$builder.AppendLine("- $($violation.Risk) rule $($violation.PluginId) ($name): $($violation.Unsuppressed) unsuppressed instance(s)")
+        }
+    }
+
+    if ($unusedCount -gt 0) {
+        [void]$builder.AppendLine()
+        [void]$builder.AppendLine('Unused suppressions (review and remove when the review condition is met):')
+        [void]$builder.AppendLine()
+        foreach ($suppression in $Result.UnusedSuppressions) {
+            [void]$builder.AppendLine("- rule $($suppression.PluginId) ``$($suppression.UrlPattern)`` (owner: $($suppression.Owner))")
         }
     }
 
@@ -342,6 +504,85 @@ function Invoke-SelfTest {
 
     Assert-True (-not ((ConvertTo-ZapDastMarkdown -Result $empty -Origin $origin).Contains('Passive-scan canary'))) 'Summary must omit the canary line when no canary is configured.'
 
+    # Alert gate. Mirrors the insecure-headers regression fixture: Medium CSP and anti-clickjacking alerts.
+    $gateReport = @'
+{
+  "site": [ { "@name": "http://localhost:8080", "alerts": [
+    { "pluginid": "10038", "name": "Content Security Policy (CSP) Header Not Set", "riskcode": "2", "count": "2",
+      "instances": [ { "uri": "http://localhost:8080/Account/Login" }, { "uri": "http://localhost:8080/robots.txt" } ] },
+    { "pluginid": "10021", "name": "X-Content-Type-Options Header Missing", "riskcode": "1", "count": "1",
+      "instances": [ { "uri": "http://localhost:8080/css/landing.css" } ] },
+    { "pluginid": "10024", "name": "Information Disclosure - Sensitive Information in URL", "riskcode": "0", "count": "1",
+      "instances": [ { "uri": "http://localhost:8080/Account/Login?password=zap-passive-canary" } ] } ] } ]
+}
+'@
+    $reportOnly = Get-ZapDastResult -ReportJson $gateReport -Origin $origin
+    Assert-True ($reportOnly.GateViolations.Count -eq 0) 'FailOnRisk None must never produce gate violations.'
+    Assert-True ((ConvertTo-ZapDastMarkdown -Result $reportOnly -Origin $origin).Contains('Alert gate: off')) 'Report-only summary must say the gate is off.'
+
+    $mediumGate = Get-ZapDastResult -ReportJson $gateReport -Origin $origin -FailOnRisk Medium
+    Assert-True ($mediumGate.GateViolations.Count -eq 1) "An unsuppressed Medium alert must fail a Medium gate (found $($mediumGate.GateViolations.Count))."
+    Assert-True ($mediumGate.GateViolations[0].PluginId -eq '10038' -and $mediumGate.GateViolations[0].Unsuppressed -eq 2) 'The Medium gate must report both unsuppressed CSP instances.'
+    $mediumMarkdown = ConvertTo-ZapDastMarkdown -Result $mediumGate -Origin $origin
+    Assert-True ($mediumMarkdown.Contains('Alert gate: **failed**') -and $mediumMarkdown.Contains('Alerts failing the gate:')) 'A failing gate must be visible in the summary.'
+
+    $highGate = Get-ZapDastResult -ReportJson $gateReport -Origin $origin -FailOnRisk High
+    Assert-True ($highGate.GateViolations.Count -eq 0) 'A Medium alert must not fail a High gate.'
+    $lowGate = Get-ZapDastResult -ReportJson $gateReport -Origin $origin -FailOnRisk Low
+    Assert-True ($lowGate.GateViolations.Count -eq 2) 'A Low gate must also catch the Low alert but never Informational ones.'
+
+    $narrow = ConvertTo-ZapSuppressionList -SuppressionsJson @'
+{ "suppressions": [
+  { "pluginId": "10038", "urlPattern": "^http://localhost:8080/robots\\.txt$", "rationale": "Plain-text file; CSP does not apply.",
+    "owner": "maintainers", "reviewCondition": "Revisit if robots.txt becomes HTML." },
+  { "pluginId": "10098", "urlPattern": "^http://localhost:8080/unused$", "rationale": "Unused example.",
+    "owner": "maintainers", "reviewCondition": "Remove when unused." } ] }
+'@
+    $partial = Get-ZapDastResult -ReportJson $gateReport -Origin $origin -FailOnRisk Medium -Suppressions $narrow
+    Assert-True ($partial.GateViolations.Count -eq 1 -and $partial.GateViolations[0].Unsuppressed -eq 1) 'A suppression covering one instance must leave the other instance failing the gate.'
+    Assert-True (@($partial.UnusedSuppressions).Count -eq 1 -and $partial.UnusedSuppressions[0].PluginId -eq '10098') 'Suppressions that match nothing must be reported as unused.'
+    Assert-True ((ConvertTo-ZapDastMarkdown -Result $partial -Origin $origin).Contains('| Medium | 10038 | Content Security Policy (CSP) Header Not Set | 2 | 1 |')) 'The summary must show suppressed instance counts.'
+
+    $both = ConvertTo-ZapSuppressionList -SuppressionsJson @'
+{ "suppressions": [
+  { "pluginId": "10038", "urlPattern": "^http://localhost:8080/(robots\\.txt|Account/Login)$", "rationale": "Fixture only.",
+    "owner": "maintainers", "reviewCondition": "Self-test fixture." } ] }
+'@
+    $covered = Get-ZapDastResult -ReportJson $gateReport -Origin $origin -FailOnRisk Medium -Suppressions $both
+    Assert-True ($covered.GateViolations.Count -eq 0) 'An alert whose every instance is suppressed must pass the gate.'
+
+    $wrongPlugin = ConvertTo-ZapSuppressionList -SuppressionsJson '{ "suppressions": [ { "pluginId": "10020", "urlPattern": "^http://localhost:8080/(robots\\.txt|Account/Login)$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }'
+    $otherRule = Get-ZapDastResult -ReportJson $gateReport -Origin $origin -FailOnRisk Medium -Suppressions $wrongPlugin
+    Assert-True ($otherRule.GateViolations.Count -eq 1) 'A suppression for a different rule must not suppress the alert.'
+
+    $noInstances = Get-ZapDastResult -ReportJson '{ "site": [ { "@name": "http://localhost:8080", "alerts": [ { "pluginid": "40012", "name": "x", "riskcode": "3", "count": "1" } ] } ] }' -Origin $origin -FailOnRisk Medium -Suppressions $both
+    Assert-True ($noInstances.GateViolations.Count -eq 1) 'An alert without listed instances must not be treated as suppressed.'
+
+    $emptyList = ConvertTo-ZapSuppressionList -SuppressionsJson '{ "suppressions": [] }'
+    Assert-True (@($emptyList).Count -eq 0) 'An empty suppressions array must load as an empty list.'
+
+    $invalidSuppressions = @(
+        'not json',
+        '{ }',
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/x$", "rationale": "r", "owner": "o" } ] }',
+        '{ "suppressions": [ { "pluginId": "abc", "urlPattern": "^http://localhost:8080/x$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "http://localhost:8080/x", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^.*$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^.*/x$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/(x$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }'
+    )
+    foreach ($invalid in $invalidSuppressions) {
+        $threw = $false
+        try {
+            [void](ConvertTo-ZapSuppressionList -SuppressionsJson $invalid)
+        }
+        catch {
+            $threw = $true
+        }
+
+        Assert-True $threw "Invalid suppressions must throw: $invalid"
+    }
+
     if ($failures.Count -gt 0) {
         $failures | ForEach-Object { Write-Error -Message $_ -ErrorAction Continue }
         throw "Write-ZapDastSummary self-test failed with $($failures.Count) failure(s)."
@@ -363,12 +604,23 @@ if ([string]::IsNullOrWhiteSpace($UrlListPath) -or -not (Test-Path -LiteralPath 
     throw "ZAP URL export was not found: '$UrlListPath'."
 }
 
+$suppressions = @()
+if (-not [string]::IsNullOrWhiteSpace($SuppressionsPath)) {
+    if (-not (Test-Path -LiteralPath $SuppressionsPath -PathType Leaf)) {
+        throw "Alert suppressions file was not found: '$SuppressionsPath'."
+    }
+
+    $suppressions = ConvertTo-ZapSuppressionList -SuppressionsJson (Get-Content -LiteralPath $SuppressionsPath -Raw)
+}
+
 $result = Get-ZapDastResult `
     -ReportJson (Get-Content -LiteralPath $ReportPath -Raw) `
     -UrlList @(Get-Content -LiteralPath $UrlListPath) `
     -Origin $AllowedOrigin `
     -CanaryUrl $CanaryUrl `
-    -CanaryPluginId $CanaryPluginId
+    -CanaryPluginId $CanaryPluginId `
+    -FailOnRisk $FailOnRisk `
+    -Suppressions $suppressions
 
 $summary = ConvertTo-ZapDastMarkdown -Result $result -Origin $AllowedOrigin
 Write-Host $summary
@@ -383,4 +635,9 @@ if ($result.ScopeViolations.Count -gt 0) {
 
 if (-not [string]::IsNullOrWhiteSpace($CanaryUrl) -and -not $result.CanaryDetected) {
     throw "Passive-scan canary was not detected: rule $CanaryPluginId raised no alert on '$CanaryUrl'. The passive scanner may not have analyzed the traffic, so this report cannot be treated as clean."
+}
+
+if ($result.GateViolations.Count -gt 0) {
+    $names = ($result.GateViolations | ForEach-Object { "$($_.Risk) $($_.PluginId)" }) -join ', '
+    throw "ZAP reported $($result.GateViolations.Count) unsuppressed alert type(s) at $FailOnRisk or higher: $names. Fix the application, or record a narrow suppression in .zap/alert-suppressions.json with a rationale, owner, and review condition."
 }
