@@ -138,10 +138,10 @@ function ConvertTo-ZapSuppressionList {
             throw "$label has non-numeric pluginId '$($values.pluginId)'."
         }
 
-        # Narrow by construction: anchored at both ends, rooted at the literal authorized origin, starting with a literal
-        # path character, and not matching arbitrary paths under the origin.
+        # Narrow by construction: anchored at both ends, rooted at the literal authorized origin, and naming exactly one
+        # literal URL path. Only the query string, after an escaped \?, may use regular-expression syntax.
         $pattern = $values.urlPattern
-        if (-not $pattern.StartsWith('^') -or -not $pattern.EndsWith('$')) {
+        if (-not $pattern.StartsWith('^') -or -not $pattern.EndsWith('$') -or $pattern.EndsWith('\$')) {
             throw "$label urlPattern must be anchored with ^ and `$: '$pattern'."
         }
 
@@ -149,6 +149,18 @@ function ConvertTo-ZapSuppressionList {
             $pattern.Length -le $requiredPrefix.Length -or
             $pattern[$requiredPrefix.Length] -notmatch '[A-Za-z0-9_~-]') {
             throw "$label urlPattern must start with the literal origin '$requiredPrefix' followed by a literal path character: '$pattern'."
+        }
+
+        $body = $pattern.Substring($requiredPrefix.Length, $pattern.Length - $requiredPrefix.Length - 1)
+        $queryStart = $body.IndexOf('\?', [System.StringComparison]::Ordinal)
+        $pathPart = if ($queryStart -ge 0) { $body.Substring(0, $queryStart) } else { $body }
+        if ($pathPart -notmatch '^(?:[A-Za-z0-9_~%/-]|\\[.\-])+$') {
+            throw "$label urlPattern must name one literal URL path: only letters, digits, '/', '_', '~', '%', '-', and escaped '\.' or '\-' are allowed before an optional '\?' query part: '$pattern'."
+        }
+
+        # Alternation would let a second branch escape the literal path, so an unescaped | is never allowed.
+        if ($pattern -match '(?<!\\)(?:\\\\)*\|') {
+            throw "$label urlPattern must not use alternation (|): '$pattern'."
         }
 
         try {
@@ -587,6 +599,11 @@ function Invoke-SelfTest {
     $noInstances = Get-ZapDastResult -ReportJson '{ "site": [ { "@name": "http://localhost:8080", "alerts": [ { "pluginid": "40012", "name": "x", "riskcode": "3", "count": "1" } ] } ] }' -Origin $origin -FailOnRisk Medium -Suppressions $both
     Assert-True ($noInstances.GateViolations.Count -eq 1) 'An alert without listed instances must not be treated as suppressed.'
 
+    $queryScoped = ConvertTo-ZapSuppressionList -Origin $origin -SuppressionsJson '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/Account/Login\\?ReturnUrl=.*$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }'
+    Assert-True (@($queryScoped).Count -eq 1) 'A literal path with a regular-expression query part must be accepted.'
+    Assert-True ($queryScoped[0].Regex.IsMatch('http://localhost:8080/Account/Login?ReturnUrl=%2Frobots.txt')) 'A query-scoped suppression must match its path with any query value.'
+    Assert-True (-not $queryScoped[0].Regex.IsMatch('http://localhost:8080/Account/LoginX?ReturnUrl=1')) 'A query-scoped suppression must not match a different path.'
+
     $emptyList = ConvertTo-ZapSuppressionList -Origin $origin -SuppressionsJson '{ "suppressions": [] }'
     Assert-True (@($emptyList).Count -eq 0) 'An empty suppressions array must load as an empty list.'
 
@@ -613,7 +630,16 @@ function Invoke-SelfTest {
         '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/n.*$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
         '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
         '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^https?://localhost:8080/x$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
-        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://example.com/x$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }'
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://example.com/x$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
+        # Prefix catch-alls and other non-literal paths that dodge the fixed probes.
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/a.*$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/Account.*$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/Account/[A-Za-z]+$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/Account/Login|css/x$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/css/x.css$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/x\\$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/x\\?y|^http://localhost:8080/A.*$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/x\\?(y|z)$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }'
     )
     foreach ($invalid in $invalidSuppressions) {
         $threw = $false

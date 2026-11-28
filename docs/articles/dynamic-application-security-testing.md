@@ -90,11 +90,16 @@ entries. Each entry covers one rule on one anchored URL pattern:
 The script rejects the file if any field is missing or `pluginId` is not numeric. It also rejects any `urlPattern` that:
 
 * is not anchored with `^` and `$`;
-* does not start with the literal origin `^http://localhost:8080/` followed by a literal path character;
+* does not start with the literal origin `^http://localhost:8080/`;
+* does not name one literal URL path. Before an optional escaped `\?` query part, only letters, digits, `/`, `_`, `~`,
+  `%`, `-`, and escaped `\.` or `\-` are allowed. Regular-expression syntax is allowed only in the query part, for
+  example `^http://localhost:8080/Account/Login\?ReturnUrl=.*$`;
+* uses alternation (`|`) anywhere;
 * is not a valid regular expression; or
-* also matches arbitrary probe paths under the origin.
+* matches arbitrary probe paths under the origin.
 
-This blocks catch-alls such as `^http://localhost:8080/.*$`. There is no way to suppress a whole rule or a whole risk
+This blocks catch-alls such as `^http://localhost:8080/.*$` and prefix patterns such as `^http://localhost:8080/a.*$`.
+Every suppression covers exactly one path. There is no way to suppress a whole rule, a path prefix, or a whole risk
 level. The job summary reports suppressed instance counts and lists unused suppressions, so stale
 entries are visible and can be removed.
 
