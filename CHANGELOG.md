@@ -10,8 +10,10 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 * Added a report-only OWASP ZAP scan to the Linux template smoke test. It spiders and passively analyzes the
   loopback-only application scaffolded from the template package built in the same run, publishes JSON and HTML
-  reports with a job summary, and fails only if ZAP requests a URL outside the authorized origin. The ZAP stable image
-  is pinned by digest, and the scan, triage process, local reproduction, and limits are documented (#767).
+  reports with a job summary, and never fails on alerts. The job fails only when ZAP requests a URL outside the
+  authorized origin, when a passive-scan canary shows the scanner analyzed nothing, or when the scan errors or exceeds
+  its time bound. The ZAP stable image is pinned by digest, and the scan, triage process, local reproduction, and limits
+  are documented (#767).
 * Added `aka.ms` to the smoke-test runner egress allow-list. Harden-Runner now enforces block mode on Windows, where
   the .NET SDK installer downloads through that redirect (#767).
 
