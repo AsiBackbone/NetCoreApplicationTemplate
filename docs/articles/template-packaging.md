@@ -16,7 +16,7 @@ Package-based validation is preferred because it verifies the actual distributio
 | Template identity | `AsiBackbone.NetCoreApplicationTemplate.CSharp` |
 | Template group identity | `AsiBackbone.NetCoreApplicationTemplate` |
 | Source replacement token | `ProjectTemplate` |
-| Current package version | `2.11.11` |
+| Current package version | `2.11.12` |
 
 The version above and the pinned NuGet install command describe the latest **published stable release**, not necessarily an unpublished candidate prepared on `main`. The [documentation homepage](../index.md) links the reviewed release and its notes; `Directory.Build.props` identifies a locally built candidate. The post-publication release-update PR synchronizes the published references.
 
@@ -140,13 +140,13 @@ See [Container Release Publishing](container-publish.md#durable-release-assets) 
 Install the published package from NuGet:
 
 ```powershell
-dotnet new install NetCoreApplicationTemplate::2.11.11
+dotnet new install NetCoreApplicationTemplate::2.11.12
 ```
 
 Install a locally packed package:
 
 ```powershell
-dotnet new install ./artifacts/template-package/NetCoreApplicationTemplate.2.11.11.nupkg
+dotnet new install ./artifacts/template-package/NetCoreApplicationTemplate.2.11.12.nupkg
 ```
 
 ## Create a New Project from the Template
