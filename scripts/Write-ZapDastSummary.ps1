@@ -44,8 +44,10 @@ function Test-InAllowedOrigin {
         return $false
     }
 
+    # Scheme and host are case-insensitive, so the origin comparison ignores case consistently. Only the part after
+    # the origin (path, query, fragment) may be case-sensitive, and it is never compared here.
     $trimmed = $Url.Trim()
-    if ($trimmed -ceq $Origin) {
+    if ([string]::Equals($trimmed, $Origin, [System.StringComparison]::OrdinalIgnoreCase)) {
         return $true
     }
 
@@ -256,6 +258,9 @@ function Invoke-SelfTest {
     Assert-True (-not (Test-InAllowedOrigin -Url 'https://localhost:8080/' -Origin $origin)) 'Scheme change must be out of scope.'
     Assert-True (-not (Test-InAllowedOrigin -Url 'https://login.example.com/authorize' -Origin $origin)) 'External host must be out of scope.'
     Assert-True (-not (Test-InAllowedOrigin -Url '' -Origin $origin)) 'Empty URL must be out of scope.'
+    Assert-True (Test-InAllowedOrigin -Url 'HTTP://LOCALHOST:8080' -Origin $origin) 'Bare origin must match regardless of case.'
+    Assert-True (Test-InAllowedOrigin -Url 'HTTP://LocalHost:8080/Account/Login' -Origin $origin) 'Origin path must match regardless of origin case.'
+    Assert-True (-not (Test-InAllowedOrigin -Url 'HTTP://LOCALHOST:80801' -Origin $origin)) 'Case-insensitive matching must not admit a port prefix.'
 
     $cleanReport = @'
 {
