@@ -1,0 +1,88 @@
+# OWASP ZAP Automation Framework plan for the package-generated NCAT application (#767).
+#
+# Rollout stage 1: bounded, unauthenticated, report-only discovery and passive analysis. The plan has no active scan
+# and no alert gate. Do not add either until every stage-1 alert has been triaged as described in
+# docs/articles/dynamic-application-security-testing.md.
+#
+# Boundary: the only authorized target is the disposable Compose instance that the CI template-smoke-test job scaffolds
+# from the template package built in the same run. That instance publishes on 127.0.0.1:8080 only. Never point this plan
+# at a shared, public, or production deployment.
+env:
+  contexts:
+    - name: ncat-loopback
+      # The spider requests context URLs directly and follows redirects for that first request, before excludePaths
+      # apply. Seed only with an anonymous page that answers 200 without redirecting; everything else the spider finds
+      # is checked against includePaths and excludePaths before it is requested.
+      urls:
+        - http://localhost:8080/Account/Login
+      # Patterns are anchored at both ends so no other origin can match, even a URL that embeds this one.
+      includePaths:
+        - "^http://localhost:8080/.*$"
+      excludePaths:
+        # Routes that can redirect to an external identity provider, or receive its callback, are never requested.
+        - "^http://localhost:8080/External/.*$"
+        - "^http://localhost:8080/signin-.*$"
+        - "^http://localhost:8080/signout-.*$"
+        - "^http://localhost:8080/Saml2.*$"
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    progressToStdout: true
+
+jobs:
+  - type: passiveScan-config
+    parameters:
+      scanOnlyInScope: true
+      maxAlertsPerRule: 10
+
+  # Seed anonymous, non-redirecting routes that are not linked from rendered pages. Never add a route here that can
+  # answer with a redirect.
+  - type: requestor
+    requests:
+      # Passive-scan canary. Rule 10024 (Information Disclosure - Sensitive Information in URL) always flags this
+      # synthetic parameter. scripts/Write-ZapDastSummary.ps1 fails the job if that alert is missing, so a passive
+      # scanner that silently did nothing cannot be mistaken for a clean result. The login page ignores the parameter.
+      - url: http://localhost:8080/Account/Login?password=zap-passive-canary
+        method: GET
+      - url: http://localhost:8080/health/live
+        method: GET
+      - url: http://localhost:8080/health/ready
+        method: GET
+
+  - type: spider
+    parameters:
+      context: ncat-loopback
+      url: http://localhost:8080/Account/Login
+      maxDuration: 3           # minutes
+      maxDepth: 5
+      maxChildren: 20
+      threadCount: 2
+      postForm: false          # Discovery only: forms are parsed but never submitted.
+      parseRobotsTxt: true
+      parseSitemapXml: true
+
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 3           # minutes
+
+  # Every URL in the session, in or out of scope, as a plain list. The CI scope guard uses it to prove that only the
+  # loopback origin was requested.
+  - type: export
+    parameters:
+      type: url
+      source: all
+      fileName: /zap/wrk/ncat-zap-urls.txt
+
+  - type: report
+    parameters:
+      template: traditional-json
+      reportDir: /zap/wrk
+      reportFile: ncat-zap-report.json
+      reportTitle: NCAT package-generated application - ZAP baseline (report-only)
+
+  - type: report
+    parameters:
+      template: traditional-html
+      reportDir: /zap/wrk
+      reportFile: ncat-zap-report.html
+      reportTitle: NCAT package-generated application - ZAP baseline (report-only)
