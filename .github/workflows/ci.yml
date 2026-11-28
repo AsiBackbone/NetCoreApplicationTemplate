@@ -30,7 +30,9 @@ env:
   # allow-lists below against a real run before changing this default. See docs/articles/build-quality.md.
   EGRESS_POLICY: ${{ github.event.inputs.egress_policy || 'audit' }}
   # Endpoints required to restore NuGet packages, install the .NET SDK, and talk to GitHub Actions infrastructure.
-  ALLOWED_ENDPOINTS_DOTNET: |
+  # Keep the lists as folded (>-) scalars: the Harden-Runner agent splits allowed-endpoints on spaces only, so a
+  # newline-separated (|) list collapses into a single malformed entry and blocks everything else.
+  ALLOWED_ENDPOINTS_DOTNET: >-
     api.github.com:443
     api.nuget.org:443
     builds.dotnet.microsoft.com:443
@@ -49,8 +51,9 @@ env:
     *.actions.githubusercontent.com:443
   # The scaffolded Docker build and Compose run also reach container registries. ghcr.io and
   # pkg-containers.githubusercontent.com serve the digest-pinned OWASP ZAP image used by the DAST scan (#767).
-  # aka.ms is the Windows SDK installer's download redirect; Harden-Runner enforces block mode on Windows too.
-  ALLOWED_ENDPOINTS_SMOKE: |
+  # aka.ms is the dotnet-install channel redirect used by the Windows and macOS legs, which Harden-Runner also
+  # enforces in block mode.
+  ALLOWED_ENDPOINTS_SMOKE: >-
     aka.ms:443
     api.github.com:443
     api.nuget.org:443
