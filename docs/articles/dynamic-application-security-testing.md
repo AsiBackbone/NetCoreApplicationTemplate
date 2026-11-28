@@ -5,7 +5,8 @@ built in the same workflow run. The scan was authorized by
 [AsiBackbone Organization Discussion #73](https://github.com/orgs/AsiBackbone/discussions/73) and is tracked by
 [issue #767](https://github.com/AsiBackbone/NetCoreApplicationTemplate/issues/767).
 
-The scan is currently in **rollout stage 1: report-only**. ZAP alerts are published for triage and never fail CI.
+The scan is in **rollout stage 5: enforcing**. Any Medium or High alert that is not covered by a reviewed suppression
+fails CI. Low and Informational alerts are published for triage and never fail CI.
 
 ## What is scanned
 
@@ -34,9 +35,9 @@ The scan is loopback-only and disposable by construction:
 * ZAP runs with `-silent`, which stops update checks and other unsolicited requests. Its own proxy listens on
   `127.0.0.1:8090`, because the application already holds port 8080 on the host network.
 * After the scan, `scripts/Write-ZapDastSummary.ps1` checks every site and alert instance in the JSON report, and every
-  URL in ZAP's session, exported as a plain URL list. **Any URL outside `http://localhost:8080` fails the job.** This
-  scope guard is enforced now, even though alerts are not. It detects an out-of-scope request after the fact; the seed
-  and exclusion rules above are what prevent one.
+  URL in ZAP's session, exported as a plain URL list. **Any URL outside `http://localhost:8080` fails the job,** whatever
+  the alerts say. The scope guard detects an out-of-scope request after the fact; the seed and exclusion rules above are
+  what prevent one.
 * Never point the plan at a shared, public, or production deployment. A scan of any other environment needs its own
   authorization.
 
@@ -47,7 +48,7 @@ jobs:
 
 | Job | Purpose | Bound |
 |:---|:---|:---|
-| `passiveScan-config` | Passive rules scan in-scope traffic only, with at most 10 alerts per rule | - |
+| `passiveScan-config` | Passive rules scan in-scope traffic only, with no per-rule alert cap, so the gate sees every instance | - |
 | `requestor` | Requests the passive-scan canary (below), then seeds `/health/live` and `/health/ready`, which are not linked from rendered pages | - |
 | `spider` | Starts at `/Account/Login` and discovers linked pages with GET requests. Forms are parsed but never submitted | 3 minutes, depth 5 |
 | `passiveScan-wait` | Waits for passive analysis to finish | 3 minutes |
@@ -62,7 +63,47 @@ rule 10024 (*Information Disclosure - Sensitive Information in URL*) always flag
 that URL as `-CanaryUrl` and **fails the job if rule 10024 raised no alert on it**. The canary appears in the report as a
 single Informational alert. Triage records it as an intentional fixture, not a finding.
 
-There is no active scan in stage 1. The whole container run is bounded by `timeout 12m`, and the step has a
+### Alert gate
+
+The summary step calls the script with `-FailOnRisk Medium -SuppressionsPath ./.zap/alert-suppressions.json`. The job
+fails when any Medium or High alert has at least one instance that no suppression covers. The summary lists each
+failing rule and its unsuppressed instance count. An alert that reports a count but lists no instances is never treated
+as suppressed. Low and Informational alerts are always reported and never fail the job.
+
+`.zap/alert-suppressions.json` is the only place to accept an alert. It is reviewed like code, and it currently holds no
+entries. Each entry covers one rule on one anchored URL pattern:
+
+```json
+{
+  "suppressions": [
+    {
+      "pluginId": "10038",
+      "urlPattern": "^http://localhost:8080/robots\\.txt$",
+      "rationale": "Plain-text response; a Content Security Policy does not apply.",
+      "owner": "NCAT maintainers",
+      "reviewCondition": "Revisit if /robots.txt is ever served as HTML."
+    }
+  ]
+}
+```
+
+The script rejects the file if any field is missing or `pluginId` is not numeric. It also rejects any `urlPattern` that:
+
+* is not anchored with `^` and `$`;
+* does not start with the literal origin `^http://localhost:8080/`;
+* does not name one literal URL path. Before an optional escaped `\?` query part, only letters, digits, `/`, `_`, `~`,
+  `%`, `-`, and escaped `\.` or `\-` are allowed. Regular-expression syntax is allowed only in the query part, for
+  example `^http://localhost:8080/Account/Login\?ReturnUrl=.*$`;
+* uses alternation (`|`) anywhere;
+* is not a valid regular expression; or
+* matches arbitrary probe paths under the origin.
+
+This blocks catch-alls such as `^http://localhost:8080/.*$` and prefix patterns such as `^http://localhost:8080/a.*$`.
+Every suppression covers exactly one path. There is no way to suppress a whole rule, a path prefix, or a whole risk
+level. The job summary reports suppressed instance counts and lists unused suppressions, so stale
+entries are visible and can be removed.
+
+There is no active scan. The whole container run is bounded by `timeout 12m`, and the step has a
 15-minute `timeout-minutes` backstop. ZAP exit code `2` (plan warnings) is reported as a workflow warning. Any other
 non-zero exit code, including a timeout, fails the job.
 
@@ -74,8 +115,9 @@ variable at the top of `ci.yml`. A trailing comment records the matching version
 
 The Linux smoke-test leg publishes:
 
-* A **job summary** with the ZAP version, number of requested URLs, scope-guard result, canary result, scan duration, alert-type counts by risk,
-  and one row per alert type.
+* A **job summary** with the ZAP version, number of requested URLs, scope-guard result, canary result, alert-gate
+  result, suppression counts, scan duration, alert-type counts by risk, and one row per alert type with its suppressed
+  instance count.
 * A **`dast-ncat-zap` artifact** with the JSON and HTML reports, the URL list, and the summary. It is kept for
   7 days and uploaded on both success and failure.
 
@@ -119,14 +161,20 @@ docker run --rm --network host \
 pwsh ./scripts/Write-ZapDastSummary.ps1 \
   -ReportPath ./artifacts/dast/ncat/ncat-zap-report.json \
   -UrlListPath ./artifacts/dast/ncat/ncat-zap-urls.txt \
-  -CanaryUrl 'http://localhost:8080/Account/Login?password=zap-passive-canary'
+  -CanaryUrl 'http://localhost:8080/Account/Login?password=zap-passive-canary' \
+  -FailOnRisk Medium \
+  -SuppressionsPath ./.zap/alert-suppressions.json
 
 (cd ./artifacts/scaffold/ContosoSecurityPortal && docker compose -p contososecurityportal-ci down --volumes --remove-orphans)
 dotnet new uninstall NetCoreApplicationTemplate
 ```
 
-Run `./scripts/Write-ZapDastSummary.ps1 -SelfTest` after changing the summary or scope-guard logic. CI runs it in the
-`Build validation` job.
+Run `./scripts/Write-ZapDastSummary.ps1 -SelfTest` after changing the summary, scope-guard, canary, gate, or suppression
+logic. CI runs it in the `Build validation` job, so a regression in the gate fails CI even if no scan runs.
+
+To reproduce the gate failure locally, create `./artifacts/scaffold/ContosoSecurityPortal/.env` containing
+`ContosoSecurityPortal__SecurityHeaders__Enabled=false` before `docker compose up`, then delete it afterwards. The
+configuration prefix is the generated project name: `dotnet new` replaces the template's `ProjectTemplate` prefix with it.
 
 ## Alert triage
 
@@ -135,22 +183,32 @@ Classify every alert in the report into exactly one category:
 | Category | Meaning | Action |
 |:---|:---|:---|
 | Defect | The generated application behaves insecurely | Fix it in the template, with a test, through the normal issue and PR process. Report anything exploitable privately under `SECURITY.md` instead of in a public issue |
-| Acceptable platform behavior | Intended ASP.NET Core or template behavior that the rule does not account for | Record a narrow filter (see below) |
-| Scanner limitation | A false positive or a rule that cannot judge this response correctly | Record a narrow filter (see below) |
+| Acceptable platform behavior | Intended ASP.NET Core or template behavior that the rule does not account for | Add a narrow suppression |
+| Scanner limitation | A false positive or a rule that cannot judge this response correctly | Add a narrow suppression |
 | Out of scope | The finding concerns something the scan does not assure, such as an excluded route | Document it. Do not widen the scan to chase it |
 
-Filters must be narrow: one rule ID and one URL pattern each, checked in to `.zap/` with a rationale, an owner, and a
-review condition. Never disable a whole rule or suppress by risk level.
+Suppressions go in `.zap/alert-suppressions.json`, in the format described under [Alert gate](#alert-gate). Never
+suppress a Defect: fix it. A suppression needs the same review as any other security-control change.
 
 ## Rollout
 
-1. **Report-only scan (current).** Bounded spider and passive analysis, reports, job summary, and scope guard.
-2. **Triage.** Review and classify every stage-1 alert.
-3. **Filters.** Record only the narrow rule-and-URL filters that triage justifies.
-4. **Regression fixture.** Prove with a controlled insecure response that an unsuppressed policy-breaking alert fails
-   the intended gate, then remove the fixture.
-5. **Enforcement.** Fail on new unsuppressed Medium or High alerts. Low and Informational alerts stay in reports and
-   the job summary.
+All five stages are complete:
+
+1. **Report-only scan (done, #768).** Bounded spider and passive analysis, reports, job summary, scope guard, and the
+   passive-scan canary.
+2. **Triage (done).** Across the stage-1 runs, the only alert was the deliberate canary (rule 10024, Informational).
+3. **Suppressions (done).** Triage justified none, so `.zap/alert-suppressions.json` is empty.
+4. **Regression fixture (done, #770).** A temporary branch disabled the generated application's security headers with
+   `ContosoSecurityPortal__SecurityHeaders__Enabled=false`. ZAP raised Medium alerts 10038 (CSP header not set) and
+   10020 (missing anti-clickjacking header), and the gate failed the job. Low alert 10021 was reported without failing.
+   The branch was then deleted. The gate logic stays covered by `-SelfTest`, including High alerts and suppression
+   breadth checks.
+5. **Enforcement (current).** Unsuppressed Medium or High alerts fail CI. Low and Informational alerts stay in the
+   reports and the job summary.
+
+The same validation confirmed cleanup on every path. After a passing scan, a gate failure, a scan stopped by its time
+bound, and a cancelled run, the ZAP container, the application container, its three volumes, and its network were all
+removed.
 
 A strictly time-bounded active scan may be added once stage 2 has confirmed the scope and exclusions. If DAST becomes
 a required status check, update the repository security-control baselines in `eng/repository-controls` in the same
