@@ -5,12 +5,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>14.0</LangVersion>
 
-    <VersionPrefix>2.11.11</VersionPrefix>
+    <VersionPrefix>2.11.12</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Version Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</Version>
     <Version Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</Version>
-    <AssemblyVersion>2.11.11.0</AssemblyVersion>
-    <FileVersion>2.11.11.0</FileVersion>
+    <AssemblyVersion>2.11.12.0</AssemblyVersion>
+    <FileVersion>2.11.12.0</FileVersion>
     <!--
       InformationalVersion is left to the SDK default, "<version>+<commit>". Source Link already records the repository.
       Do not set it here: a value that references a property defined later in this file, such as RepositoryUrl,

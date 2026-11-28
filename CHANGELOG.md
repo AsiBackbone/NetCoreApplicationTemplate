@@ -6,6 +6,31 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ## Unreleased
 
+## 2.11.12 - 2026-11-27
+
+### Security
+
+* Added three read-only repository assurance agent profiles for security, release, and quality reviews. A new governance
+  validator checks their bounded capabilities, maintainer-only placement, documentation, template exclusions, package
+  contents, and generated scaffold boundary. The validator includes regression self-tests and now runs in CI (#750,
+  #751).
+* Updated pinned GitHub Actions, including CodeQL 4.39.5, Cosign Installer 4.1.4, and zizmor 0.9.2, while preserving
+  immutable commit-SHA pinning (#763).
+
+### Changed
+
+* Updated `Sustainsys.Saml2.AspNetCore2` from 2.11.0 to 2.11.1 and refreshed the affected package lock files. This also
+  updates its Microsoft.IdentityModel SAML dependencies from 5.2.4 to 5.7.0 (#760).
+* Updated `coverlet.MTP` from 10.1.0 to 10.1.1 and ReportGenerator from 5.6.0 to 5.6.1 (#759, #761).
+* Refreshed the pinned .NET 10 SDK and ASP.NET Core runtime container image digests used by newly generated
+  applications. The .NET major version, image tags, Dockerfile structure, and intended runtime behavior remain
+  unchanged (#762).
+* Added repository assurance documentation and formalized the controlled contribution, pull-request approval, and
+  AI-assisted organization proposal process. These maintainer-governance files are excluded from the template package
+  and generated applications (#738, #752-#757).
+* CI restore and build commands now explicitly target `NetCoreApplicationTemplate.slnx`, avoiding ambiguity between
+  the solution and the template-packaging project at the repository root (#750).
+
 ## 2.11.11 - 2026-11-21
 
 ### Security
