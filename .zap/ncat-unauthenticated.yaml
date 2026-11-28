@@ -15,14 +15,15 @@ env:
       # is checked against includePaths and excludePaths before it is requested.
       urls:
         - http://localhost:8080/Account/Login
+      # Patterns are anchored at both ends so no other origin can match, even a URL that embeds this one.
       includePaths:
-        - "http://localhost:8080/.*"
+        - "^http://localhost:8080/.*$"
       excludePaths:
         # Routes that can redirect to an external identity provider, or receive its callback, are never requested.
-        - "http://localhost:8080/External/.*"
-        - "http://localhost:8080/signin-.*"
-        - "http://localhost:8080/signout-.*"
-        - "http://localhost:8080/Saml2.*"
+        - "^http://localhost:8080/External/.*$"
+        - "^http://localhost:8080/signin-.*$"
+        - "^http://localhost:8080/signout-.*$"
+        - "^http://localhost:8080/Saml2.*$"
   parameters:
     failOnError: true
     failOnWarning: false
@@ -38,6 +39,11 @@ jobs:
   # answer with a redirect.
   - type: requestor
     requests:
+      # Passive-scan canary. Rule 10024 (Information Disclosure - Sensitive Information in URL) always flags this
+      # synthetic parameter. scripts/Write-ZapDastSummary.ps1 fails the job if that alert is missing, so a passive
+      # scanner that silently did nothing cannot be mistaken for a clean result. The login page ignores the parameter.
+      - url: http://localhost:8080/Account/Login?password=zap-passive-canary
+        method: GET
       - url: http://localhost:8080/health/live
         method: GET
       - url: http://localhost:8080/health/ready

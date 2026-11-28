@@ -9,6 +9,11 @@ param(
 
     [string]$SummaryPath,
 
+    [string]$CanaryUrl,
+
+    [ValidatePattern('^\d+$')]
+    [string]$CanaryPluginId = '10024',
+
     [switch]$SelfTest
 )
 
@@ -16,6 +21,8 @@ param(
 # loopback-only scan boundary. Alerts are report-only during rollout stage 1: they are counted and listed but never fail
 # the script. The script fails only when the report is missing or malformed, or when the report or exported URL list
 # contains any URL outside -AllowedOrigin. -UrlListPath is the plain URL list written by the ZAP export job (type url).
+# When -CanaryUrl is set, the script also fails unless rule -CanaryPluginId raised an alert on that URL. The canary
+# proves the passive scanner actually analyzed traffic, so an empty report cannot be mistaken for a clean application.
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -73,8 +80,12 @@ function Get-ZapDastResult {
     param(
         [Parameter(Mandatory = $true)][string]$ReportJson,
         [AllowEmptyCollection()][string[]]$UrlList = @(),
-        [Parameter(Mandatory = $true)][string]$Origin
+        [Parameter(Mandatory = $true)][string]$Origin,
+        [string]$CanaryUrl,
+        [string]$CanaryPluginId = '10024'
     )
+
+    $canaryDetected = $false
 
     try {
         $report = $ReportJson | ConvertFrom-Json -Depth 64
@@ -112,11 +123,18 @@ function Get-ZapDastResult {
                 throw "ZAP alert '$(Get-PropertyValue -InputObject $alert -Name 'name')' has unknown riskcode '$riskCode'."
             }
 
+            $pluginId = [string](Get-PropertyValue -InputObject $alert -Name 'pluginid')
             $instances = @(Get-PropertyValue -InputObject $alert -Name 'instances') | Where-Object { $null -ne $_ }
             foreach ($instance in $instances) {
                 $uri = [string](Get-PropertyValue -InputObject $instance -Name 'uri')
                 if (-not (Test-InAllowedOrigin -Url $uri -Origin $Origin)) {
                     [void]$scopeViolations.Add("alert instance: $uri")
+                }
+
+                if (-not [string]::IsNullOrWhiteSpace($CanaryUrl) -and
+                    $pluginId -eq $CanaryPluginId -and
+                    [string]::Equals($uri.Trim(), $CanaryUrl.Trim(), [System.StringComparison]::OrdinalIgnoreCase)) {
+                    $canaryDetected = $true
                 }
             }
 
@@ -127,7 +145,7 @@ function Get-ZapDastResult {
             $alerts.Add([pscustomobject]@{
                     RiskCode  = [int]$riskCode
                     Risk      = $riskName
-                    PluginId  = [string](Get-PropertyValue -InputObject $alert -Name 'pluginid')
+                    PluginId  = $pluginId
                     Name      = [string](Get-PropertyValue -InputObject $alert -Name 'name')
                     Instances = $instanceCount
                 })
@@ -147,11 +165,14 @@ function Get-ZapDastResult {
     $sortedAlerts = @($alerts | Sort-Object -Property @{ Expression = 'RiskCode'; Descending = $true }, PluginId, Name)
 
     return [pscustomobject]@{
-        ZapVersion      = [string](Get-PropertyValue -InputObject $report -Name '@version')
-        Counts          = $counts
-        Alerts          = $sortedAlerts
+        ZapVersion        = [string](Get-PropertyValue -InputObject $report -Name '@version')
+        Counts            = $counts
+        Alerts            = $sortedAlerts
         RequestedUrlCount = @($UrlList | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }).Count
-        ScopeViolations = @($scopeViolations)
+        ScopeViolations   = @($scopeViolations)
+        CanaryUrl         = $CanaryUrl
+        CanaryPluginId    = $CanaryPluginId
+        CanaryDetected    = $canaryDetected
     }
 }
 
@@ -175,6 +196,15 @@ function ConvertTo-ZapDastMarkdown {
     }
     else {
         [void]$builder.AppendLine("- Scope guard: **failed** ($($Result.ScopeViolations.Count) out-of-scope URL(s))")
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($Result.CanaryUrl)) {
+        if ($Result.CanaryDetected) {
+            [void]$builder.AppendLine("- Passive-scan canary: detected (rule $($Result.CanaryPluginId) on the canary URL)")
+        }
+        else {
+            [void]$builder.AppendLine("- Passive-scan canary: **missing** (rule $($Result.CanaryPluginId) did not fire on the canary URL)")
+        }
     }
 
     [void]$builder.AppendLine('- Enforcement: none. Alerts are reported for triage and do not fail the job.')
@@ -283,6 +313,30 @@ function Invoke-SelfTest {
     $empty = Get-ZapDastResult -ReportJson '{ "site": [ { "@name": "http://localhost:8080", "alerts": [] } ] }' -Origin $origin
     Assert-True ($empty.Alerts.Count -eq 0) 'Report without alerts must produce no alert rows.'
 
+    $canaryUrl = 'http://localhost:8080/Account/Login?password=zap-passive-canary'
+    $canaryReport = @'
+{
+  "site": [ { "@name": "http://localhost:8080", "alerts": [
+    { "pluginid": "10024", "name": "Information Disclosure - Sensitive Information in URL", "riskcode": "0",
+      "instances": [ { "uri": "http://localhost:8080/Account/Login?password=zap-passive-canary" } ] } ] } ]
+}
+'@
+    $withCanary = Get-ZapDastResult -ReportJson $canaryReport -Origin $origin -CanaryUrl $canaryUrl
+    Assert-True $withCanary.CanaryDetected 'Canary alert on the canary URL must be detected.'
+    Assert-True ((ConvertTo-ZapDastMarkdown -Result $withCanary -Origin $origin).Contains('Passive-scan canary: detected')) 'Summary must report a detected canary.'
+
+    $silent = Get-ZapDastResult -ReportJson '{ "site": [ { "@name": "http://localhost:8080", "alerts": [] } ] }' -Origin $origin -CanaryUrl $canaryUrl
+    Assert-True (-not $silent.CanaryDetected) 'An empty report must not satisfy the canary.'
+    Assert-True ((ConvertTo-ZapDastMarkdown -Result $silent -Origin $origin).Contains('Passive-scan canary: **missing**')) 'Summary must report a missing canary.'
+
+    $wrongRule = Get-ZapDastResult -ReportJson ($canaryReport -replace '"10024"', '"10049"') -Origin $origin -CanaryUrl $canaryUrl
+    Assert-True (-not $wrongRule.CanaryDetected) 'A different rule on the canary URL must not satisfy the canary.'
+
+    $wrongUrl = Get-ZapDastResult -ReportJson ($canaryReport -replace 'zap-passive-canary', 'other') -Origin $origin -CanaryUrl $canaryUrl
+    Assert-True (-not $wrongUrl.CanaryDetected) 'The canary rule on another URL must not satisfy the canary.'
+
+    Assert-True (-not ((ConvertTo-ZapDastMarkdown -Result $empty -Origin $origin).Contains('Passive-scan canary'))) 'Summary must omit the canary line when no canary is configured.'
+
     if ($failures.Count -gt 0) {
         $failures | ForEach-Object { Write-Error -Message $_ -ErrorAction Continue }
         throw "Write-ZapDastSummary self-test failed with $($failures.Count) failure(s)."
@@ -307,7 +361,9 @@ if ([string]::IsNullOrWhiteSpace($UrlListPath) -or -not (Test-Path -LiteralPath 
 $result = Get-ZapDastResult `
     -ReportJson (Get-Content -LiteralPath $ReportPath -Raw) `
     -UrlList @(Get-Content -LiteralPath $UrlListPath) `
-    -Origin $AllowedOrigin
+    -Origin $AllowedOrigin `
+    -CanaryUrl $CanaryUrl `
+    -CanaryPluginId $CanaryPluginId
 
 $summary = ConvertTo-ZapDastMarkdown -Result $result -Origin $AllowedOrigin
 Write-Host $summary
@@ -318,4 +374,8 @@ if (-not [string]::IsNullOrWhiteSpace($SummaryPath)) {
 
 if ($result.ScopeViolations.Count -gt 0) {
     throw "ZAP requested $($result.ScopeViolations.Count) URL(s) outside the authorized origin '$AllowedOrigin'."
+}
+
+if (-not [string]::IsNullOrWhiteSpace($CanaryUrl) -and -not $result.CanaryDetected) {
+    throw "Passive-scan canary was not detected: rule $CanaryPluginId raised no alert on '$CanaryUrl'. The passive scanner may not have analyzed the traffic, so this report cannot be treated as clean."
 }

@@ -48,11 +48,19 @@ jobs:
 | Job | Purpose | Bound |
 |:---|:---|:---|
 | `passiveScan-config` | Passive rules scan in-scope traffic only, with at most 10 alerts per rule | - |
-| `requestor` | Seeds `/health/live` and `/health/ready`, which are not linked from rendered pages | - |
+| `requestor` | Requests the passive-scan canary (below), then seeds `/health/live` and `/health/ready`, which are not linked from rendered pages | - |
 | `spider` | Starts at `/Account/Login` and discovers linked pages with GET requests. Forms are parsed but never submitted | 3 minutes, depth 5 |
 | `passiveScan-wait` | Waits for passive analysis to finish | 3 minutes |
 | `export` | Writes every URL in the session to `ncat-zap-urls.txt` for the scope guard | - |
 | `report` | Writes `ncat-zap-report.json` and `ncat-zap-report.html` | - |
+
+### Passive-scan canary
+
+A report with no alerts is only meaningful if the passive scanner actually analyzed the traffic. The requestor therefore
+first requests `/Account/Login?password=zap-passive-canary`. The login page ignores the synthetic parameter, but ZAP
+rule 10024 (*Information Disclosure - Sensitive Information in URL*) always flags it. The summary script is called with
+that URL as `-CanaryUrl` and **fails the job if rule 10024 raised no alert on it**. The canary appears in the report as a
+single Informational alert. Triage records it as an intentional fixture, not a finding.
 
 There is no active scan in stage 1. The whole container run is bounded by `timeout 12m`, and the step has a
 15-minute `timeout-minutes` backstop. ZAP exit code `2` (plan warnings) is reported as a workflow warning. Any other
@@ -66,7 +74,7 @@ variable at the top of `ci.yml`. A trailing comment records the matching version
 
 The Linux smoke-test leg publishes:
 
-* A **job summary** with the ZAP version, number of requested URLs, scope-guard result, scan duration, alert-type counts by risk,
+* A **job summary** with the ZAP version, number of requested URLs, scope-guard result, canary result, scan duration, alert-type counts by risk,
   and one row per alert type.
 * A **`dast-ncat-zap` artifact** with the JSON and HTML reports, the URL list, and the summary. It is kept for
   7 days and uploaded on both success and failure.
@@ -110,7 +118,8 @@ docker run --rm --network host \
 
 pwsh ./scripts/Write-ZapDastSummary.ps1 \
   -ReportPath ./artifacts/dast/ncat/ncat-zap-report.json \
-  -UrlListPath ./artifacts/dast/ncat/ncat-zap-urls.txt
+  -UrlListPath ./artifacts/dast/ncat/ncat-zap-urls.txt \
+  -CanaryUrl 'http://localhost:8080/Account/Login?password=zap-passive-canary'
 
 (cd ./artifacts/scaffold/ContosoSecurityPortal && docker compose -p contososecurityportal-ci down --volumes --remove-orphans)
 dotnet new uninstall NetCoreApplicationTemplate

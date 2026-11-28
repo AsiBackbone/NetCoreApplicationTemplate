@@ -449,6 +449,7 @@ jobs:
                 -ReportPath (Join-Path $reportDir 'ncat-zap-report.json') `
                 -UrlListPath (Join-Path $reportDir 'ncat-zap-urls.txt') `
                 -AllowedOrigin 'http://localhost:8080' `
+                -CanaryUrl 'http://localhost:8080/Account/Login?password=zap-passive-canary' `
                 -SummaryPath $summaryFile
           }
           finally {
