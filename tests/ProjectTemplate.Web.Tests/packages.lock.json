@@ -4,14 +4,14 @@
     "net10.0": {
       "coverlet.MTP": {
         "type": "Direct",
-        "requested": "[10.1.0, )",
-        "resolved": "10.1.0",
-        "contentHash": "FbW1D7OFFUmITgKzYhasyaX0m/oQzuU3ab4ooOURngztKK/QulCT/YuADhRDSGrE79S2dVoEQPgNkg2qBz29tg==",
+        "requested": "[10.1.1, )",
+        "resolved": "10.1.1",
+        "contentHash": "dxxUyMyMa8AHnaglNC6aWkvYYV9PE4Z5mcyRXSWWinQ0OeSJ+kdcD7wNg8Dau/Lj9VK79VIC+QbYXdv1M+TVXA==",
         "dependencies": {
-          "Microsoft.Extensions.Configuration": "10.0.12",
-          "Microsoft.Extensions.Configuration.Json": "10.0.12",
-          "Microsoft.Extensions.DependencyInjection": "10.0.12",
-          "Microsoft.Testing.Platform": "2.4.1"
+          "Microsoft.Extensions.Configuration": "10.0.14",
+          "Microsoft.Extensions.Configuration.Json": "10.0.14",
+          "Microsoft.Extensions.DependencyInjection": "10.0.14",
+          "Microsoft.Testing.Platform": "2.5.2"
         }
       },
       "FsCheck": {
@@ -586,27 +586,20 @@
       },
       "Microsoft.IdentityModel.Tokens.Saml": {
         "type": "Transitive",
-        "resolved": "5.2.4",
-        "contentHash": "00JslaTaHAUtMqiv/C/jQBqqrHkYmTe2n08qqrsHW57xVKTu+vOoi75HqDZbK3SAnRuadevDtvGCHf7V5GOQDQ==",
+        "resolved": "5.7.0",
+        "contentHash": "u7HTUOgSTtcbZpF3ioEBwKYBprqbErXGJAIxoDlrjXv3c9ZYZyA5BLIgWzBnAza/FysJDTx6lJpmaQ2zsLMynw==",
         "dependencies": {
-          "Microsoft.IdentityModel.Tokens": "5.2.4",
-          "Microsoft.IdentityModel.Xml": "5.2.4",
-          "NETStandard.Library": "1.6.1"
+          "Microsoft.IdentityModel.Tokens": "5.7.0",
+          "Microsoft.IdentityModel.Xml": "5.7.0"
         }
       },
       "Microsoft.IdentityModel.Xml": {
         "type": "Transitive",
-        "resolved": "5.2.4",
-        "contentHash": "v0UUzcpzz+mcR+Fzp8wFrcBt0Br0nJH5vuAdmlUmFqoc/DuDt/u5fcXVFRP3D77l22CQ/Rs3FTXUeXrTvi4gPg==",
+        "resolved": "5.7.0",
+        "contentHash": "mDnOpRc7OamfzLyUeOpLTPy3zH/4Yky47Qt1RapKN2ZkGNNIFr8e2HQUdownYX12sRHvsPeiwXj/8ZMZ+7jc2Q==",
         "dependencies": {
-          "Microsoft.IdentityModel.Tokens": "5.2.4",
-          "NETStandard.Library": "1.6.1"
+          "Microsoft.IdentityModel.Tokens": "5.7.0"
         }
-      },
-      "Microsoft.NETCore.Platforms": {
-        "type": "Transitive",
-        "resolved": "1.1.0",
-        "contentHash": "kz0PEW2lhqygehI/d6XsPCQzD7ff7gUJaVGPVETX611eadGsA3A877GdSlU0LRVMCTH/+P3o2iDTak+S08V2+A=="
       },
       "Microsoft.SourceLink.Common": {
         "type": "Transitive",
@@ -670,14 +663,6 @@
         "type": "Transitive",
         "resolved": "10.0.12",
         "contentHash": "kdj5cqOwgZCMltEhQ4+WVUoFkMHG08EJfy1MDyS9H+FBg66vTTFyX8YcNl8IQh5wRQv79P+iduQgDGY8ucBR+w=="
-      },
-      "NETStandard.Library": {
-        "type": "Transitive",
-        "resolved": "1.6.1",
-        "contentHash": "WcSp3+vP+yHNgS8EV5J7pZ9IRpeDuARBPN28by8zqff1wJQXm26PVU8L3/fYLBJVU7BtDyqNVWq2KlCVvSSR4A==",
-        "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.1.0"
-        }
       },
       "OpenTelemetry": {
         "type": "Transitive",
@@ -777,14 +762,15 @@
       },
       "Sustainsys.Saml2": {
         "type": "Transitive",
-        "resolved": "2.11.0",
-        "contentHash": "59Frh6f1xTaTuNMWYKn76kJLGebycZOx2R0C9uxJrs9mXw59IbZn0ULQiqN2TrQp8OTNsn8siZMn/8NMT+Kmfg==",
+        "resolved": "2.11.1",
+        "contentHash": "6/JS302UgRXQgS6FtbekV4o5cc4OphyVJ0OPLm+9QLdm8zsE85PR7uY7IETRk9D99ffcvtsR+ZNWDHn8Uhgjfw==",
         "dependencies": {
           "Microsoft.Extensions.Caching.Memory": "2.1.2",
-          "Microsoft.IdentityModel.Protocols": "5.2.4",
-          "Microsoft.IdentityModel.Tokens": "5.2.4",
-          "Microsoft.IdentityModel.Tokens.Saml": "5.2.4",
+          "Microsoft.IdentityModel.Protocols": "5.7.0",
+          "Microsoft.IdentityModel.Tokens": "5.7.0",
+          "Microsoft.IdentityModel.Tokens.Saml": "5.7.0",
           "System.Configuration.ConfigurationManager": "4.4.1",
+          "System.Drawing.Common": "4.7.2",
           "System.Security.Cryptography.Xml": "4.7.1"
         }
       },
@@ -969,7 +955,7 @@
           "Serilog.Settings.Configuration": "[10.0.1, )",
           "Serilog.Sinks.Console": "[6.1.1, )",
           "Serilog.Sinks.File": "[7.0.0, )",
-          "Sustainsys.Saml2.AspNetCore2": "[2.11.0, )"
+          "Sustainsys.Saml2.AspNetCore2": "[2.11.1, )"
         }
       },
       "Asp.Versioning.Mvc": {
@@ -1174,11 +1160,11 @@
       },
       "Sustainsys.Saml2.AspNetCore2": {
         "type": "CentralTransitive",
-        "requested": "[2.11.0, )",
-        "resolved": "2.11.0",
-        "contentHash": "hyLaaxasCwaPK/bwYOaW/+t/WjVHErxUBNkbvpAoS3/tbK3wj0m8cIK6Fo0L3XDyOofqjFcOEG7lmwJo0239QA==",
+        "requested": "[2.11.1, )",
+        "resolved": "2.11.1",
+        "contentHash": "PtA8TbsmfiGFqI0JoIEr0a4DmhonuRlIk8KnbZUJ6R634VfI5ozDKNrdNnnXyc+qiPU/vdkdbVOyo5jR5stsyA==",
         "dependencies": {
-          "Sustainsys.Saml2": "2.11.0"
+          "Sustainsys.Saml2": "2.11.1"
         }
       },
       "System.Drawing.Common": {
