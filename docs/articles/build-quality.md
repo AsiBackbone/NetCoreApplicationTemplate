@@ -203,7 +203,7 @@ CI hardens each Linux job with [Harden-Runner](https://github.com/step-security/
 | Variable | Used by | Covers |
 |:---|:---|:---|
 | `ALLOWED_ENDPOINTS_DOTNET` | Build validation, template option matrix | GitHub Actions infrastructure, the .NET SDK installer, and NuGet restore |
-| `ALLOWED_ENDPOINTS_SMOKE` | Template smoke test | The same endpoints plus the container registries used by the scaffolded Docker build and Compose run, and GitHub Container Registry for the pinned OWASP ZAP image ([Dynamic Application Security Testing](dynamic-application-security-testing.md)) |
+| `ALLOWED_ENDPOINTS_SMOKE` | Template smoke test | The same endpoints plus `aka.ms` for the Windows .NET SDK installer, the container registries used by the scaffolded Docker build and Compose run, and GitHub Container Registry for the pinned OWASP ZAP image ([Dynamic Application Security Testing](dynamic-application-security-testing.md)) |
 
 Harden-Runner ignores `allowed-endpoints` while the policy is `audit`, so the lists are inert until block mode is used.
 
@@ -214,7 +214,7 @@ To move to blocking:
 3. Repeat until a full run, including the cross-platform smoke test and option matrix, passes in block mode.
 4. Change the `EGRESS_POLICY` default in `ci.yml` to `block`.
 
-Harden-Runner enforces policy on Linux runners only. The Windows and macOS smoke-test legs remain unenforced regardless of the policy value.
+Harden-Runner enforces the policy on the Linux and Windows runners; the Windows smoke-test leg needs `aka.ms`, which the .NET SDK installer uses for its download redirect. The macOS smoke-test leg remains unenforced regardless of the policy value.
 
 ## Dependency Upgrade Policy
 

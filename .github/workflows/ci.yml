@@ -49,7 +49,9 @@ env:
     *.actions.githubusercontent.com:443
   # The scaffolded Docker build and Compose run also reach container registries. ghcr.io and
   # pkg-containers.githubusercontent.com serve the digest-pinned OWASP ZAP image used by the DAST scan (#767).
+  # aka.ms is the Windows SDK installer's download redirect; Harden-Runner enforces block mode on Windows too.
   ALLOWED_ENDPOINTS_SMOKE: |
+    aka.ms:443
     api.github.com:443
     api.nuget.org:443
     auth.docker.io:443
