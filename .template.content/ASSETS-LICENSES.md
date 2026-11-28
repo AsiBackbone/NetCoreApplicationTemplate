@@ -100,9 +100,9 @@ _The MSBuild targets and properties for building .NET test projects._
 
 _This package provides the generated application's optional OpenID Connect authentication handler._
 
-## [Sustainsys.Saml2.AspNetCore2 2.11.0](https://www.nuget.org/packages/Sustainsys.Saml2.AspNetCore2/2.11.0)
+## [Sustainsys.Saml2.AspNetCore2 2.11.1](https://www.nuget.org/packages/Sustainsys.Saml2.AspNetCore2/2.11.1)
 
-_Sustainsys.Saml2.AspNetCore2 provides the generated application's optional SAML2 authentication handler. The exact 2.11.0 package metadata and v2.11.0 source tag declare the MIT license._
+_Sustainsys.Saml2.AspNetCore2 provides the generated application's optional SAML2 authentication handler. The exact 2.11.1 package metadata and v2.11.1 source tag declare the MIT license._
 
 Copyright (c) 2018 Sustainsys AB and contributors
 

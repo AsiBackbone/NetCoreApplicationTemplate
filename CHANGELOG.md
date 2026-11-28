@@ -10,6 +10,10 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ### Security
 
+* Updated `Sustainsys.Saml2.AspNetCore2` from 2.11.0 to the upstream 2.11.1 security release, which addresses
+  insufficient LogoutRequest validation, missing HTML output encoding, incorrect RelayState integrity validation, and
+  denial of service caused by missing input validation. Refreshed both license inventories to reference the exact
+  2.11.1 package metadata and `v2.11.1` source tag (#760).
 * Added three read-only repository assurance agent profiles for security, release, and quality reviews. A new governance
   validator checks their bounded capabilities, maintainer-only placement, documentation, template exclusions, package
   contents, and generated scaffold boundary. The validator includes regression self-tests and now runs in CI (#750,
@@ -19,8 +23,8 @@ This project follows Semantic Versioning using the format `MAJOR.MINOR.PATCH`.
 
 ### Changed
 
-* Updated `Sustainsys.Saml2.AspNetCore2` from 2.11.0 to 2.11.1 and refreshed the affected package lock files. This also
-  updates its Microsoft.IdentityModel SAML dependencies from 5.2.4 to 5.7.0 (#760).
+* Refreshed the package lock files for `Sustainsys.Saml2.AspNetCore2` 2.11.1. Its Microsoft.IdentityModel SAML
+  dependencies move from 5.2.4 to 5.7.0 (#760).
 * Updated `coverlet.MTP` from 10.1.0 to 10.1.1 and ReportGenerator from 5.6.0 to 5.6.1 (#759, #761).
 * Refreshed the pinned .NET 10 SDK and ASP.NET Core runtime container image digests used by newly generated
   applications. The .NET major version, image tags, Dockerfile structure, and intended runtime behavior remain

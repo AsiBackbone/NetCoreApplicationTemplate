@@ -6,9 +6,14 @@ moving the template to .NET 11.
 
 ## Dependency and container servicing
 
-`Sustainsys.Saml2.AspNetCore2` is updated from 2.11.0 to 2.11.1. Its `Microsoft.IdentityModel` SAML dependencies move
-from 5.2.4 to 5.7.0, and the affected lock files are refreshed. `coverlet.MTP` is updated to 10.1.1, while repository
-coverage reporting moves to ReportGenerator 5.6.1.
+`Sustainsys.Saml2.AspNetCore2` is updated from 2.11.0 to the upstream
+[2.11.1 security release](https://github.com/Sustainsys/Saml2/releases/tag/v2.11.1). Upstream identifies fixes for
+insufficient LogoutRequest validation, missing HTML output encoding, incorrect RelayState integrity validation, and
+denial of service caused by missing input validation. Its `Microsoft.IdentityModel` SAML dependencies move from 5.2.4
+to 5.7.0, and the affected lock files are refreshed. The repository and generated-scaffold license inventories now
+reference the exact 2.11.1 package metadata and `v2.11.1` source tag.
+
+`coverlet.MTP` is updated to 10.1.1, while repository coverage reporting moves to ReportGenerator 5.6.1.
 
 The pinned .NET 10 SDK and ASP.NET Core runtime container image digests are refreshed. The image tags, target
 framework, Dockerfile structure, and intended runtime behavior are unchanged.
