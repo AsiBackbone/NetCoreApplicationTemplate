@@ -284,8 +284,10 @@ function Get-ZapDastResult {
             $countValue = Get-PropertyValue -InputObject $alert -Name 'count'
             $instanceCount = if ($null -ne $countValue -and "$countValue" -match '^\d+$') { [int]$countValue } else { $instances.Count }
 
-            # An alert that reports a count without listing its instances cannot be shown to be suppressed.
-            $unsuppressedCount = if ($instances.Count -eq 0) { [Math]::Max($instanceCount, 1) } else { $instances.Count - $suppressedCount }
+            # Only listed instances can be shown to be suppressed. Any instance the count reports but the report does not
+            # list (or an alert with no listed instances at all) is treated as unsuppressed.
+            $totalInstances = [Math]::Max([Math]::Max($instanceCount, $instances.Count), 1)
+            $unsuppressedCount = $totalInstances - $suppressedCount
 
             if ([int]$riskCode -ge $failOnRiskCode -and $unsuppressedCount -gt 0) {
                 $gateViolations.Add([pscustomobject]@{
@@ -598,6 +600,9 @@ function Invoke-SelfTest {
 
     $noInstances = Get-ZapDastResult -ReportJson '{ "site": [ { "@name": "http://localhost:8080", "alerts": [ { "pluginid": "40012", "name": "x", "riskcode": "3", "count": "1" } ] } ] }' -Origin $origin -FailOnRisk Medium -Suppressions $both
     Assert-True ($noInstances.GateViolations.Count -eq 1) 'An alert without listed instances must not be treated as suppressed.'
+
+    $truncated = Get-ZapDastResult -ReportJson ($gateReport -replace '"riskcode": "2", "count": "2"', '"riskcode": "2", "count": "3"') -Origin $origin -FailOnRisk Medium -Suppressions $both
+    Assert-True ($truncated.GateViolations.Count -eq 1 -and $truncated.GateViolations[0].Unsuppressed -eq 1) 'Instances counted but not listed must be treated as unsuppressed even when every listed instance is suppressed.'
 
     $queryScoped = ConvertTo-ZapSuppressionList -Origin $origin -SuppressionsJson '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/Account/Login\\?ReturnUrl=.*$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }'
     Assert-True (@($queryScoped).Count -eq 1) 'A literal path with a regular-expression query part must be accepted.'

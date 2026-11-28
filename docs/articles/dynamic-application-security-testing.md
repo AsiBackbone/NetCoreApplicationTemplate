@@ -48,7 +48,7 @@ jobs:
 
 | Job | Purpose | Bound |
 |:---|:---|:---|
-| `passiveScan-config` | Passive rules scan in-scope traffic only, with at most 10 alerts per rule | - |
+| `passiveScan-config` | Passive rules scan in-scope traffic only, with no per-rule alert cap, so the gate sees every instance | - |
 | `requestor` | Requests the passive-scan canary (below), then seeds `/health/live` and `/health/ready`, which are not linked from rendered pages | - |
 | `spider` | Starts at `/Account/Login` and discovers linked pages with GET requests. Forms are parsed but never submitted | 3 minutes, depth 5 |
 | `passiveScan-wait` | Waits for passive analysis to finish | 3 minutes |

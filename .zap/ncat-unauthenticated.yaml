@@ -34,7 +34,9 @@ jobs:
   - type: passiveScan-config
     parameters:
       scanOnlyInScope: true
-      maxAlertsPerRule: 10
+      # 0 = unlimited. A per-rule cap would hide instances beyond it from the alert gate, so a suppressed first batch
+      # could mask a later unsuppressed instance of the same rule. The target is small, so noise is not a concern.
+      maxAlertsPerRule: 0
 
   # Seed anonymous, non-redirecting routes that are not linked from rendered pages. Never add a route here that can
   # answer with a redirect.
