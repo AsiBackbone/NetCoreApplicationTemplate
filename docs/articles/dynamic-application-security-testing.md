@@ -162,7 +162,8 @@ Run `./scripts/Write-ZapDastSummary.ps1 -SelfTest` after changing the summary, s
 logic. CI runs it in the `Build validation` job, so a regression in the gate fails CI even if no scan runs.
 
 To reproduce the gate failure locally, create `./artifacts/scaffold/ContosoSecurityPortal/.env` containing
-`ProjectTemplate__SecurityHeaders__Enabled=false` before `docker compose up`, then delete it afterwards.
+`ContosoSecurityPortal__SecurityHeaders__Enabled=false` before `docker compose up`, then delete it afterwards. The
+configuration prefix is the generated project name: `dotnet new` replaces the template's `ProjectTemplate` prefix with it.
 
 ## Alert triage
 
