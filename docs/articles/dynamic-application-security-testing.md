@@ -87,9 +87,15 @@ entries. Each entry covers one rule on one anchored URL pattern:
 }
 ```
 
-The script rejects the file if any field is missing, if `pluginId` is not numeric, or if `urlPattern` is not anchored
-with `^` and `$`, starts with a wildcard, or is not a valid regular expression. There is no way to suppress a whole rule
-or a whole risk level. The job summary reports suppressed instance counts and lists unused suppressions, so stale
+The script rejects the file if any field is missing or `pluginId` is not numeric. It also rejects any `urlPattern` that:
+
+* is not anchored with `^` and `$`;
+* does not start with the literal origin `^http://localhost:8080/` followed by a literal path character;
+* is not a valid regular expression; or
+* also matches arbitrary probe paths under the origin.
+
+This blocks catch-alls such as `^http://localhost:8080/.*$`. There is no way to suppress a whole rule or a whole risk
+level. The job summary reports suppressed instance counts and lists unused suppressions, so stale
 entries are visible and can be removed.
 
 There is no active scan. The whole container run is bounded by `timeout 12m`, and the step has a
@@ -181,13 +187,23 @@ suppress a Defect: fix it. A suppression needs the same review as any other secu
 
 ## Rollout
 
-1. **Report-only scan (current).** Bounded spider and passive analysis, reports, job summary, and scope guard.
-2. **Triage.** Review and classify every stage-1 alert.
-3. **Filters.** Record only the narrow rule-and-URL filters that triage justifies.
-4. **Regression fixture.** Prove with a controlled insecure response that an unsuppressed policy-breaking alert fails
-   the intended gate, then remove the fixture.
-5. **Enforcement.** Fail on new unsuppressed Medium or High alerts. Low and Informational alerts stay in reports and
-   the job summary.
+All five stages are complete:
+
+1. **Report-only scan (done, #768).** Bounded spider and passive analysis, reports, job summary, scope guard, and the
+   passive-scan canary.
+2. **Triage (done).** Across the stage-1 runs, the only alert was the deliberate canary (rule 10024, Informational).
+3. **Suppressions (done).** Triage justified none, so `.zap/alert-suppressions.json` is empty.
+4. **Regression fixture (done, #770).** A temporary branch disabled the generated application's security headers with
+   `ContosoSecurityPortal__SecurityHeaders__Enabled=false`. ZAP raised Medium alerts 10038 (CSP header not set) and
+   10020 (missing anti-clickjacking header), and the gate failed the job. Low alert 10021 was reported without failing.
+   The branch was then deleted. The gate logic stays covered by `-SelfTest`, including High alerts and suppression
+   breadth checks.
+5. **Enforcement (current).** Unsuppressed Medium or High alerts fail CI. Low and Informational alerts stay in the
+   reports and the job summary.
+
+The same validation confirmed cleanup on every path. After a passing scan, a gate failure, a scan stopped by its time
+bound, and a cancelled run, the ZAP container, the application container, its three volumes, and its network were all
+removed.
 
 A strictly time-bounded active scan may be added once stage 2 has confirmed the scope and exclusions. If DAST becomes
 a required status check, update the repository security-control baselines in `eng/repository-controls` in the same

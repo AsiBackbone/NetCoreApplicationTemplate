@@ -90,7 +90,18 @@ function Get-PropertyValue {
 
 function ConvertTo-ZapSuppressionList {
     param(
-        [Parameter(Mandatory = $true)][string]$SuppressionsJson
+        [Parameter(Mandatory = $true)][string]$SuppressionsJson,
+        [Parameter(Mandatory = $true)][string]$Origin
+    )
+
+    # A suppression must start with the literal authorized origin and a literal path character, and must not match
+    # arbitrary paths. These probes stand in for "any other URL under the origin".
+    $requiredPrefix = '^' + [System.Text.RegularExpressions.Regex]::Escape($Origin) + '/'
+    $breadthProbes = @(
+        "$Origin/",
+        "$Origin/ncat-suppression-breadth-probe",
+        "$Origin/ncat-suppression-breadth-probe/nested?probe=1",
+        "$Origin/Zz9-breadth-probe"
     )
 
     try {
@@ -127,14 +138,17 @@ function ConvertTo-ZapSuppressionList {
             throw "$label has non-numeric pluginId '$($values.pluginId)'."
         }
 
-        # Narrow by construction: anchored at both ends and confined to one URL path under the origin.
+        # Narrow by construction: anchored at both ends, rooted at the literal authorized origin, starting with a literal
+        # path character, and not matching arbitrary paths under the origin.
         $pattern = $values.urlPattern
         if (-not $pattern.StartsWith('^') -or -not $pattern.EndsWith('$')) {
             throw "$label urlPattern must be anchored with ^ and `$: '$pattern'."
         }
 
-        if ($pattern -match '^\^\.\*' -or $pattern -eq '^.*$') {
-            throw "$label urlPattern must name a specific URL, not match everything: '$pattern'."
+        if (-not $pattern.StartsWith($requiredPrefix, [System.StringComparison]::Ordinal) -or
+            $pattern.Length -le $requiredPrefix.Length -or
+            $pattern[$requiredPrefix.Length] -notmatch '[A-Za-z0-9_~-]') {
+            throw "$label urlPattern must start with the literal origin '$requiredPrefix' followed by a literal path character: '$pattern'."
         }
 
         try {
@@ -145,6 +159,12 @@ function ConvertTo-ZapSuppressionList {
         }
         catch {
             throw "$label urlPattern is not a valid regular expression: $($_.Exception.Message)"
+        }
+
+        foreach ($probe in $breadthProbes) {
+            if ($regex.IsMatch($probe)) {
+                throw "$label urlPattern is too broad: it matches '$probe'. Name a specific URL path: '$pattern'."
+            }
         }
 
         $list.Add([pscustomobject]@{
@@ -528,10 +548,17 @@ function Invoke-SelfTest {
 
     $highGate = Get-ZapDastResult -ReportJson $gateReport -Origin $origin -FailOnRisk High
     Assert-True ($highGate.GateViolations.Count -eq 0) 'A Medium alert must not fail a High gate.'
+
+    $highReport = $gateReport -replace '"pluginid": "10038", "name": "Content Security Policy \(CSP\) Header Not Set", "riskcode": "2"', '"pluginid": "40012", "name": "Cross Site Scripting (Reflected)", "riskcode": "3"'
+    Assert-True ($highReport -ne $gateReport) 'The High fixture must replace the Medium alert.'
+    $highOnHigh = Get-ZapDastResult -ReportJson $highReport -Origin $origin -FailOnRisk High
+    Assert-True ($highOnHigh.GateViolations.Count -eq 1 -and $highOnHigh.GateViolations[0].Risk -eq 'High' -and $highOnHigh.GateViolations[0].Unsuppressed -eq 2) 'An unsuppressed High alert must fail a High gate.'
+    $highOnMedium = Get-ZapDastResult -ReportJson $highReport -Origin $origin -FailOnRisk Medium
+    Assert-True ($highOnMedium.GateViolations.Count -eq 1 -and $highOnMedium.GateViolations[0].PluginId -eq '40012') 'An unsuppressed High alert must fail the Medium gate used in CI.'
     $lowGate = Get-ZapDastResult -ReportJson $gateReport -Origin $origin -FailOnRisk Low
     Assert-True ($lowGate.GateViolations.Count -eq 2) 'A Low gate must also catch the Low alert but never Informational ones.'
 
-    $narrow = ConvertTo-ZapSuppressionList -SuppressionsJson @'
+    $narrow = ConvertTo-ZapSuppressionList -Origin $origin -SuppressionsJson @'
 { "suppressions": [
   { "pluginId": "10038", "urlPattern": "^http://localhost:8080/robots\\.txt$", "rationale": "Plain-text file; CSP does not apply.",
     "owner": "maintainers", "reviewCondition": "Revisit if robots.txt becomes HTML." },
@@ -543,22 +570,24 @@ function Invoke-SelfTest {
     Assert-True (@($partial.UnusedSuppressions).Count -eq 1 -and $partial.UnusedSuppressions[0].PluginId -eq '10098') 'Suppressions that match nothing must be reported as unused.'
     Assert-True ((ConvertTo-ZapDastMarkdown -Result $partial -Origin $origin).Contains('| Medium | 10038 | Content Security Policy (CSP) Header Not Set | 2 | 1 |')) 'The summary must show suppressed instance counts.'
 
-    $both = ConvertTo-ZapSuppressionList -SuppressionsJson @'
+    $both = ConvertTo-ZapSuppressionList -Origin $origin -SuppressionsJson @'
 { "suppressions": [
-  { "pluginId": "10038", "urlPattern": "^http://localhost:8080/(robots\\.txt|Account/Login)$", "rationale": "Fixture only.",
+  { "pluginId": "10038", "urlPattern": "^http://localhost:8080/robots\\.txt$", "rationale": "Fixture only.",
+    "owner": "maintainers", "reviewCondition": "Self-test fixture." },
+  { "pluginId": "10038", "urlPattern": "^http://localhost:8080/Account/Login$", "rationale": "Fixture only.",
     "owner": "maintainers", "reviewCondition": "Self-test fixture." } ] }
 '@
     $covered = Get-ZapDastResult -ReportJson $gateReport -Origin $origin -FailOnRisk Medium -Suppressions $both
     Assert-True ($covered.GateViolations.Count -eq 0) 'An alert whose every instance is suppressed must pass the gate.'
 
-    $wrongPlugin = ConvertTo-ZapSuppressionList -SuppressionsJson '{ "suppressions": [ { "pluginId": "10020", "urlPattern": "^http://localhost:8080/(robots\\.txt|Account/Login)$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }'
+    $wrongPlugin = ConvertTo-ZapSuppressionList -Origin $origin -SuppressionsJson '{ "suppressions": [ { "pluginId": "10020", "urlPattern": "^http://localhost:8080/Account/Login$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }'
     $otherRule = Get-ZapDastResult -ReportJson $gateReport -Origin $origin -FailOnRisk Medium -Suppressions $wrongPlugin
     Assert-True ($otherRule.GateViolations.Count -eq 1) 'A suppression for a different rule must not suppress the alert.'
 
     $noInstances = Get-ZapDastResult -ReportJson '{ "site": [ { "@name": "http://localhost:8080", "alerts": [ { "pluginid": "40012", "name": "x", "riskcode": "3", "count": "1" } ] } ] }' -Origin $origin -FailOnRisk Medium -Suppressions $both
     Assert-True ($noInstances.GateViolations.Count -eq 1) 'An alert without listed instances must not be treated as suppressed.'
 
-    $emptyList = ConvertTo-ZapSuppressionList -SuppressionsJson '{ "suppressions": [] }'
+    $emptyList = ConvertTo-ZapSuppressionList -Origin $origin -SuppressionsJson '{ "suppressions": [] }'
     Assert-True (@($emptyList).Count -eq 0) 'An empty suppressions array must load as an empty list.'
 
     $invalidSuppressions = @(
@@ -569,12 +598,22 @@ function Invoke-SelfTest {
         '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "http://localhost:8080/x", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
         '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^.*$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
         '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^.*/x$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
-        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/(x$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }'
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/x(y$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
+        # Catch-alls rooted at the authorized origin, and patterns for any other origin.
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/.*$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/(.*)$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/[^?]*$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/\\w+$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/Z?.*$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/n.*$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^https?://localhost:8080/x$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://example.com/x$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }'
     )
     foreach ($invalid in $invalidSuppressions) {
         $threw = $false
         try {
-            [void](ConvertTo-ZapSuppressionList -SuppressionsJson $invalid)
+            [void](ConvertTo-ZapSuppressionList -Origin $origin -SuppressionsJson $invalid)
         }
         catch {
             $threw = $true
@@ -610,7 +649,7 @@ if (-not [string]::IsNullOrWhiteSpace($SuppressionsPath)) {
         throw "Alert suppressions file was not found: '$SuppressionsPath'."
     }
 
-    $suppressions = ConvertTo-ZapSuppressionList -SuppressionsJson (Get-Content -LiteralPath $SuppressionsPath -Raw)
+    $suppressions = ConvertTo-ZapSuppressionList -Origin $AllowedOrigin -SuppressionsJson (Get-Content -LiteralPath $SuppressionsPath -Raw)
 }
 
 $result = Get-ZapDastResult `
