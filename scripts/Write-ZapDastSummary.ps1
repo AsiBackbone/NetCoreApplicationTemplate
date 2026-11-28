@@ -119,11 +119,11 @@ function ConvertTo-ZapSuppressionList {
     $list = [System.Collections.Generic.List[object]]::new()
     $index = 0
     foreach ($entry in @($entries)) {
-        if ($null -eq $entry) {
-            continue
+        $label = "Suppression #$index"
+        if ($null -eq $entry -or $entry -isnot [System.Management.Automation.PSCustomObject]) {
+            throw "$label must be an object with pluginId, urlPattern, rationale, owner, and reviewCondition."
         }
 
-        $label = "Suppression #$index"
         $values = @{}
         foreach ($field in @('pluginId', 'urlPattern', 'rationale', 'owner', 'reviewCondition')) {
             $value = [string](Get-PropertyValue -InputObject $entry -Name $field)
@@ -599,6 +599,11 @@ function Invoke-SelfTest {
         '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^.*$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
         '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^.*/x$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
         '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/x(y$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
+        # Null or non-object entries.
+        '{ "suppressions": [ null ] }',
+        '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/x$", "rationale": "r", "owner": "o", "reviewCondition": "c" }, null ] }',
+        '{ "suppressions": [ "^http://localhost:8080/x$" ] }',
+        '{ "suppressions": null }',
         # Catch-alls rooted at the authorized origin, and patterns for any other origin.
         '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/.*$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
         '{ "suppressions": [ { "pluginId": "10038", "urlPattern": "^http://localhost:8080/(.*)$", "rationale": "r", "owner": "o", "reviewCondition": "c" } ] }',
